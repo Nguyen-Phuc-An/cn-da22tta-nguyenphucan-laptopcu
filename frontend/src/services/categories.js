@@ -1,21 +1,24 @@
-import { apiFetch } from './apiClient';
+// Categories services: data helpers only.
 
-export function listCategories() {
-  return apiFetch('/categories');
+export function normalizeCategory(c = {}) {
+  return {
+    id: c.id || c.ma || null,
+    name: c.name || c.ten || null,
+    parentId: c.parent_id || c.danh_muc_cha_id || null,
+    ...c
+  };
 }
 
-export function getCategory(id) {
-  return apiFetch(`/categories/${id}`);
-}
-
-export function createCategory(payload) {
-  return apiFetch('/categories', { method: 'POST', body: payload });
-}
-
-export function updateCategory(id, payload) {
-  return apiFetch(`/categories/${id}`, { method: 'PUT', body: payload });
-}
-
-export function deleteCategory(id) {
-  return apiFetch(`/categories/${id}`, { method: 'DELETE' });
+export function buildCategoryTree(list = []) {
+  // simple tree builder (flat parent_id -> children)
+  const map = {};
+  list.forEach(i => { map[i.id] = { ...i, children: [] }; });
+  const roots = [];
+  list.forEach(i => {
+    const node = map[i.id];
+    const pid = i.parentId || i.danh_muc_cha_id || null;
+    if (pid && map[pid]) map[pid].children.push(node);
+    else roots.push(node);
+  });
+  return roots;
 }

@@ -1,28 +1,30 @@
 const db = require('../db');
 
-async function createCategory({ name, slug, parent_id = null }) {
-  const [res] = await db.query('INSERT INTO categories (name, slug, parent_id) VALUES (?, ?, ?)', [name, slug, parent_id]);
+async function createCategory(payload = {}) {
+  const name = payload.ten || payload.name || null;
+  const parent_id = payload.danh_muc_cha_id ?? payload.parent_id ?? null;
+  const [res] = await db.query('INSERT INTO categories (ten, danh_muc_cha_id) VALUES (?, ?)', [name, parent_id]);
   return res.insertId;
 }
 
 async function getCategoryById(id) {
-  const [rows] = await db.query('SELECT * FROM categories WHERE id = ?', [id]);
+  const [rows] = await db.query('SELECT id, ten, danh_muc_cha_id, tao_luc, cap_nhat_luc FROM categories WHERE id = ?', [id]);
   return rows[0] || null;
 }
 
 async function listCategories() {
-  const [rows] = await db.query('SELECT * FROM categories ORDER BY parent_id IS NOT NULL, name');
+  const [rows] = await db.query('SELECT id, ten, danh_muc_cha_id, tao_luc, cap_nhat_luc FROM categories ORDER BY danh_muc_cha_id IS NOT NULL, ten');
   return rows;
 }
 
-async function updateCategory(id, { name, slug, parent_id }) {
-  const sets = []; const vals = [];
-  if (name !== undefined) { sets.push('name = ?'); vals.push(name); }
-  if (slug !== undefined) { sets.push('slug = ?'); vals.push(slug); }
-  if (parent_id !== undefined) { sets.push('parent_id = ?'); vals.push(parent_id); }
+async function updateCategory(id, payload = {}) {
+  const sets = [];
+  const vals = [];
+  if (payload.ten !== undefined) { sets.push('ten = ?'); vals.push(payload.ten); }
+  if (payload.danh_muc_cha_id !== undefined) { sets.push('danh_muc_cha_id = ?'); vals.push(payload.danh_muc_cha_id); }
   if (!sets.length) return false;
   vals.push(id);
-  await db.query(`UPDATE categories SET ${sets.join(', ')} WHERE id = ?`, vals);
+  await db.query('UPDATE categories SET ' + sets.join(', ') + ' WHERE id = ?', vals);
   return true;
 }
 

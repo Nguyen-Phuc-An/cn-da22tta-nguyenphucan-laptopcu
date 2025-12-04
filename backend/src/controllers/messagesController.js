@@ -1,29 +1,67 @@
-const messages = require('../models/messages');
+const messagesModel = require('../models/messages');
 
-async function send(req, res) {
+// REST: Get chat history for a user/email
+async function getChatHistory(req, res) {
   try {
-    const { from_user_id, to_user_id, product_id, content } = req.body;
-    if (!from_user_id || !to_user_id || !content) return res.status(400).json({ error: 'from_user_id, to_user_id, content required' });
-    const id = await messages.sendMessage({ from_user_id, to_user_id, product_id, content });
-    res.status(201).json({ id });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+    const { identifier } = req.params; // user_id or email
+    const messages = await messagesModel.getMessages(identifier);
+    res.json(messages);
+  } catch (err) {
+    console.error('getChatHistory error:', err);
+    res.status(500).json({ error: err.message });
+  }
 }
 
-async function conversation(req, res) {
+// REST: Get all conversations
+async function getConversationsList(req, res) {
   try {
-    const userA = Number(req.params.userA);
-    const userB = Number(req.params.userB);
-    const rows = await messages.listConversation(userA, userB, req.query);
-    res.json(rows);
-  } catch (e) { res.status(500).json({ error: e.message }); }
+    const conversations = await messagesModel.getConversations();
+    res.json(conversations);
+  } catch (err) {
+    console.error('getConversationsList error:', err);
+    res.status(500).json({ error: err.message });
+  }
 }
 
-async function markRead(req, res) {
+// REST: Get single conversation with all messages
+async function getConversation(req, res) {
   try {
-    const ids = req.body.ids || [];
-    await messages.markAsRead(ids);
-    res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+    const { identifier } = req.params;
+    const messages = await messagesModel.getConversationWithMessages(identifier);
+    res.json(messages);
+  } catch (err) {
+    console.error('getConversation error:', err);
+    res.status(500).json({ error: err.message });
+  }
 }
 
-module.exports = { send, conversation, markRead };
+// REST: Send a message (fallback for non-Socket.IO)
+async function sendMessage(req, res) {
+  try {
+    const { user_id, email_nguoi_gui, content, sender_name, is_user } = req.body;
+    
+    if (!content || (!user_id && !email_nguoi_gui)) {
+      return res.status(400).json({ error: 'content and (user_id or email_nguoi_gui) required' });
+    }
+
+    const id = await messagesModel.sendMessage({
+      user_id: user_id || null,
+      email_nguoi_gui: email_nguoi_gui || null,
+      content,
+      sender_name,
+      is_user: is_user !== undefined ? is_user : true
+    });
+
+    res.status(201).json({ id, timestamp: new Date() });
+  } catch (err) {
+    console.error('sendMessage error:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+module.exports = {
+  getChatHistory,
+  getConversationsList,
+  getConversation,
+  sendMessage
+};

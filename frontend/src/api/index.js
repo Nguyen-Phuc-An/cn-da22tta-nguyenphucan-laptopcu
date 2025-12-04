@@ -1,0 +1,9 @@
+export * as AuthAPI from '../api/auth';
+export * as UsersAPI from '../api/users';
+export * as ProductsAPI from '../api/products';
+export * as CategoriesAPI from '../api/categories';
+export * as ChatAPI from '../api/chat';
+export * as ProductImagesAPI from '../api/productImages';
+export * as OrdersAPI from '../api/orders';
+export * as ReviewsAPI from '../api/reviews';
+export * as WishlistsAPI from '../api/wishlists';

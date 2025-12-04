@@ -10,6 +10,17 @@ export function setToken(t) {
   }
 }
 
+export function getToken() {
+  if (token) return token;
+  if (typeof window !== 'undefined') return localStorage.getItem('cn_token');
+  return null;
+}
+
+export function getAuthHeader() {
+  const t = getToken();
+  return t ? { Authorization: 'Bearer ' + t } : {};
+}
+
 async function apiFetch(path, opts = {}) {
   opts.headers = opts.headers || {};
   if (token) opts.headers['Authorization'] = 'Bearer ' + token;

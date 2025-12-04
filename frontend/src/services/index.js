@@ -6,3 +6,4 @@ export * as orders from './orders';
 export * as reviews from './reviews';
 export * as wishlists from './wishlists';
 export * as messages from './messages';
+export * as productImages from './productImages';

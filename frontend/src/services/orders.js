@@ -1,21 +1,16 @@
-import { apiFetch } from './apiClient';
+// Orders services: data helpers only.
 
-export function createOrder(payload) {
-  return apiFetch('/orders', { method: 'POST', body: payload });
+export function normalizeOrder(order = {}) {
+  return {
+    id: order.id || order.ma || null,
+    userId: order.user_id || order.khach_hang_id || null,
+    total: Number(order.total || order.tong_tien || 0),
+    status: order.status || null,
+    items: order.items || order.chi_tiet || [],
+    ...order
+  };
 }
 
-export function getOrder(id) {
-  return apiFetch(`/orders/${id}`);
-}
-
-export function listOrdersForUser(userId, params = '') {
-  return apiFetch(`/users/${userId}/orders${params ? `?${params}` : ''}`);
-}
-
-export function updateOrderStatus(id, status) {
-  return apiFetch(`/orders/${id}/status`, { method: 'PUT', body: { status } });
-}
-
-export function deleteOrder(id) {
-  return apiFetch(`/orders/${id}`, { method: 'DELETE' });
+export function calculateOrderTotal(items = []) {
+  return (items || []).reduce((s, it) => s + (Number(it.price || it.gia || 0) * (it.qty || it.so_luong || 1)), 0);
 }

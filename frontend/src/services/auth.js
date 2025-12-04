@@ -1,23 +1,22 @@
-import { apiFetch, API_BASE } from './apiClient';
+// Auth services: only helpers and payload normalization.
 
-export function login(emailOrPayload, password) {
-  const body = (typeof emailOrPayload === 'object' && emailOrPayload !== null)
+export function prepareLoginPayload(emailOrPayload, password) {
+  return (typeof emailOrPayload === 'object' && emailOrPayload !== null)
     ? emailOrPayload
     : { email: emailOrPayload, password };
-
-  return apiFetch('/auth/login', { method: 'POST', body });
 }
 
-export function register(payload) {
-  return apiFetch('/auth/register', { method: 'POST', body: payload });
+export function prepareRegisterPayload(payload) {
+  return payload;
 }
 
-export function logout() {
-  // client-side only: clear token via setToken in apiClient (import where used)
-  return Promise.resolve();
-}
-
-// optional: fetch current user if backend has endpoint
-export function me() {
-  return apiFetch('/auth/me');
+export function normalizeUser(user = {}) {
+  return {
+    id: user.id || user.ma || null,
+    name: user.ten || user.name || user.fullName || null,
+    email: user.email || null,
+    phone: user.phone || user.sdt || null,
+    address: user.address || user.dia_chi || null,
+    ...user
+  };
 }

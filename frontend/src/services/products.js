@@ -1,35 +1,24 @@
-import { apiFetch, API_BASE } from './apiClient';
+// Services for products should only contain data processing helpers.
+// HTTP calls belong to `src/api/products.js`.
 
-export function getProducts(query = '') {
-  return apiFetch('/products' + (query ? `?${query}` : ''));
+export function normalizeProduct(p = {}) {
+  return {
+    id: p.id,
+    title: p.title || p.tieu_de || '',
+    price: Number(p.price || p.gia || 0),
+    description: p.description || p.mo_ta || p.noi_dung || '',
+    currency: p.currency || 'VND',
+    ...p
+  };
 }
 
-export function getProduct(id) {
-  return apiFetch(`/products/${id}`);
-}
-
-export function createProduct(payload) {
-  return apiFetch('/products', { method: 'POST', body: payload });
-}
-
-export function updateProduct(id, payload) {
-  return apiFetch(`/products/${id}`, { method: 'PUT', body: payload });
-}
-
-export function deleteProduct(id) {
-  return apiFetch(`/products/${id}`, { method: 'DELETE' });
-}
-
-export async function uploadProductImages(productId, files = []) {
-  const form = new FormData();
-  files.forEach(f => form.append('images', f));
-  const token = localStorage.getItem('cn_token');
-  const headers = token ? { Authorization: 'Bearer ' + token } : {};
-  const res = await fetch(API_BASE + `/products/${productId}/images`, {
-    method: 'POST',
-    headers,
-    body: form
-  });
-  if (!res.ok) throw new Error(await res.text().catch(() => res.statusText));
-  return res.json();
+export function prepareProductPayload(values = {}) {
+  // adapt frontend form fields to backend API shape if needed
+  return {
+    title: values.title || values.tieu_de,
+    price: values.price || values.gia,
+    description: values.description || values.mo_ta || values.noi_dung,
+    category_id: values.category_id || values.danh_muc_id,
+    ...values
+  };
 }

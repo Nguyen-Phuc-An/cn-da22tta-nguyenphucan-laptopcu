@@ -1,0 +1,33 @@
+.price-slider {
+  width: 100%;
+  max-width: 400px;
+  margin: 16px 0;
+  font-family: Inter, sans-serif;
+}
+
+.price-slider .labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: #0f172a;
+}
+
+.track {
+  height: 6px;
+  border-radius: 3px;
+}
+
+.thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background-color: #ff4444;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  cursor: grab;
+}
+
+.thumb:active {
+  cursor: grabbing;
+}

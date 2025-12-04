@@ -1,16 +1,47 @@
-import React, { useState } from 'react';
-import { login, register } from '../services/auth';
+import React, { useState, useEffect, useRef } from 'react';
+import { login, register } from '../api/auth';
 import '../styles/AuthModal.css'; 
 
 export default function AuthModal({ mode = 'login', onClose, onAuthSuccess }) {
   const [m, setMode] = useState(mode); // 'login' or 'register'
   const [email, setEmail] = useState('');
+  const emailRef = useRef(null);
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const formRef = useRef(null);
+
+  // close when clicking outside the form
+  useEffect(() => {
+    function onDocMouseDown(e) {
+      try {
+        if (!formRef.current) return;
+        if (!formRef.current.contains(e.target)) {
+          onClose && onClose();
+        }
+      } catch (err) { void err; }
+    }
+    document.addEventListener('mousedown', onDocMouseDown);
+    return () => document.removeEventListener('mousedown', onDocMouseDown);
+  }, [onClose]);
+
+  // focus email input when modal opens or when switching between login/register
+  useEffect(() => {
+    try {
+      if (emailRef && emailRef.current) {
+        emailRef.current.focus();
+        // place cursor at end
+        const val = emailRef.current.value || '';
+        emailRef.current.setSelectionRange && emailRef.current.setSelectionRange(val.length, val.length);
+      }
+    } catch (err) { void err; }
+  }, [m]);
+
+  // sync internal mode when prop changes
+  useEffect(() => { setMode(mode); }, [mode]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -39,12 +70,12 @@ export default function AuthModal({ mode = 'login', onClose, onAuthSuccess }) {
 
   return (
     <div className="auth-modal">
-      <form onSubmit={handleSubmit}>
+      <form ref={formRef} onSubmit={handleSubmit}>
         <h3>{m === 'login' ? 'Đăng nhập' : 'Đăng ký'}</h3>
 
         <label>
           Email
-          <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+          <input ref={emailRef} type="email" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" />
         </label>
 
         {m === 'register' && (
@@ -81,7 +112,7 @@ export default function AuthModal({ mode = 'login', onClose, onAuthSuccess }) {
           </button>
 
           <button type="button" onClick={() => setMode(m === 'login' ? 'register' : 'login')}>
-            {m === 'login' ? 'Chuyển sang đăng ký' : 'Chuyển sang đăng nhập'}
+            {m === 'login' ? 'Đăng ký' : 'Đăng nhập'}
           </button>
         </div>
       </form>

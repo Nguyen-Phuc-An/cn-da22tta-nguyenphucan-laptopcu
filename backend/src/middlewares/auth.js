@@ -1,18 +1,20 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+
 const JWT_SECRET = process.env.JWT_SECRET || 'change_this_secret';
 
-function authMiddleware(req, res, next) {
-  const h = req.headers.authorization || '';
-  const token = h.startsWith('Bearer ') ? h.slice(7) : null;
-  if (!token) return res.status(401).json({ error: 'token required' });
+function requireAuth(req, res, next) {
+  const auth = req.get('authorization') || '';
+  const m = auth.match(/^Bearer\s+(.+)$/i);
+  if (!m) return res.status(401).json({ error: 'missing token' });
   try {
-    const payload = jwt.verify(token, JWT_SECRET);
+    const payload = jwt.verify(m[1], JWT_SECRET);
     req.user = payload;
     next();
-  } catch (e) {
+  } catch (err) {
     return res.status(401).json({ error: 'invalid token' });
   }
 }
 
-module.exports = authMiddleware;
+// export the middleware function directly for simple require() usage
+module.exports = requireAuth;
