@@ -367,7 +367,7 @@ mysqldump -u root -p used_laptops > backup.sql
 
 ## 📞 Liên hệ & Hỗ trợ
 
-- **Email**: nguyenphucan@example.com
+- **Email**: Anphuc1203@gmail.com
 - **GitHub**: https://github.com/Nguyen-Phuc-An
 - **Repository**: https://github.com/Nguyen-Phuc-An/cn-da22tta-nguyenphucan-laptopcu
 
