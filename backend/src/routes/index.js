@@ -1,13 +1,14 @@
 const express = require('express');
 const path = require('path');
 const usersCtrl = require('../controllers/usersController');
+const usersImagesCtrl = require('../controllers/usersImagesController');
 const categoriesCtrl = require('../controllers/categoriesController');
 const productsCtrl = require('../controllers/productsController');
 const ordersCtrl = require('../controllers/ordersController');
 const reviewsCtrl = require('../controllers/reviewsController');
 const wishlistsCtrl = require('../controllers/wishlistsController');
 const productImagesCtrl = require('../controllers/productImagesController');
-const { upload: uploadMw } = require('../middlewares/upload');
+const { upload: uploadMw, avatarUpload } = require('../middlewares/upload');
 const auth = require('../middlewares/auth');
 const authRoutes = require('./auth');
 const bannersRoutes = require('./banners');
@@ -53,6 +54,13 @@ router.get('/users/:id', usersCtrl.getOne);
 router.put('/users/:id', usersCtrl.update);
 router.delete('/users/:id', usersCtrl.remove);
 
+// User images
+router.post('/users/:userId/images', auth, avatarUpload.array('images', 5), usersImagesCtrl.upload);
+router.get('/users/:userId/images', usersImagesCtrl.list);
+router.get('/users/:userId/images/main', usersImagesCtrl.getMain);
+router.post('/users/:userId/images/main', auth, usersImagesCtrl.setMain);
+router.delete('/users/:userId/images', auth, usersImagesCtrl.remove);
+
 // Admin stats
 try {
 	const adminCtrl = require('../controllers/adminController');
@@ -80,9 +88,11 @@ router.delete('/products/:productId/images/:id', auth, productImagesCtrl.remove)
 
 /* Orders */
 router.post('/orders', ordersCtrl.create);
+router.get('/orders', ordersCtrl.listAll);
 router.get('/orders/:id', ordersCtrl.getOne);
 router.get('/users/:userId/orders', ordersCtrl.listForUser);
 router.put('/orders/:id/status', ordersCtrl.updateStatus);
+router.put('/orders/:id', ordersCtrl.update);
 router.delete('/orders/:id', ordersCtrl.remove);
 
 /* Reviews */
@@ -97,15 +107,22 @@ router.delete('/users/:userId/wishlists/:productId', wishlistsCtrl.remove);
 
 /* Banners */
 router.use('/banners', bannersRoutes);
-
 /* Chat Messages */
 try {
 	const messagesCtrl = require('../controllers/messagesController');
+	router.get('/messages/chat/users', auth, messagesCtrl.getChatUsers);
+	router.get('/messages/chat/user/:userId', auth, messagesCtrl.getChatHistory);
 	router.post('/messages/chat', messagesCtrl.sendMessage);
-	router.get('/messages/chat/conversations', messagesCtrl.getConversationsList);
-	router.get('/messages/chat/history/:identifier', messagesCtrl.getChatHistory);
-	router.get('/messages/chat/:identifier', messagesCtrl.getConversation);
 } catch (e) { console.warn('chat routes not added', e && e.message ? e.message : e); }
+
+/* Contacts */
+try {
+	const contactsCtrl = require('../controllers/contactsController');
+	router.post('/contacts', contactsCtrl.create);
+	router.get('/contacts', auth, contactsCtrl.list);
+	router.get('/contacts/:id', auth, contactsCtrl.getOne);
+	router.delete('/contacts/:id', auth, contactsCtrl.remove);
+} catch (e) { console.warn('contacts routes not added', e && e.message ? e.message : e); }
 
 // mount auth
 router.use('/auth', authRoutes);

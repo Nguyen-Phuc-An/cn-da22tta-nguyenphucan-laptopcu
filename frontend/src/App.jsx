@@ -3,9 +3,13 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import ChatButton from './components/ChatButton';
 import Home from './pages/Home';
+import About from './pages/About';
+import Contact from './pages/Contact';
 import Profile from './pages/Profile';
 import Wishlists from './pages/Wishlists';
 import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+import OrderSuccess from './pages/OrderSuccess';
 import ProductDetail from './pages/ProductDetail';
 import Admin from './pages/admin/Admin';
 import AuthModal from './components/AuthModal';
@@ -107,7 +111,7 @@ export default function App() {
               <div className="app">
                 <Header onOpenAuth={setModalMode} onLogout={() => handleSetToken(null)} />
               <main className="container">
-              {/* Simple pathname routing: /admin for admin dashboard, /product/:id for product detail, /profile for user profile, /wishlists for wishlist, /cart for cart (pretty URLs) */}
+              {/* Simple pathname routing: /admin for admin dashboard, /product/:id for product detail, /profile for user profile, /wishlists for wishlist, /cart for cart, /checkout for checkout, /order-success/:id for order success (pretty URLs) */}
               {(() => {
                 const p = typeof window !== 'undefined' ? window.location.pathname : '';
                 if (p && p.startsWith('/admin')) {
@@ -115,6 +119,18 @@ export default function App() {
                 }
                 if (p && p.startsWith('/product/')) {
                   return <ProductDetail />;
+                }
+                if (p && p.startsWith('/order-success/')) {
+                  return <OrderSuccess />;
+                }
+                if (p && p.startsWith('/checkout')) {
+                  return <Checkout />;
+                }
+                if (p && p.startsWith('/about')) {
+                  return <About />;
+                }
+                if (p && p.startsWith('/contact')) {
+                  return <Contact />;
                 }
                 if (p && p.startsWith('/profile')) {
                   return <Profile />;
@@ -128,10 +144,10 @@ export default function App() {
                 return <Home />;
               })()}
             </main>
-            {/* hide footer on admin dashboard (for admins), product detail, profile page, wishlists page, and cart; show footer for customers even if path is /admin */}
+            {/* hide footer on admin dashboard (for admins), product detail, profile page, wishlists page, cart, checkout, and order success; show footer for customers even if path is /admin */}
             {(() => {
               const p = typeof window !== 'undefined' ? window.location.pathname : '';
-              const hideFooter = (p && p.startsWith('/admin') && isOperator) || (p && p.startsWith('/product/')) || (p && p.startsWith('/profile')) || (p && p.startsWith('/wishlists')) || (p && p.startsWith('/cart'));
+              const hideFooter = (p && p.startsWith('/admin') && isOperator) || (p && p.startsWith('/product/')) || (p && p.startsWith('/profile')) || (p && p.startsWith('/wishlists')) || (p && p.startsWith('/cart')) || (p && p.startsWith('/checkout')) || (p && p.startsWith('/order-success/'));
               return !hideFooter && <Footer />;
             })()}
           {modalMode && (
@@ -143,11 +159,12 @@ export default function App() {
                 const tokenValue = (typeof res === 'string') ? res : (res && res.token) ? res.token : null;
                 if (tokenValue) {
                   handleSetToken(tokenValue);
-                  // if admin, navigate to admin dashboard
+                  // if admin or staff, navigate to admin dashboard
                   try {
                     const payload = JSON.parse(atob(tokenValue.split('.')[1]));
                     const isAdmin = payload && (payload.role === 'admin' || payload.isAdmin || payload.is_admin || payload.admin === true || (payload.permissions && payload.permissions.includes && payload.permissions.includes('admin')));
-                    if (isAdmin) window.location.href = window.location.origin + '/admin';
+                    const isStaff = payload && (payload.role === 'staff' || payload.isStaff || payload.is_staff || (payload.permissions && payload.permissions.includes && payload.permissions.includes('staff')));
+                    if (isAdmin || isStaff) window.location.href = window.location.origin + '/admin';
                   } catch {
                     // ignore
                   }

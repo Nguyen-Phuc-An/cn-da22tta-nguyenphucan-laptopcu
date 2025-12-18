@@ -12,7 +12,6 @@ export default function Banners() {
     position: '',
     status: 'active'
   });
-  const [bannerImage, setBannerImage] = useState(null);
   const [bannerImagePreview, setBannerImagePreview] = useState(null);
 
   useEffect(() => {
@@ -39,7 +38,6 @@ export default function Banners() {
   const handleBannerImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setBannerImage(file);
       const reader = new FileReader();
       reader.onload = (e) => setBannerImagePreview(e.target.result);
       reader.readAsDataURL(file);
@@ -64,7 +62,6 @@ export default function Banners() {
         status: 'active'
       });
     }
-    setBannerImage(null);
     setBannerImagePreview(null);
     setShowBannerModal(true);
   };
@@ -138,9 +135,8 @@ export default function Banners() {
   return (
     <div className="admin-panel">
       <div className="panel-header">
-        <h2>Quản lý Banner</h2>
         <button className="btn btn-primary" onClick={() => handleOpenBannerModal()}>
-          ➕ Thêm banner
+          Thêm banner
         </button>
       </div>
 
@@ -148,7 +144,7 @@ export default function Banners() {
         <thead>
           <tr>
             <th>Tiêu đề</th>
-            <th>Ảnh</th>
+            <th  style={{ overflow: 'hidden', width: '200px' }}>Ảnh</th>
             <th>Liên kết</th>
             <th>Vị trí</th>
             <th>Trạng thái</th>
@@ -164,9 +160,9 @@ export default function Banners() {
               return (
                 <tr key={b.id}>
                   <td>{b.tieu_de || '-'}</td>
-                  <td>
+                  <td style={{ overflow: 'hidden', width: '200px' }}>
                     {imgUrl ? (
-                      <img src={imgUrl} alt="banner" style={{ height: '40px', maxWidth: '200px', objectFit: 'cover', borderRadius: '4px' }} />
+                      <img src={imgUrl} alt="banner" style={{ height: '100px', objectFit: 'cover', borderRadius: '4px' }} />
                     ) : (
                       <span style={{fontSize: '24px'}}>🖼️</span>
                     )}
@@ -185,8 +181,8 @@ export default function Banners() {
                     </span>
                   </td>
                   <td>
-                    <button style={{ padding: '5px 10px', marginRight: '5px', cursor: 'pointer' }} onClick={() => handleOpenBannerModal(b)}>Sửa</button>
-                    <button style={{ padding: '5px 10px', cursor: 'pointer', color: '#ef4444' }} onClick={() => handleDeleteBanner(b.id)}>Xóa</button>
+                    <button className="btn" onClick={() => handleOpenBannerModal(b)} style={{marginRight: '5px'}}>Sửa</button>
+                    <button className="btn-danger" onClick={() => handleDeleteBanner(b.id)}>Xóa</button>
                   </td>
                 </tr>
               );

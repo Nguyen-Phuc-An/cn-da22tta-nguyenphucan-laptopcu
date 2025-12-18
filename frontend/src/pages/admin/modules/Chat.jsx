@@ -1,49 +1,40 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { apiFetch } from '../../../services/apiClient';
 import io from 'socket.io-client';
 
 export default function Chat() {
-  const [conversations, setConversations] = useState([]);
-  const [selectedConversation, setSelectedConversation] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [replyText, setReplyText] = useState('');
   const [loading, setLoading] = useState(true);
-  const [onlineCustomers, setOnlineCustomers] = useState(new Set());
   const [sending, setSending] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const messagesEndRef = useRef(null);
   const socketRef = useRef(null);
 
-  useEffect(() => {
-    // Skip if socket already exists (prevents reconnection in Strict Mode)
-    if (socketRef.current) return;
+  // Load users who have chatted
+  const loadChatUsers = useCallback(async () => {
+    try {
+      const res = await apiFetch('/messages/chat/users');
+      const data = Array.isArray(res) ? res : res?.data || [];
+      console.log('[Chat] Loaded chat users:', data.length);
+      setUsers(data);
+      setLoading(false);
+    } catch (err) {
+      console.error('[Chat] Error loading chat users:', err);
+      setLoading(false);
+    }
+  }, []);
 
-    const loadConversations = async () => {
-      try {
-        const res = await apiFetch('/messages/chat/conversations');
-        let data = Array.isArray(res) ? res : res?.data || [];
-        
-        // Deduplicate conversations
-        const uniqueMap = new Map();
-        data.forEach(conv => {
-          const convId = conv.user_id ? `user_${conv.user_id}` : (conv.email_nguoi_gui || 'guest');
-          const existing = uniqueMap.get(convId);
-          if (!existing || new Date(conv.tao_luc || 0) > new Date(existing.tao_luc || 0)) {
-            uniqueMap.set(convId, conv);
-          }
-        });
-        data = Array.from(uniqueMap.values());
-        
-        setConversations(data);
-        setLoading(false);
-      } catch (err) {
-        console.error('Error loading conversations:', err);
-        setLoading(false);
-      }
-    };
-    loadConversations();
+  // Initialize WebSocket connection
+  useEffect(() => {
+    loadChatUsers();
 
     // Initialize WebSocket connection
-    const socket = io('http://localhost:3000/chat', { 
+    if (socketRef.current) return;
+
+    const socket = io('http://localhost:3000', { 
       path: '/socket.io/',
       transports: ['websocket', 'polling'],
       reconnection: true,
@@ -54,169 +45,82 @@ export default function Chat() {
     });
 
     socket.on('connect', () => {
-      console.log('[WebSocket] Connected:', socket.id);
-      // Admin joins chat namespace
-      socket.emit('get_conversations');
+      console.log('[WebSocket] Admin connected:', socket.id);
+      socket.emit('admin_join');
     });
 
-    socket.on('conversations_list', (data) => {
-      console.log('[WebSocket] Received conversations list');
-      if (data.conversations) {
-        // Deduplicate conversations using a Map
-        const uniqueMap = new Map();
-        data.conversations.forEach(conv => {
-          const convId = conv.user_id ? `user_${conv.user_id}` : (conv.email_nguoi_gui || 'guest');
-          // Keep the one with the latest message
-          const existing = uniqueMap.get(convId);
-          if (!existing || new Date(conv.tao_luc || 0) > new Date(existing.tao_luc || 0)) {
-            uniqueMap.set(convId, conv);
-          }
-        });
-        const uniqueConversations = Array.from(uniqueMap.values());
-        console.log(`[Chat] Deduped conversations: ${data.conversations.length} -> ${uniqueConversations.length}`);
-        setConversations(uniqueConversations);
+    socket.on('user_message', (data) => {
+      console.log('[WebSocket] Received user message:', data);
+      // Update messages if this is from the selected user
+      if (data.user_id === selectedUserId) {
+        setMessages(prev => [...prev, {
+          id: data.id,
+          noi_dung: data.noi_dung,
+          la_nguoi_dung: 1,
+          tao_luc: data.tao_luc
+        }]);
       }
-    });
-
-    socket.on('user_online', (data) => {
-      console.log('[WebSocket] User online:', data.conversationId);
-      setOnlineCustomers(prev => new Set([...prev, data.conversationId]));
-    });
-
-    socket.on('user_offline', (data) => {
-      console.log('[WebSocket] User offline:', data.conversationId);
-      setOnlineCustomers(prev => {
-        const updated = new Set(prev);
-        updated.delete(data.conversationId);
-        return updated;
-      });
-    });
-
-    socket.on('receive_message', (data) => {
-      console.log('[WebSocket] Received message:', data);
-      setMessages(prev => [...prev, {
-        id: data.id,
-        noi_dung: data.content,
-        ten_nguoi_gui: data.sender_name,
-        la_nguoi_dung: data.sender_type === 'user' ? 1 : 0,
-        tao_luc: data.timestamp
-      }]);
-    });
-
-    socket.on('message_history', (data) => {
-      console.log('[WebSocket] Received message history:', data.messages?.length);
-      if (data.messages) {
-        setMessages(data.messages);
-      }
-    });
-
-    socket.on('error', (data) => {
-      console.error('[WebSocket] Error:', data.message);
+      // Refresh users list to show new/updated conversations
+      loadChatUsers();
     });
 
     socket.on('disconnect', () => {
-      console.log('[WebSocket] Disconnected');
+      console.log('[WebSocket] Admin disconnected');
     });
 
     socketRef.current = socket;
-    
-    return () => {
-      // Only disconnect on component unmount, not on re-render
-      if (socketRef.current === socket) {
-        // Don't call disconnect() to avoid React Strict Mode issues
-        // The socket will auto-cleanup on unmount
-      }
-    };
-  }, []);
 
+    return () => {
+      // Don't disconnect to maintain connection
+    };
+  }, [loadChatUsers, selectedUserId]);
+
+  // Auto scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSelectConversation = async (convId) => {
-    console.log('[Chat] Selected conversation:', convId);
-    setSelectedConversation(convId);
+  const handleSelectUser = async (userId) => {
+    console.log('[Chat] Selected user:', userId);
+    setSelectedUserId(userId);
     setMessages([]);
-    
-    let historyLoaded = false;
 
-    // Set a timeout to fallback to REST API if WebSocket doesn't respond
-    const fallbackTimer = setTimeout(async () => {
-      if (!historyLoaded) {
-        console.log('[Chat] WebSocket timeout, using REST API fallback');
-        try {
-          const res = await apiFetch(`/messages/chat/${convId}`);
-          const data = Array.isArray(res) ? res : res?.data || [];
-          console.log('[Chat] Loaded messages via REST:', data.length);
-          setMessages(data);
-          historyLoaded = true;
-        } catch (err) {
-          console.error('[Chat] Error loading messages via REST:', err);
-        }
-      }
-    }, 2000); // 2 second timeout
-
-    // Use WebSocket to join conversation and load history
-    if (socketRef.current && socketRef.current.connected) {
-      console.log('[Chat] Sending admin_join via WebSocket');
-      socketRef.current.emit('admin_join', { conversationId: convId });
-      
-      // Once we get the message_history event, we know WebSocket worked
-      const handleHistoryReceived = () => {
-        historyLoaded = true;
-        clearTimeout(fallbackTimer);
-        socketRef.current.off('message_history', handleHistoryReceived);
-      };
-      
-      socketRef.current.on('message_history', handleHistoryReceived);
-    } else {
-      console.log('[Chat] WebSocket not connected, using REST API directly');
-      clearTimeout(fallbackTimer);
-      // Fallback to REST API if WebSocket not ready
-      try {
-        const res = await apiFetch(`/messages/chat/${convId}`);
-        const data = Array.isArray(res) ? res : res?.data || [];
-        console.log('[Chat] Loaded messages via REST:', data.length);
-        setMessages(data);
-        historyLoaded = true;
-      } catch (err) {
-        console.error('[Chat] Error loading messages:', err);
-        setMessages([]);
-      }
+    try {
+      // Load chat history for this user
+      const res = await apiFetch(`/messages/chat/user/${userId}`);
+      const data = Array.isArray(res) ? res : res?.data || [];
+      console.log('[Chat] Loaded messages for user:', data.length);
+      setMessages(data);
+    } catch (err) {
+      console.error('[Chat] Error loading messages:', err);
+      setMessages([]);
     }
   };
 
   const handleSendReply = async (e) => {
     e.preventDefault();
-    if (!replyText.trim() || !selectedConversation) return;
-    
+    if (!replyText.trim() || !selectedUserId) return;
+
     setSending(true);
     try {
       if (socketRef.current && socketRef.current.connected) {
         // Send via WebSocket
-        socketRef.current.emit('send_message', {
-          content: replyText,
-          conversationId: selectedConversation
+        socketRef.current.emit('admin_message', {
+          user_id: selectedUserId,
+          noi_dung: replyText
         });
         setReplyText('');
-      } else {
-        // Fallback to REST API
-        await apiFetch('/messages/chat', {
-          method: 'POST',
-          body: JSON.stringify({
-            conversation_id: selectedConversation,
-            message: replyText,
-            is_staff: true
-          })
-        });
-        setReplyText('');
-        // Reload messages via REST API
-        const res = await apiFetch(`/messages/chat/${selectedConversation}`);
-        const data = Array.isArray(res) ? res : res?.data || [];
-        setMessages(data);
+        
+        // Add message to UI immediately
+        setMessages(prev => [...prev, {
+          id: Date.now(),
+          noi_dung: replyText,
+          la_nguoi_dung: 0,
+          tao_luc: new Date().toISOString()
+        }]);
       }
     } catch (err) {
-      console.error('Error sending message:', err);
+      console.error('[Chat] Error sending message:', err);
       alert('Lỗi gửi tin nhắn');
     } finally {
       setSending(false);
@@ -224,7 +128,11 @@ export default function Chat() {
   };
 
   if (loading) {
-    return <div className="admin-panel" style={{ textAlign: 'center', padding: '40px' }}>Đang tải...</div>;
+    return (
+      <div style={{ padding: '20px', textAlign: 'center', color: '#999' }}>
+        <p>Đang tải...</p>
+      </div>
+    );
   }
 
   return (
@@ -254,7 +162,7 @@ export default function Chat() {
         minHeight: '0',
         overflow: 'hidden'
       }}>
-        {/* Conversations List */}
+        {/* Users List */}
         <div style={{ 
           borderRight: '1px solid #e5e7eb',
           display: 'flex',
@@ -267,10 +175,32 @@ export default function Chat() {
             borderBottom: '1px solid #e5e7eb',
             backgroundColor: '#fff'
           }}>
-            <h3 style={{ margin: '0', fontSize: '16px', fontWeight: '600', color: '#333' }}>Danh sách khách hàng</h3>
+            <h3 style={{ margin: '0', fontSize: '16px', fontWeight: '600', color: '#333' }}>Khách hàng</h3>
             <p style={{ margin: '5px 0 0 0', fontSize: '12px', color: '#999' }}>
-              {conversations.length} cuộc hội thoại
+              {users.length} người đang chat
             </p>
+          </div>
+          
+          <div style={{
+            padding: '12px 15px',
+            borderBottom: '1px solid #e5e7eb',
+            backgroundColor: '#fff'
+          }}>
+            <input
+              type="text"
+              placeholder="Tìm kiếm khách hàng..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                fontSize: '13px',
+                boxSizing: 'border-box',
+                color: '#333'
+              }}
+            />
           </div>
           
           <div style={{ 
@@ -279,86 +209,74 @@ export default function Chat() {
             overflowX: 'hidden',
             minHeight: '0'
           }}>
-            {conversations.length === 0 ? (
+            {users.length === 0 ? (
               <div style={{ 
                 padding: '30px 20px',
                 textAlign: 'center',
                 color: '#999'
               }}>
-                <p style={{ fontSize: '14px', margin: '0' }}>Chưa có cuộc hội thoại</p>
+                <p style={{ fontSize: '14px', margin: '0' }}>Chưa có cuộc trò chuyện</p>
               </div>
             ) : (
-              conversations.map((conv, idx) => {
-                const convId = conv.user_id ? `user_${conv.user_id}` : (conv.email_nguoi_gui || 'guest');
-                const isOnline = onlineCustomers.has(convId);
-                return (
-                  <div
-                    key={convId || idx}
-                    onClick={() => handleSelectConversation(convId)}
-                    style={{
-                      padding: '15px',
-                      borderBottom: '1px solid #e5e7eb',
-                      cursor: 'pointer',
-                      backgroundColor: selectedConversation === convId ? '#fff' : 'transparent',
-                      borderLeft: selectedConversation === convId ? '4px solid #667eea' : '4px solid transparent',
-                      transition: 'all 0.2s ease',
-                      ':hover': {
-                        backgroundColor: '#f5f5f5'
-                      }
-                    }}
-                    onMouseEnter={(e) => {
-                      if (selectedConversation !== convId) {
-                        e.currentTarget.style.backgroundColor = '#f5f5f5';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (selectedConversation !== convId) {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                      }
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
-                      <div style={{ flex: 1, minWidth: '0' }}>
-                        <div style={{ 
-                          fontWeight: '600', 
-                          fontSize: '15px',
-                          color: '#333',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
-                        }}>
-                          {conv.ten_nguoi_gui || 'Khách hàng'}
-                        </div>
-                        <div style={{ 
-                          fontSize: '12px', 
-                          color: '#999',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          marginTop: '4px'
-                        }}>
-                          {conv.email_nguoi_gui || 'Không có email'}
-                        </div>
-                        <div style={{ 
-                          fontSize: '11px', 
-                          color: '#bbb',
-                          marginTop: '6px'
-                        }}>
-                          {conv.message_count || 0} tin nhắn
-                        </div>
+              users.filter(user => 
+                (user.ten || 'Khách hàng').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (user.email || '').toLowerCase().includes(searchTerm.toLowerCase())
+              ).map((user) => (
+                <div
+                  key={user.user_id}
+                  onClick={() => handleSelectUser(user.user_id)}
+                  style={{
+                    padding: '15px',
+                    borderBottom: '1px solid #e5e7eb',
+                    cursor: 'pointer',
+                    backgroundColor: selectedUserId === user.user_id ? '#fff' : 'transparent',
+                    borderLeft: selectedUserId === user.user_id ? '4px solid #667eea' : '4px solid transparent',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (selectedUserId !== user.user_id) {
+                      e.currentTarget.style.backgroundColor = '#f5f5f5';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedUserId !== user.user_id) {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
+                    <div style={{ flex: 1, minWidth: '0' }}>
+                      <div style={{ 
+                        fontWeight: '600', 
+                        fontSize: '15px',
+                        color: '#333',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {user.ten || 'Khách hàng'}
                       </div>
-                      <div style={{
-                        width: '12px',
-                        height: '12px',
-                        borderRadius: '50%',
-                        backgroundColor: isOnline ? '#10b981' : '#d1d5db',
-                        flexShrink: 0,
-                        marginTop: '2px'
-                      }} title={isOnline ? 'Đang online' : 'Offline'} />
+                      <div style={{ 
+                        fontSize: '12px', 
+                        color: '#999',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        marginTop: '4px'
+                      }}>
+                        {user.email || 'Không có email'}
+                      </div>
+                      <div style={{ 
+                        fontSize: '11px', 
+                        color: '#bbb',
+                        marginTop: '6px'
+                      }}>
+                        {user.message_count || 0} tin nhắn
+                      </div>
                     </div>
                   </div>
-                );
-              })
+                </div>
+              ))
             )}
           </div>
         </div>
@@ -370,7 +288,7 @@ export default function Chat() {
           backgroundColor: '#fff',
           overflow: 'hidden'
         }}>
-          {selectedConversation ? (
+          {selectedUserId ? (
             <>
               {/* Chat Header */}
               <div style={{ 
@@ -380,7 +298,7 @@ export default function Chat() {
                 flexShrink: 0
               }}>
                 <h3 style={{ margin: '0', fontSize: '16px', fontWeight: '600', color: '#333' }}>
-                  Trò chuyện
+                  Chat với khách hàng
                 </h3>
               </div>
 
@@ -411,7 +329,7 @@ export default function Chat() {
                       key={msg.id || `msg-${i}`}
                       style={{
                         display: 'flex',
-                        justifyContent: !msg.la_nguoi_dung ? 'flex-end' : 'flex-start',
+                        justifyContent: msg.la_nguoi_dung ? 'flex-start' : 'flex-end',
                         marginBottom: '0'
                       }}
                     >
@@ -420,8 +338,8 @@ export default function Chat() {
                           maxWidth: '70%',
                           padding: '12px 16px',
                           borderRadius: '12px',
-                          backgroundColor: !msg.la_nguoi_dung ? '#667eea' : '#f3f4f6',
-                          color: !msg.la_nguoi_dung ? 'white' : '#333'
+                          backgroundColor: msg.la_nguoi_dung ? '#f3f4f6' : '#667eea',
+                          color: msg.la_nguoi_dung ? '#333' : 'white'
                         }}
                       >
                         <p style={{ 
@@ -430,7 +348,7 @@ export default function Chat() {
                           fontWeight: '600',
                           opacity: 0.8
                         }}>
-                          {msg.ten_nguoi_gui || (!msg.la_nguoi_dung ? 'Support' : 'Khách')}
+                          {msg.la_nguoi_dung ? 'Khách hàng' : 'Admin'}
                         </p>
                         <p style={{ 
                           margin: '0', 
@@ -479,7 +397,7 @@ export default function Chat() {
                     fontFamily: 'inherit',
                     fontSize: '14px',
                     resize: 'none',
-                    fontColor: '#333'
+                    color: '#333'
                   }}
                 />
                 <button 
@@ -518,7 +436,7 @@ export default function Chat() {
             }}>
               <div style={{ textAlign: 'center' }}>
                 <p style={{ fontSize: '16px', margin: '0 0 10px 0' }}>👋</p>
-                <p style={{ fontSize: '14px', margin: '0' }}>Chọn cuộc hội thoại để bắt đầu</p>
+                <p style={{ fontSize: '14px', margin: '0' }}>Chọn khách hàng để bắt đầu trò chuyện</p>
               </div>
             </div>
           )}

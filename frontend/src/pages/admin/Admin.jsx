@@ -7,6 +7,10 @@ import Customers from './modules/Customers';
 import Banners from './modules/Banners';
 import Chat from './modules/Chat';
 import Staff from './modules/Staff';
+import Contacts from './modules/Contacts';
+import ProfileModal from './modals/ProfileModal';
+import ChangePasswordModal from './modals/ChangePasswordModal';
+import { apiFetch } from '../../services/apiClient';
 import './Admin.css';
 
 function decodeJwt(token) {
@@ -23,16 +27,38 @@ function decodeJwt(token) {
 export default function Admin() {
   const { token, setToken } = useContext(AuthContext);
   const userInfo = useMemo(() => decodeJwt(token), [token]);
-  const isAdmin = !!(userInfo && (userInfo.role === 'admin' || userInfo.isAdmin));
+  const isAdmin = !!(userInfo && (userInfo.role === 'admin' || userInfo.isAdmin || userInfo.is_admin || userInfo.admin === true || (userInfo.permissions && userInfo.permissions.includes && userInfo.permissions.includes('admin'))));
   
   const [activeModule, setActiveModule] = useState('dashboard');
-  const [searchQuery, setSearchQuery] = useState('');
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [pendingOrders, setPendingOrders] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
   // Redirect if not logged in
   useEffect(() => {
     if (!token) window.location.href = '/';
   }, [token]);
+
+  // Load stats for header badges
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const stats = await apiFetch('/admin/stats');
+        if (stats) {
+          setPendingOrders(stats.orders?.newOrders || 0);
+          setUnreadMessages(stats.messages?.unreadMessages || 0);
+        }
+      } catch (err) {
+        console.error('Error loading stats:', err);
+      }
+    };
+    loadStats();
+    // Refresh stats every 30 seconds
+    const interval = setInterval(loadStats, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const displayName = userInfo?.ten || userInfo?.name || userInfo?.email || 'User';
   const userInitial = (displayName || 'U').charAt(0).toUpperCase();
@@ -46,25 +72,22 @@ export default function Admin() {
     <div className="admin-container">
       {/* HEADER - FIXED TOP */}
       <header className="admin-header">
-        <div className="header-search">
-          <input
-            type="text"
-            placeholder="Tìm sản phẩm, mã đơn, khách hàng..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
-          />
-          <button className="search-btn">🔍</button>
-        </div>
-
         <div className="header-actions">
-          <button className="icon-btn" title="Thông báo">
+          <button 
+            className="icon-btn" 
+            title="Thông báo"
+            onClick={() => setActiveModule('orders')}
+          >
             🔔
-            <span className="badge">2</span>
+            {pendingOrders > 0 && <span className="badge">{pendingOrders}</span>}
           </button>
-          <button className="icon-btn" title="Tin nhắn">
+          <button 
+            className="icon-btn" 
+            title="Tin nhắn"
+            onClick={() => setActiveModule('chat')}
+          >
             💬
-            <span className="badge">3</span>
+            {unreadMessages > 0 && <span className="badge">{unreadMessages}</span>}
           </button>
 
           <div className="user-menu-wrapper">
@@ -77,10 +100,10 @@ export default function Admin() {
             </button>
             {showUserMenu && (
               <div className="user-dropdown">
-                <button onClick={() => alert('Hồ sơ cá nhân (sẽ triển khai)')}>
+                <button onClick={() => { setShowProfileModal(true); setShowUserMenu(false); }}>
                   👤 Hồ sơ cá nhân
                 </button>
-                <button onClick={() => alert('Đổi mật khẩu (sẽ triển khai)')}>
+                <button onClick={() => { setShowPasswordModal(true); setShowUserMenu(false); }}>
                   🔐 Đổi mật khẩu
                 </button>
                 <hr />
@@ -105,44 +128,50 @@ export default function Admin() {
               className={`menu-item ${activeModule === 'dashboard' ? 'active' : ''}`}
               onClick={() => setActiveModule('dashboard')}
             >
-              📊 Dashboard
+              Dashboard
             </button>
             <button
               className={`menu-item ${activeModule === 'products' ? 'active' : ''}`}
               onClick={() => setActiveModule('products')}
             >
-              📦 Quản lý sản phẩm
+              Quản lý sản phẩm
             </button>
             <button
               className={`menu-item ${activeModule === 'orders' ? 'active' : ''}`}
               onClick={() => setActiveModule('orders')}
             >
-              🛒 Quản lý đơn hàng
+              Quản lý đơn hàng
             </button>
             <button
               className={`menu-item ${activeModule === 'customers' ? 'active' : ''}`}
               onClick={() => setActiveModule('customers')}
             >
-              👥 Quản lý khách hàng
+              Quản lý khách hàng
             </button>
             <button
               className={`menu-item ${activeModule === 'banners' ? 'active' : ''}`}
               onClick={() => setActiveModule('banners')}
             >
-              🎨 Quản lý Banner
+              Quản lý Banner
             </button>
             <button
               className={`menu-item ${activeModule === 'chat' ? 'active' : ''}`}
               onClick={() => setActiveModule('chat')}
             >
-              💬 Chat
+              Chat
+            </button>
+            <button
+              className={`menu-item ${activeModule === 'contacts' ? 'active' : ''}`}
+              onClick={() => setActiveModule('contacts')}
+            >
+              Liên hệ
             </button>
             {isAdmin && (
               <button
                 className={`menu-item ${activeModule === 'staff' ? 'active' : ''}`}
                 onClick={() => setActiveModule('staff')}
               >
-                👔 Nhân viên
+                Nhân viên
               </button>
             )}
           </nav>
@@ -158,10 +187,15 @@ export default function Admin() {
             {activeModule === 'customers' && <Customers />}
             {activeModule === 'banners' && <Banners />}
             {activeModule === 'chat' && <Chat />}
+            {activeModule === 'contacts' && <Contacts />}
             {activeModule === 'staff' && isAdmin && <Staff />}
           </div>
         </main>
       </div>
+
+      {/* Modals */}
+      {showProfileModal && <ProfileModal token={token} onClose={() => setShowProfileModal(false)} />}
+      {showPasswordModal && <ChangePasswordModal onClose={() => setShowPasswordModal(false)} />}
     </div>
   );
 }

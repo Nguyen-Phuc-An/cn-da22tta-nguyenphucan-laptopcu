@@ -4,7 +4,8 @@ import { imageToSrc } from '../services/productImages';
 import '../styles/Cart.css';
 
 export default function Cart() {
-  const { items, removeFromCart, updateQuantity, getTotalPrice, clearCart } = useContext(CartContext);
+  const { items, removeFromCart, updateQuantity, clearCart } = useContext(CartContext);
+  const [selectedItems, setSelectedItems] = React.useState(new Set());
 
   if (items.length === 0) {
     return (
@@ -18,7 +19,30 @@ export default function Cart() {
     );
   }
 
-  const totalPrice = getTotalPrice();
+  // Toggle item selection
+  const toggleItemSelection = (itemId) => {
+    const newSelected = new Set(selectedItems);
+    if (newSelected.has(itemId)) {
+      newSelected.delete(itemId);
+    } else {
+      newSelected.add(itemId);
+    }
+    setSelectedItems(newSelected);
+  };
+
+  // Toggle select all
+  const toggleSelectAll = () => {
+    if (selectedItems.size === items.length) {
+      setSelectedItems(new Set());
+    } else {
+      setSelectedItems(new Set(items.map(item => item.id)));
+    }
+  };
+
+  // Calculate total for selected items only
+  const selectedItemsTotal = items
+    .filter(item => selectedItems.has(item.id))
+    .reduce((sum, item) => sum + (item.gia * item.quantity), 0);
 
   return (
     <div className="cart-container">
@@ -27,8 +51,44 @@ export default function Cart() {
       <div className="cart-content">
         {/* Cart Items */}
         <div className="cart-items">
+          {/* Select All Header */}
+          <div className="cart-select-all" style={{
+            padding: '12px 15px',            
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            fontSize: '20px'
+          }}>
+            <input 
+              type="checkbox"
+              checked={selectedItems.size === items.length && items.length > 0}
+              onChange={toggleSelectAll}
+              style={{ cursor: 'pointer', width: '18px', height: '18px' }}
+            />
+            <label style={{ cursor: 'pointer', userSelect: 'none', margin: 0 }}>
+              Chọn tất cả ({selectedItems.size}/{items.length})
+            </label>
+          </div>
+
           {items.map(item => (
-            <div key={item.id} className="cart-item-card">
+            <div key={item.id} className="cart-item-card" style={{
+              opacity: selectedItems.has(item.id) ? 1 : 0.8,
+              position: 'relative'
+            }}>
+              <div style={{
+                position: 'absolute',
+                top: '10px',
+                left: '10px',
+                zIndex: 10
+              }}>
+                <input 
+                  type="checkbox"
+                  checked={selectedItems.has(item.id)}
+                  onChange={() => toggleItemSelection(item.id)}
+                  style={{ cursor: 'pointer', width: '20px', height: '20px' }}
+                />
+              </div>
+
               <button 
                 onClick={() => removeFromCart(item.id)}
                 className="btn-remove-card"
@@ -103,8 +163,13 @@ export default function Cart() {
             <h2>Tóm Tắt Đơn Hàng</h2>
 
             <div className="summary-row">
+              <span>Sản phẩm được chọn:</span>
+              <span className="amount">{selectedItems.size}/{items.length}</span>
+            </div>
+
+            <div className="summary-row">
               <span>Tổng tiền hàng:</span>
-              <span className="amount">{totalPrice.toLocaleString('vi-VN')}₫</span>
+              <span className="amount">{selectedItemsTotal.toLocaleString('vi-VN')}₫</span>
             </div>
 
             <div className="summary-row">
@@ -119,11 +184,29 @@ export default function Cart() {
 
             <div className="summary-row total">
               <span>Tổng thanh toán:</span>
-              <span className="amount-total">{totalPrice.toLocaleString('vi-VN')}₫</span>
+              <span className="amount-total">{selectedItemsTotal.toLocaleString('vi-VN')}₫</span>
             </div>
             <p style={{margin: '0', fontSize: '14px', color: '#666'}}>Vị trí nhận đơn là địa chỉ giao hàng được lấy từ thông tin mà khách hàng đã cung cấp khi đăng ký tài khoản.</p>
 
-            <button className="btn-checkout">Thanh Toán Ngay</button>
+            <button 
+              className="btn-checkout" 
+              onClick={() => {
+                if (selectedItems.size === 0) {
+                  alert('Vui lòng chọn ít nhất 1 sản phẩm để thanh toán');
+                  return;
+                }
+                // Store selected items and redirect to checkout
+                localStorage.setItem('selectedCartItems', JSON.stringify(Array.from(selectedItems)));
+                window.location.href = '/checkout';
+              }}
+              disabled={selectedItems.size === 0}
+              style={{
+                opacity: selectedItems.size === 0 ? 0.5 : 1,
+                cursor: selectedItems.size === 0 ? 'not-allowed' : 'pointer'
+              }}
+            >
+              Thanh Toán Ngay ({selectedItems.size} sản phẩm)
+            </button>
 
             <button 
               onClick={clearCart}

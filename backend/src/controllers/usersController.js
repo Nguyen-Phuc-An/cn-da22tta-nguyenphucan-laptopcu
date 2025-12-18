@@ -13,8 +13,7 @@ async function create(req, res) {
 
     const hash = bcrypt.hashSync(password, 12);
     const insertId = await users.createUser({ email: normalizedEmail, name: String(name).trim(), passwordHash: hash, role, phone, address });
-    const user = await users.getUserById(insertId);
-    res.status(201).json(user);
+    res.status(201).json({ id: insertId });
   } catch (e) { console.error(e); res.status(500).json({ error: e.message }); }
 }
 
@@ -42,6 +41,10 @@ async function update(req, res) {
     if (body.password) {
       body.passwordHash = bcrypt.hashSync(body.password, 12);
       delete body.password;
+    }
+    // Handle avatar upload
+    if (req.file) {
+      body.avatar = `/public/uploads/users/${req.file.filename}`;
     }
     const ok = await users.updateUser(id, body);
     if (!ok) return res.status(400).json({ error: 'nothing to update' });

@@ -44,6 +44,9 @@ async function stats(req, res) {
     // Alerts: products out of stock, orders pending
     const [[{ pendingOrders }]] = await db.query("SELECT COUNT(*) AS pendingOrders FROM orders WHERE trang_thai = 'pending'");
 
+    // NEW orders created today (not viewed yet by admin)
+    const [[{ newOrders }]] = await db.query("SELECT COUNT(*) AS newOrders FROM orders WHERE trang_thai = 'pending' AND DATE(tao_luc) = CURDATE()");
+
     // Revenue series: 7 days
     const daysStart = new Date(); daysStart.setHours(0,0,0,0); daysStart.setDate(daysStart.getDate() - 6);
     const [dayRows] = await db.query(`SELECT DATE(tao_luc) AS d, COALESCE(SUM(tong_tien),0) AS total, COUNT(*) AS cnt FROM orders WHERE tao_luc >= ? AND trang_thai IN (${placeholders}) GROUP BY DATE(tao_luc) ORDER BY DATE(tao_luc) ASC`, [toMySQL(daysStart), ...successStatuses]);
@@ -70,7 +73,7 @@ async function stats(req, res) {
     res.json({
       products: { totalProducts: Number(totalProducts), sellingCount: Number(sellingCount), outOfStock: Number(outOfStock), hiddenCount: Number(hiddenCount) },
       users: { totalUsers: Number(totalUsers), newUsersWeek: Number(newUsersWeek) },
-      orders: { revenueToday: Number(revenueToday), revenueMonth: Number(revenueMonth), successfulOrdersToday: Number(successfulOrdersToday), pendingOrders: Number(pendingOrders) },
+      orders: { revenueToday: Number(revenueToday), revenueMonth: Number(revenueMonth), successfulOrdersToday: Number(successfulOrdersToday), pendingOrders: Number(pendingOrders), newOrders: Number(newOrders) },
       messages: { unreadMessages: Number(unreadMessages) },
       revenue7days, revenue12months
     });

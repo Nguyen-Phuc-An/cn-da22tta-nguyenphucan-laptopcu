@@ -1,67 +1,81 @@
-const messagesModel = require('../models/messages');
+const db = require('../db');
 
-// REST: Get chat history for a user/email
-async function getChatHistory(req, res) {
+/**
+ * Get list of users who have chatted (for admin panel)
+ */
+exports.getChatUsers = async (req, res) => {
   try {
-    const { identifier } = req.params; // user_id or email
-    const messages = await messagesModel.getMessages(identifier);
-    res.json(messages);
+    const query = `
+      SELECT DISTINCT 
+        cm.user_id,
+        u.ten,
+        u.email,
+        COUNT(cm.id) as message_count,
+        MAX(cm.tao_luc) as last_message_time
+      FROM chat_messages cm
+      LEFT JOIN users u ON cm.user_id = u.id
+      WHERE cm.user_id IS NOT NULL
+      GROUP BY cm.user_id
+      ORDER BY MAX(cm.tao_luc) DESC
+    `;
+
+    const [results] = await db.query(query);
+    res.json(results);
   } catch (err) {
-    console.error('getChatHistory error:', err);
-    res.status(500).json({ error: err.message });
+    console.error('Error getting chat users:', err);
+    res.status(500).json({ error: 'Failed to get chat users' });
   }
-}
+};
 
-// REST: Get all conversations
-async function getConversationsList(req, res) {
+/**
+ * Get chat history for a specific user
+ */
+exports.getChatHistory = async (req, res) => {
   try {
-    const conversations = await messagesModel.getConversations();
-    res.json(conversations);
+    const { userId } = req.params;
+
+    const query = `
+      SELECT id, user_id, noi_dung, la_nguoi_dung, tao_luc
+      FROM chat_messages
+      WHERE user_id = ?
+      ORDER BY tao_luc ASC
+    `;
+
+    const [results] = await db.query(query, [userId]);
+    res.json(results);
   } catch (err) {
-    console.error('getConversationsList error:', err);
-    res.status(500).json({ error: err.message });
+    console.error('Error getting chat history:', err);
+    res.status(500).json({ error: 'Failed to get chat history' });
   }
-}
+};
 
-// REST: Get single conversation with all messages
-async function getConversation(req, res) {
+/**
+ * Send a message (REST fallback)
+ */
+exports.sendMessage = async (req, res) => {
   try {
-    const { identifier } = req.params;
-    const messages = await messagesModel.getConversationWithMessages(identifier);
-    res.json(messages);
-  } catch (err) {
-    console.error('getConversation error:', err);
-    res.status(500).json({ error: err.message });
-  }
-}
+    const { user_id, noi_dung, la_nguoi_dung } = req.body;
 
-// REST: Send a message (fallback for non-Socket.IO)
-async function sendMessage(req, res) {
-  try {
-    const { user_id, email_nguoi_gui, content, sender_name, is_user } = req.body;
-    
-    if (!content || (!user_id && !email_nguoi_gui)) {
-      return res.status(400).json({ error: 'content and (user_id or email_nguoi_gui) required' });
+    if (!user_id || !noi_dung) {
+      return res.status(400).json({ error: 'user_id and noi_dung required' });
     }
 
-    const id = await messagesModel.sendMessage({
-      user_id: user_id || null,
-      email_nguoi_gui: email_nguoi_gui || null,
-      content,
-      sender_name,
-      is_user: is_user !== undefined ? is_user : true
+    const query = `
+      INSERT INTO chat_messages (user_id, noi_dung, la_nguoi_dung, tao_luc)
+      VALUES (?, ?, ?, NOW())
+    `;
+
+    const [result] = await db.query(query, [user_id, noi_dung, la_nguoi_dung || 1]);
+
+    res.status(201).json({
+      id: result.insertId,
+      user_id,
+      noi_dung,
+      la_nguoi_dung: la_nguoi_dung || 1,
+      tao_luc: new Date()
     });
-
-    res.status(201).json({ id, timestamp: new Date() });
   } catch (err) {
-    console.error('sendMessage error:', err);
-    res.status(500).json({ error: err.message });
+    console.error('Error sending message:', err);
+    res.status(500).json({ error: 'Failed to send message' });
   }
-}
-
-module.exports = {
-  getChatHistory,
-  getConversationsList,
-  getConversation,
-  sendMessage
 };

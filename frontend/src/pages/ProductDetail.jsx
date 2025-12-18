@@ -123,6 +123,13 @@ export default function ProductDetail() {
   const handleAddToCart = () => {
     if (!product) return;
     
+    // Check if product is out of stock
+    const stockQuantity = parseInt(product.so_luong) || 0;
+    if (stockQuantity <= 0) {
+      addToast('Sản phẩm đã hết hàng', 'error');
+      return;
+    }
+    
     // Check if product already exists in cart
     const productExists = cartItems.some(item => item.id === product.id);
     if (productExists) {
@@ -136,7 +143,7 @@ export default function ProductDetail() {
   };
 
   if (err) return <p className="error">{err}</p>;
-  if (!product) return <p>Đang tải...</p>;
+  if (!product) return null;
 
   const currentImage = product.images && product.images[selectedImageIndex] 
     ? imageToSrc(typeof product.images[selectedImageIndex] === 'string' 
@@ -236,23 +243,76 @@ export default function ProductDetail() {
             <span className="price-unit">{product.tien_te || product.currency || 'VND'}</span>
           </div>
           <div className="pd-color">
-            <h3>Màu sắc sản phẩm:</h3>
-            {product.mau_sac ? (
-              <span className="color-value">
+            <div className="pd-color-1">
+              <h3>Tình trạng sản phẩm:</h3>
+              <span className="condition-value" style={{
+                padding: '6px 8px',
+                borderRadius: '4px',
+                color: {
+                  'like_new': '#2e7d32',
+                  'good': '#856404',
+                  'fair': '#c62828',
+                  'new': '#155724'
+                }[product.tinh_trang] || '#333',
+                fontWeight: '600',
+                fontSize: '15px'
+              }}>
                 {
                   {
-                    'den': 'Đen',
-                    'bac': 'Bạc',
-                    'xam': 'Xám',
-                    'trang': 'Trắng',
-                    'do': 'Đỏ',
-                    'xanh': 'Xanh'
-                  }[product.mau_sac] || product.mau_sac
+                    'like_new': 'Như mới',
+                    'good': 'Tốt',
+                    'fair': 'Bình thường',
+                    'new': 'Mới'
+                  }[product.tinh_trang] || product.tinh_trang || 'Chưa có thông tin'
                 }
               </span>
-            ) : (
-              <span className="color-value">Chưa có thông tin</span>
-            )}
+            </div> 
+
+            <div className="pd-color-1">
+              <h3>Màu sắc sản phẩm:</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <span className="color-value" style={{ 
+                  color: {
+                    'den': '#1a1a1a',
+                    'bac': '#c0c0c0',
+                    'xam': '#808080',
+                    'trang': '#333',
+                    'do': '#dc3545',
+                    'xanh': '#0066cc'
+                  }[product.mau_sac] || '#333',
+                  fontWeight: '600',
+                  fontSize: '16px'
+                }}>
+                  {
+                    {
+                      'den': 'Đen',
+                      'bac': 'Bạc',
+                      'xam': 'Xám',
+                      'trang': 'Trắng',
+                      'do': 'Đỏ',
+                      'xanh': 'Xanh'
+                    }[product.mau_sac] || product.mau_sac || 'Chưa có thông tin'
+                  }
+                </span>
+                {product.mau_sac && (
+                  <div style={{
+                    width: '40px',
+                    height: '20px',
+                    borderRadius: '6px',
+                    border: '2px solid #ddd',
+                    backgroundColor: {
+                      'den': '#1a1a1a',
+                      'bac': '#c0c0c0',
+                      'xam': '#808080',
+                      'trang': '#f5f5f5',
+                      'do': '#dc3545',
+                      'xanh': '#0066cc'
+                    }[product.mau_sac] || '#ccc',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                  }} title={`Màu ${product.mau_sac}`} />
+                )}
+              </div>
+            </div>                       
           </div>
 
           <div className="pd-price-sinhvien">
@@ -273,56 +333,75 @@ export default function ProductDetail() {
           </div>
 
           <div className="pd-actions">
-            <div className="quantity-selector">
-              <label>Số lượng:</label>
-              <button 
-                onClick={() => setCartQuantity(Math.max(1, cartQuantity - 1))}
-                disabled={cartQuantity <= 1}
-              >
-                −
-              </button>
-              <input 
-                type="number" 
-                value={cartQuantity} 
-                onChange={(e) => {
-                  const val = parseInt(e.target.value) || 1;
-                  const maxQty = product.so_luong || 999;
-                  setCartQuantity(Math.max(1, Math.min(val, maxQty)));
-                }}
-                min="1"
-                max={product.so_luong || 999}
-              />
-              <button 
-                onClick={() => {
-                  const maxQty = product.so_luong || 999;
-                  if (cartQuantity < maxQty) {
-                    setCartQuantity(cartQuantity + 1);
-                  }
-                }}
-                disabled={cartQuantity >= (product.so_luong || 999)}
-              >
-                +
-              </button>
-            </div>
+            {product.so_luong && parseInt(product.so_luong) > 0 ? (
+              <>
+                <div style={{ padding: '10px', backgroundColor: '#e8f5e9', borderRadius: '4px', textAlign: 'center' }}>
+                  <p style={{ margin: 0, color: '#2e7d32', fontWeight: '600' }}>
+                    ✓ Còn hàng ({parseInt(product.so_luong)} sản phẩm)
+                  </p>
+                </div>
+                <div className="quantity-selector">
+                  <label>Số lượng:</label>
+                  <button 
+                    onClick={() => setCartQuantity(Math.max(1, cartQuantity - 1))}
+                    disabled={cartQuantity <= 1}
+                  >
+                    −
+                  </button>
+                  <input 
+                    type="number" 
+                    value={cartQuantity} 
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value) || 1;
+                      const maxQty = parseInt(product.so_luong) || 999;
+                      setCartQuantity(Math.max(1, Math.min(val, maxQty)));
+                    }}
+                    min="1"
+                    max={parseInt(product.so_luong) || 999}
+                  />
+                  <button 
+                    onClick={() => {
+                      const maxQty = parseInt(product.so_luong) || 999;
+                      if (cartQuantity < maxQty) {
+                        setCartQuantity(cartQuantity + 1);
+                      }
+                    }}
+                    disabled={cartQuantity >= (parseInt(product.so_luong) || 999)}
+                  >
+                    +
+                  </button>
+                </div>
 
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button className="add-to-cart-btn" onClick={handleAddToCart}>
-                <FaShoppingCart size={30} />
-              </button>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button 
+                    className="add-to-cart-btn" 
+                    onClick={handleAddToCart}
+                  >
+                    <FaShoppingCart size={30} />
+                  </button>
 
-              <button 
-                className={`wishlist-btn ${isFavorite ? 'active' : ''}`}
-                onClick={handleAddToWishlist}
-              >
-                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M20.8 6.6c-.6-2.1-2.6-3.6-4.7-3.6-1.5 0-2.9.7-3.8 1.8-.9-1.1-2.3-1.8-3.8-1.8-2.1 0-4.1 1.5-4.7 3.6-.6 2.1.1 4.3 1.8 6.1L12 21l6.9-8.3c1.7-1.8 2.4-4 1.9-6.1z" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" fill="currentColor"/>
-                </svg>
-              </button>
+                  <button 
+                    className={`wishlist-btn ${isFavorite ? 'active' : ''}`}
+                    onClick={handleAddToWishlist}
+                  >
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M20.8 6.6c-.6-2.1-2.6-3.6-4.7-3.6-1.5 0-2.9.7-3.8 1.8-.9-1.1-2.3-1.8-3.8-1.8-2.1 0-4.1 1.5-4.7 3.6-.6 2.1.1 4.3 1.8 6.1L12 21l6.9-8.3c1.7-1.8 2.4-4 1.9-6.1z" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" fill="currentColor"/>
+                    </svg>
+                  </button>
 
-              <button className="muangay-btn" onClick={handleAddToCart}>
-                Mua ngay
-              </button>
-            </div>            
+                  <button 
+                    className="muangay-btn" 
+                    onClick={handleAddToCart}
+                  >
+                    Mua ngay
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div style={{ padding: '16px', backgroundColor: '#ffebee', borderRadius: '6px', textAlign: 'center' }}>
+                <p style={{ color: '#c62828', fontWeight: '600', margin: 0, fontSize: '16px' }}>Sản phẩm hiện đã hết hàng</p>
+              </div>
+            )}
           </div>
 
           <div className="uudai" style={{ padding: '0', border: '1px solid #00003350', borderRadius: '8px', background: '#ffe9e9ff' }}>

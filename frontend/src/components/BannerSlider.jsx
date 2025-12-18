@@ -31,7 +31,6 @@ export default function BannerSlider() {
     return () => clearInterval(timer);
   }, [banners]);
 
-  if (loading) return <div className="banner-slider"><div className="banner-loading">Đang tải banner...</div></div>;
   if (!banners || banners.length === 0) return null;
 
   const current = banners[currentIndex];

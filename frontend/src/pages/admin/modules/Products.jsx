@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { apiFetch } from '../../../services/apiClient';
 import { imageToSrc, normalizeImages } from '../../../services/productImages';
 import { listImages as listProductImages, deleteImage } from '../../../api/productImages';
+import { ToastContext } from '../../../context/Toast';
 
 export default function Products() {
+  const { addToast } = useContext(ToastContext);
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -86,7 +88,7 @@ export default function Products() {
   // Category functions
   const handleAddCategory = async () => {
     if (!categoryForm.name.trim()) {
-      alert('Vui lòng nhập tên danh mục');
+      addToast('Vui lòng nhập tên danh mục', 'error');
       return;
     }
     try {
@@ -96,15 +98,15 @@ export default function Products() {
       });
       setCategories([...categories, res]);
       setCategoryForm({ name: '' });
-      alert('Thêm danh mục thành công');
+      addToast('Thêm danh mục thành công', 'success');
     } catch (err) {
-      alert('Lỗi thêm danh mục: ' + err.message);
+      addToast('Lỗi thêm danh mục: ' + err.message, 'error');
     }
   };
 
   const handleUpdateCategory = async () => {
     if (!categoryForm.name.trim()) {
-      alert('Vui lòng nhập tên danh mục');
+      addToast('Vui lòng nhập tên danh mục', 'error');
       return;
     }
     try {
@@ -115,9 +117,9 @@ export default function Products() {
       setCategories(categories.map(c => c.id === editingCategory.id ? { ...c, name: categoryForm.name } : c));
       setCategoryForm({ name: '' });
       setEditingCategory(null);
-      alert('Cập nhật danh mục thành công');
+      addToast('Cập nhật danh mục thành công', 'success');
     } catch (err) {
-      alert('Lỗi cập nhật danh mục: ' + err.message);
+      addToast('Lỗi cập nhật danh mục: ' + err.message, 'error');
     }
   };
 
@@ -126,9 +128,9 @@ export default function Products() {
     try {
       await apiFetch(`/categories/${id}`, { method: 'DELETE' });
       setCategories(categories.filter(c => c.id !== id));
-      alert('Xóa danh mục thành công');
+      addToast('Xóa danh mục thành công', 'success');
     } catch (err) {
-      alert('Lỗi xóa danh mục: ' + err.message);
+      addToast('Lỗi xóa danh mục: ' + err.message, 'error');
     }
   };
 
@@ -192,7 +194,7 @@ export default function Products() {
 
   const handleSaveProduct = async () => {
     if (!productForm.title.trim() || !productForm.category_id) {
-      alert('Vui lòng nhập đủ thông tin bắt buộc');
+      addToast('Vui lòng nhập đủ thông tin bắt buộc', 'error');
       return;
     }
     try {
@@ -215,18 +217,18 @@ export default function Products() {
           body: payload
         });
         setProducts(products.map(p => p.id === editingProduct.id ? { ...p, ...payload } : p));
-        alert('Cập nhật sản phẩm thành công');
+        addToast('Cập nhật sản phẩm thành công', 'success');
       } else {
         const res = await apiFetch('/products', {
           method: 'POST',
           body: payload
         });
         setProducts([...products, res]);
-        alert('Thêm sản phẩm thành công');
+        addToast('Thêm sản phẩm thành công', 'success');
       }
       setShowProductModal(false);
     } catch (err) {
-      alert('Lỗi lưu sản phẩm: ' + err.message);
+      addToast('Lỗi lưu sản phẩm: ' + err.message, 'error');
     }
   };
 
@@ -250,9 +252,9 @@ export default function Products() {
       // Then delete the product
       await apiFetch(`/products/${id}`, { method: 'DELETE' });
       setProducts(products.filter(p => p.id !== id));
-      alert('Xóa sản phẩm thành công');
+      addToast('Xóa sản phẩm thành công', 'success');
     } catch (err) {
-      alert('Lỗi xóa sản phẩm: ' + err.message);
+      addToast('Lỗi xóa sản phẩm: ' + err.message, 'error');
     }
   };
 
@@ -270,17 +272,16 @@ export default function Products() {
   return (
     <div className="admin-panel">
       <div className="panel-header">
-        <h2>Quản lý sản phẩm</h2>
         <div className="panel-actions">
-          <button className="btn" onClick={() => setShowCategoryModal(true)}>📁 Danh mục</button>
-          <button className="btn btn-primary" onClick={() => handleOpenProductModal()}>+ Thêm sản phẩm</button>
+          <button className="btn" onClick={() => setShowCategoryModal(true)} style={{width: '200px'}}>📁 Danh mục</button>
+          <button className="btn btn-primary" onClick={() => handleOpenProductModal()} style={{width: '200px'}}>+ Thêm sản phẩm</button>
         </div>
       </div>
 
       <div className="filter-bar">
         <input
           type="text"
-          placeholder="Tiêu đề"
+          placeholder="Tìm kiếm sản phẩm..."
           className="filter-input"
           value={filters.title}
           onChange={(e) => setFilters({...filters, title: e.target.value})}
@@ -328,7 +329,7 @@ export default function Products() {
             <th>Ổ cứng</th>
             <th>Giá</th>
             <th>Số lượng</th>
-            <th>Trạng thái</th>
+            <th style={{minWidth: '100px'}}>Trạng thái</th>
             <th>Hành động</th>
           </tr>
         </thead>
@@ -381,10 +382,9 @@ export default function Products() {
         <div className="modal-overlay" onClick={() => setShowCategoryModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{minWidth: '500px'}}>
             <button className="close-btn" onClick={() => setShowCategoryModal(false)}>✕</button>
-            <h3>Quản lý danh mục</h3>
-            
-            <div style={{ marginTop: '20px', marginBottom: '20px' }}>
-              <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+           
+            <div style={{ marginTop: '20px', marginBottom: '20px', overflowY: 'auto', height: '500px' }}>
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '15px', position: 'sticky', top: '0', background: 'white'}}>
                 <input
                   type="text"
                   placeholder="Tên danh mục"
@@ -416,7 +416,7 @@ export default function Products() {
                 <thead>
                   <tr>
                     <th>Tên danh mục</th>
-                    <th>Hành động</th>
+                    <th style={{textAlign: 'center'}}>Hành động</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -433,13 +433,14 @@ export default function Products() {
                               setEditingCategory(c);
                               setCategoryForm({ name: c.ten || c.name });
                             }}
-                            style={{marginRight: '5px'}}
+                            style={{width: '100%'}}
                           >
                             Sửa
                           </button>
                           <button 
                             className="btn-danger" 
                             onClick={() => handleDeleteCategory(c.id)}
+                            style={{width: '100%'}}
                           >
                             Xóa
                           </button>
@@ -451,7 +452,7 @@ export default function Products() {
               </table>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginbottom: '10px' }}>
               <button className="btn" onClick={() => setShowCategoryModal(false)}>Đóng</button>
             </div>
           </div>

@@ -4,12 +4,9 @@ import {
   initializeSocket,
   joinChat,
   sendMessage,
-  getMessageHistory,
   onReceiveMessage,
-  onMessageHistory,
-  onAdminOnline,
-  onUserOffline,
-  leaveChat
+  onSocketConnected,
+  onSocketDisconnected
 } from '../api/chat';
 import './ChatButton.css';
 
@@ -17,7 +14,7 @@ export default function ChatButton() {
   const { token } = useContext(AuthContext);
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { id: 'intro', content: 'Xin chào! 👋 Có gì tôi có thể giúp bạn?', is_user: false, timestamp: new Date() }
+    { id: 'intro', noi_dung: 'Xin chào! 👋 Có gì tôi có thể giúp bạn?', la_nguoi_dung: 0, tao_luc: new Date() }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -26,8 +23,7 @@ export default function ChatButton() {
   const chatMessagesRef = useRef(null);
   const isUserScrollingRef = useRef(false);
   const socketRef = useRef(null);
-  const customerIdRef = useRef(null);
-  const customerEmailRef = useRef(null);
+  const userIdRef = useRef(null);
 
   const scrollToBottom = () => {
     if (!isUserScrollingRef.current) {
@@ -41,22 +37,21 @@ export default function ChatButton() {
     isUserScrollingRef.current = scrollHeight - (scrollTop + clientHeight) > 50;
   };
 
-  // Extract user info from token
-  const extractUserInfo = () => {
+  // Extract user ID from token
+  const extractUserId = () => {
     if (token) {
       try {
         const parts = token.split('.');
         if (parts.length >= 2) {
           const payload = JSON.parse(atob(parts[1]));
-          customerIdRef.current = payload.id;
-          return { user_id: payload.id, sender_name: payload.ten || 'Khách hàng' };
+          userIdRef.current = payload.id;
+          return payload.id;
         }
       } catch {
-        // Token parsing failed
+        console.error('Failed to parse token');
       }
     }
-    customerEmailRef.current = 'guest@example.com';
-    return { user_id: null, sender_name: 'Khách hàng', email: 'guest@example.com' };
+    return null;
   };
 
   // Initialize Socket.IO and setup listeners
@@ -64,39 +59,34 @@ export default function ChatButton() {
     const socket = initializeSocket();
     socketRef.current = socket;
 
-    // Listen for incoming messages
+    // When socket connects, join user room
+    onSocketConnected(() => {
+      console.log('[ChatButton] Socket connected');
+      const userId = extractUserId();
+      if (userId) {
+        joinChat(userId);
+        setAdminOnline(true);
+      }
+    });
+
+    // Listen for admin messages
     onReceiveMessage((data) => {
+      console.log('[ChatButton] Received message:', data);
       setMessages(prev => [...prev, {
         id: data.id,
-        content: data.content,
-        is_user: data.sender_type === 'user',
-        timestamp: new Date(data.timestamp)
+        noi_dung: data.noi_dung,
+        la_nguoi_dung: data.la_nguoi_dung,
+        tao_luc: new Date(data.tao_luc)
       }]);
     });
 
-    // Listen for message history
-    onMessageHistory((data) => {
-      const formattedMessages = data.messages.map(msg => ({
-        id: msg.id,
-        content: msg.noi_dung,
-        is_user: msg.la_nguoi_dung === 1,
-        timestamp: new Date(msg.tao_luc)
-      }));
-      setMessages(formattedMessages);
-    });
-
-    // Listen for admin online
-    onAdminOnline(() => {
-      setAdminOnline(true);
-    });
-
-    // Listen for user offline
-    onUserOffline(() => {
+    onSocketDisconnected(() => {
+      console.log('[ChatButton] Socket disconnected');
       setAdminOnline(false);
     });
   };
 
-  // Open chat
+  // Open/close chat
   const handleToggleChat = (open) => {
     setIsOpen(open);
     if (open) {
@@ -106,15 +96,6 @@ export default function ChatButton() {
       if (!socketRef.current) {
         setupSocketListeners();
       }
-
-      // Get user info and join
-      const userInfo = extractUserInfo();
-      const identifier = userInfo.user_id || userInfo.email;
-      
-      joinChat(userInfo.user_id, userInfo.email, userInfo.sender_name);
-      getMessageHistory(identifier);
-    } else {
-      leaveChat();
     }
   };
 
@@ -123,23 +104,35 @@ export default function ChatButton() {
     e.preventDefault();
     if (!inputValue.trim()) return;
 
-    const content = inputValue.trim();
+    const noi_dung = inputValue.trim();
+    const userId = extractUserId() || userIdRef.current;
+
+    if (!userId) {
+      alert('Vui lòng đăng nhập để gửi tin nhắn');
+      return;
+    }
+
     setInputValue('');
     setIsLoading(true);
 
     try {
-      const userInfo = extractUserInfo();
-      const conversationId = userInfo.user_id ? `user_${userInfo.user_id}` : userInfo.email;
+      // Add user message optimistically
+      setMessages(prev => [...prev, {
+        id: Date.now(),
+        noi_dung,
+        la_nguoi_dung: 1,
+        tao_luc: new Date()
+      }]);
 
-      // Send via Socket.IO (don't add optimistically - wait for server response)
-      sendMessage(content, conversationId);
+      // Send via Socket.IO
+      sendMessage(userId, noi_dung);
     } catch (err) {
       console.error('Error sending message:', err);
       setMessages(prev => [...prev, {
         id: Date.now(),
-        content: 'Lỗi gửi tin nhắn. Vui lòng thử lại.',
-        is_user: false,
-        timestamp: new Date()
+        noi_dung: 'Lỗi gửi tin nhắn. Vui lòng thử lại.',
+        la_nguoi_dung: 0,
+        tao_luc: new Date()
       }]);
     } finally {
       setIsLoading(false);
@@ -191,8 +184,8 @@ export default function ChatButton() {
 
           <div className="chat-messages" ref={chatMessagesRef} onScroll={handleChatScroll}>
             {messages.map((msg, idx) => (
-              <div key={idx} className={`message ${msg.is_user ? 'user-message' : 'bot-message'}`}>
-                <p>{msg.content}</p>
+              <div key={idx} className={`message ${msg.la_nguoi_dung === 1 ? 'user-message' : 'bot-message'}`}>
+                <p>{msg.noi_dung}</p>
               </div>
             ))}
             <div ref={messagesEndRef} />

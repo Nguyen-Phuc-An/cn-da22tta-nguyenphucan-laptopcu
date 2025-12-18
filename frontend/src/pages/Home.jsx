@@ -40,7 +40,6 @@ export default function Home() {
   const [favourites, setFavourites] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [gridLoading, setGridLoading] = useState(false);
   const [displayCount, setDisplayCount] = useState(20); // 5 rows × 5 products per row
 
   // filter UI state
@@ -85,17 +84,6 @@ export default function Home() {
       setSearchQuery(currentSearch);
     }
   }, [setSearchQuery]);
-
-  // Set gridLoading when search query changes
-  useEffect(() => {
-    if (searchQuery.trim()) {
-      setGridLoading(true);
-      const timer = setTimeout(() => setGridLoading(false), 300);
-      return () => clearTimeout(timer);
-    } else {
-      setGridLoading(false);
-    }
-  }, [searchQuery]);
 
   useEffect(() => {
     let mounted = true;
@@ -232,8 +220,7 @@ export default function Home() {
   }, [products, selectedCategory, filters, priceSort, priceRange, searchQuery]);
 
   if (err) return <p className="error">{err}</p>;
-  if (products === null) return <p>Đang tải...</p>;
-  if (!products.length) return <p>Chưa có sản phẩm.</p>;
+  if (products === null || !products.length) return null;
 
   return (
     <section>
@@ -403,7 +390,7 @@ export default function Home() {
 
 
       {visibleProducts.length === 0 ? (
-        <div className="empty">{gridLoading ? 'Đang tìm kiếm...' : 'Không tìm thấy sản phẩm bạn tìm.'}</div>
+        <div className="empty">Không tìm thấy sản phẩm bạn tìm.</div>
       ) : (
         <>
           <div id="products" className="grid">
@@ -451,7 +438,10 @@ export default function Home() {
                 <span className="badge badge-gray">Tặng Sim/Esim VNSKY, có ngay 5GB data 5G/ngày</span>
               </div>
 
-              <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '12px' }}>
+                <div className={`product-status ${p.trang_thai === 'sold' ? 'sold-out' : 'in-stock'}`}>
+                  {p.trang_thai === 'sold' ? 'Đã bán' : 'Còn hàng'}
+                </div>
                 <button
                   className={`fav-btn ${favourites.includes(p.id) ? 'fav-active' : ''}`}
                   onClick={(e) => {

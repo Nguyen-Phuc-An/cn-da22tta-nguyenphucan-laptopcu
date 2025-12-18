@@ -97,9 +97,7 @@ export default function Wishlists() {
 
         {error && <div className="alert alert-error">{error}</div>}
 
-        {loading ? (
-          <div className="loading">Đang tải...</div>
-        ) : wishlistItems.length === 0 ? (
+        {wishlistItems.length === 0 ? (
           <div className="wishlists-empty">
             <p>Bạn chưa có sản phẩm yêu thích nào.</p>
             <a href="/" className="btn-back">Quay lại trang chủ</a>

@@ -62,10 +62,10 @@ h1 {
 /* Header */
 .site-header {
   display: flex;
-  flex-direction: column; /* xếp item theo cột từ trên xuống */
-  justify-content: flex-start; /* căn từ trên */
-  align-items: center; /* căn giữa theo chiều ngang */
-  height: 80px;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  height: auto;
   width: 100%;
   background: linear-gradient(0deg, #1414a7, #000033);
   box-shadow: 0 2px 8px rgba(15,23,42,0.04);
@@ -77,26 +77,59 @@ h1 {
 .site-header .header-inner {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   width: 100%;
-  gap: 20px;
+  max-width: 1400px;
+  padding: 0 20px 10px;
+  gap: 30px;
 }
 .brand {
-  font-size: 1.6rem;
+  font-size: 1.2rem;
   color: white;
   margin: 0;
+  white-space: nowrap;
+}
+.header-menu {
+  display: flex;
+  gap: 35px;
+  align-items: center;
+  flex: 1;
+  justify-content: center;
+}
+.header-menu .menu-link {
+  color: white;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: color 0.3s ease;
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+  padding-bottom: 4px;
+}
+.header-menu .menu-link:hover {
+  color: #ffd700;
+}
+.header-menu .menu-link.active {
+  color: #ffd700;
+  border-bottom: 2px solid #ffd700;
 }
 .nav { 
   display:flex; 
-  gap:8px; 
+  gap:15px; 
   align-items:center; 
 }
 .nav .user-info { 
+  width: 45px;
+  height: 45px;
   color: white;
   background: rgba(255, 255, 255, 0.3);
   border: none;
-  padding: 7px 12px;
-  border-radius: 6px;
+  padding: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   font-size: 1em;
   font-weight: 500;
@@ -109,8 +142,8 @@ h1 {
   background: #00003380;
   color: white; 
   border-radius:6px ; 
-  padding:8px 12px; 
-  font-size: 1em;
+  padding:10px 12px; 
+  font-size: 16px;
 }
 .nav .btn:hover { 
   background: #000033;
@@ -121,24 +154,36 @@ h1 {
   display: inline-flex;
   align-items: center;
   color: white; 
-  border-radius:6px ; 
-  padding:7px 6px; 
+  padding:0;
   border:none;
+}
+.nav .cart-btn:hover {
+  color: #ffd700;
+}
+.nav .cart-btn.active {
+  color: #ffd700;
+  border-bottom: 2px solid #ffd700;
 }
 .nav .wishlists-btn {
   background: rgba(255, 255, 255, 0);
   display: inline-flex;
   align-items: center;
-  color: red; 
-  border-radius:6px ; 
-  padding:7px 6px; 
+  color: white; 
+  padding:0;
   border:none;
+}
+.nav .wishlists-btn:hover {
+  color: #ffd700;
+}
+.nav .wishlists-btn.active {
+  color: #ffd700;
+  border-bottom: 2px solid #ffd700;
 }
 /* Header ticker (marquee) */
 .header-ticker {
   width: 70%;
+  height: 30px;
   overflow: hidden;
-  margin-bottom: 6px;
 }
 .header-ticker .ticker-track {
   display: inline-flex;
@@ -158,6 +203,7 @@ h1 {
 .header-ticker .ticker-item {
   display: inline-flex;
   align-items: center;
+  font-size: 12px;
 }
 .header-ticker .ticker-item::after {
   content: '•';
@@ -178,7 +224,7 @@ h1 {
   align-items: center;
   gap: 8px;
   background: rgba(255, 255, 255, 1);
-  padding: 8px 12px;
+  padding: 8px 10px;
   border-radius: 8px;
 }
 .header-search svg { color: rgba(3, 3, 3, 0.9);}
@@ -233,7 +279,16 @@ h1 {
 }
 
 @media (max-width: 700px) {
-  .site-header { height: 120px; }
+  .site-header { padding: 10px 0; }
+  .site-header .header-inner {
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 15px;
+  }
+  .header-menu {
+    gap: 20px;
+    font-size: 0.95rem;
+  }
   .site-footer { height: auto; padding: 24px 0; }
-  .app main.container { min-height: calc(100vh - 220px); padding-top: calc(16px + 120px); }
+  .app main.container { min-height: calc(100vh - 200px); padding-top: calc(16px + 100px); }
 }

@@ -23,4 +23,23 @@ function imageFilter(req, file, cb) {
 
 const upload = multer({ storage, fileFilter: imageFilter, limits: { files: 5, fileSize: 5 * 1024 * 1024 } });
 
-module.exports = { upload, absUploadDir };
+// Avatar upload with separate directory
+const avatarUploadDir = path.join(process.cwd(), 'public/uploads/users');
+fs.mkdirSync(avatarUploadDir, { recursive: true });
+
+const avatarStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, avatarUploadDir),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname) || '.jpg';
+    const name = Date.now() + '-' + Math.round(Math.random() * 1e6) + ext;
+    cb(null, name);
+  }
+});
+
+const avatarUpload = multer({ 
+  storage: avatarStorage, 
+  fileFilter: imageFilter, 
+  limits: { fileSize: 5 * 1024 * 1024 } 
+});
+
+module.exports = { upload, absUploadDir, avatarUpload };

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { apiFetch } from '../../../services/apiClient';
+import '../Admin.css';
 
 export default function Customers() {
   const [customers, setCustomers] = useState([]);
@@ -33,10 +34,6 @@ export default function Customers() {
 
   return (
     <div className="admin-panel">
-      <div className="panel-header">
-        <h2>Quản lý khách hàng</h2>
-      </div>
-
       <table className="data-table">
         <thead>
           <tr>
@@ -59,9 +56,8 @@ export default function Customers() {
                 <td>{c.address || '-'}</td>
                 <td>
                   <button 
-                    className="btn-sm" 
+                    className="btn" 
                     onClick={() => handleSelectCustomer(c)}
-                    style={{ padding: '5px 10px', fontSize: '12px', cursor: 'pointer' }}
                   >
                     Xem
                   </button>

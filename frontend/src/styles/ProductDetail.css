@@ -76,7 +76,7 @@
 .pd-info-section {
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 10px;
   position: sticky;
 }
 
@@ -110,24 +110,29 @@
 }
 
 .pd-color {
-  width: 200px;
+  width: 300px;
+  gap: 10px;
   background: #f9f9f9;
-  padding: 10px 20px;
-  border-radius: 20px;
+  padding: 5px 20px;
+  align-items: center;
+  border-radius: 8px;
   border: 1px solid #00003350;
 }
 
 .pd-color h3 {
-  margin: 0 0 5px 0;
+  margin: 0;
   font-size: 16px;
   font-weight: 600;
   color: #333;
 }
-
+.pd-color-1 {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
 .color-value {
   font-size: 18px;
   font-weight: 600;
-  color: #0066cc;
 }
 
 .pd-price-sinhvien {
@@ -260,8 +265,8 @@
 .pd-actions {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  padding-top: 20px;
+  gap: 10px;
+  padding-top: 10px;
   border-top: 1px solid #eee;
 }
 

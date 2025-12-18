@@ -1,27 +1,6 @@
-.profile-page {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 40px 20px;
-  margin-bottom: 60px;
-}
-
 .profile-container {
-  max-width: 600px;
+  max-width: 1200px;
   margin: 0 auto;
-}
-
-.profile-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-  color: white;
-}
-
-.profile-header h1 {
-  margin: 0;
-  font-size: 32px;
-  font-weight: 600;
 }
 
 .alert {
@@ -78,14 +57,24 @@
   border-radius: 10px;
   padding: 30px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  max-width: 900px;
+  margin: 0 auto;
 }
-
+.profile-info{
+  margin: 0 auto;
+  max-width: 500px;
+}
+.profile-form{
+  margin: 0 auto;
+  max-width: 500px;
+}
 .profile-info h2,
 .profile-form h2 {
   margin-top: 0;
   margin-bottom: 25px;
   color: #333;
   font-size: 24px;
+  text-align: center;
 }
 
 .info-group {
@@ -101,12 +90,14 @@
 }
 
 .info-label {
+  font-size: 18px;
   font-weight: 600;
   color: #555;
   min-width: 100px;
 }
 
 .info-value {
+  font-size: 20px;
   color: #333;
   text-align: right;
   flex: 1;
@@ -128,7 +119,6 @@
   border: 1px solid #ddd;
   border-radius: 5px;
   font-size: 14px;
-  font-family: inherit;
   box-sizing: border-box;
 }
 

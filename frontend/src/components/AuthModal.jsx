@@ -57,7 +57,15 @@ export default function AuthModal({ mode = 'login', onClose, onAuthSuccess }) {
           setLoading(false);
           return;
         }
-        const res = await register({ email, name, password, phone, address });
+
+        const formData = new FormData();
+        formData.append('email', email);
+        formData.append('name', name);
+        formData.append('password', password);
+        formData.append('phone', phone);
+        formData.append('address', address);
+
+        const res = await register(formData);
         onAuthSuccess && onAuthSuccess(res);
       }
       onClose && onClose();
@@ -70,7 +78,7 @@ export default function AuthModal({ mode = 'login', onClose, onAuthSuccess }) {
 
   return (
     <div className="auth-modal">
-      <form ref={formRef} onSubmit={handleSubmit}>
+      <form ref={formRef} onSubmit={handleSubmit} encType="multipart/form-data">
         <h3>{m === 'login' ? 'Đăng nhập' : 'Đăng ký'}</h3>
 
         <label>
@@ -111,7 +119,9 @@ export default function AuthModal({ mode = 'login', onClose, onAuthSuccess }) {
             {loading ? 'Đang xử lý...' : (m === 'login' ? 'Đăng nhập' : 'Đăng ký')}
           </button>
 
-          <button type="button" onClick={() => setMode(m === 'login' ? 'register' : 'login')}>
+          <button type="button" onClick={() => {
+            setMode(m === 'login' ? 'register' : 'login');
+          }}>
             {m === 'login' ? 'Đăng ký' : 'Đăng nhập'}
           </button>
         </div>

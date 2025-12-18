@@ -6,7 +6,7 @@ async function createUser({ email, name, passwordHash, role = 'customer', phone 
 }
 
 async function getUserById(id) {
-  const [rows] = await db.query('SELECT id, email, ten AS name, vai_tro AS role, dien_thoai AS phone, dia_chi AS address, tao_luc AS created_at, cap_nhat_luc AS updated_at FROM users WHERE id = ?', [id]);
+  const [rows] = await db.query('SELECT id, email, ten AS name, mat_khau AS mat_khau, vai_tro AS role, dien_thoai AS phone, dia_chi AS address, tao_luc AS created_at, cap_nhat_luc AS updated_at FROM users WHERE id = ?', [id]);
   return rows[0] || null;
 }
 

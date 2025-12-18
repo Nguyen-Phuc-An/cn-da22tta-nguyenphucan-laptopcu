@@ -22,7 +22,22 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- ==============================
--- 2 CATEGORIES
+-- 2 USERS_IMAGES
+-- ==============================
+CREATE TABLE IF NOT EXISTS users_images (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  nguoi_dung_id INT UNSIGNED NOT NULL,
+  duong_dan VARCHAR(1000) NOT NULL,
+  la_chinh TINYINT(1) DEFAULT 0,
+  tao_luc TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  cap_nhat_luc TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (nguoi_dung_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_users_images_user (nguoi_dung_id),
+  INDEX idx_users_images_main (nguoi_dung_id, la_chinh)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ==============================
+-- 3 CATEGORIES
 -- ==============================
 CREATE TABLE IF NOT EXISTS categories (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -34,7 +49,7 @@ CREATE TABLE IF NOT EXISTS categories (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ==============================
--- 3 PRODUCTS
+-- 4 PRODUCTS
 -- ==============================
 CREATE TABLE IF NOT EXISTS products (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -62,7 +77,7 @@ CREATE TABLE IF NOT EXISTS products (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ==============================
--- 4 PRODUCT_IMAGES
+-- 5 PRODUCT_IMAGES
 -- ==============================
 CREATE TABLE IF NOT EXISTS product_images (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -103,16 +118,19 @@ END$$
 DELIMITER ;
 
 -- ==============================
--- 5 ORDERS
+-- 6 ORDERS
 -- ==============================
 CREATE TABLE IF NOT EXISTS orders (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   khach_hang_id INT UNSIGNED NOT NULL, -- buyer
+  ten_nguoi_nhan VARCHAR(255),
+  dien_thoai_nhan VARCHAR(30),
+  dia_chi_nhan TEXT,
   tong_tien DECIMAL(12,2) NOT NULL DEFAULT 0.00,
   tien_te CHAR(3) DEFAULT 'VND',
-  trang_thai ENUM('pending','paid','processing','shipped','completed','cancelled','refunded') NOT NULL DEFAULT 'pending',
-  dia_chi_giao_hang TEXT,
+  trang_thai ENUM('pending','confirmed','shipping','completed','canceled') NOT NULL DEFAULT 'pending',
   phuong_thuc_thanh_toan VARCHAR(100),
+  ghi_chu TEXT,
   tao_luc TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   cap_nhat_luc TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (khach_hang_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -121,7 +139,7 @@ CREATE TABLE IF NOT EXISTS orders (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ==============================
--- 6 ORDER_ITEMS
+-- 7 ORDER_ITEMS
 -- ==============================
 CREATE TABLE IF NOT EXISTS order_items (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -138,7 +156,7 @@ CREATE TABLE IF NOT EXISTS order_items (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ==============================
--- 7 REVIEWS
+-- 8 REVIEWS
 -- ==============================
 CREATE TABLE IF NOT EXISTS reviews (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -157,7 +175,7 @@ CREATE TABLE IF NOT EXISTS reviews (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ==============================
--- 8 WISHLISTS
+-- 9 WISHLISTS
 -- ==============================
 CREATE TABLE IF NOT EXISTS wishlists (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -171,7 +189,7 @@ CREATE TABLE IF NOT EXISTS wishlists (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ==============================
--- 9 BANNERS
+-- 10 BANNERS
 -- ==============================
 CREATE TABLE IF NOT EXISTS banners (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -187,7 +205,7 @@ CREATE TABLE IF NOT EXISTS banners (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ==============================
--- 10 CHAT_MESSAGES (live chat)
+-- 11 CHAT_MESSAGES (live chat)
 -- Real-time chat between customers and support staff
 -- ==============================
 CREATE TABLE IF NOT EXISTS chat_messages (
@@ -202,4 +220,20 @@ CREATE TABLE IF NOT EXISTS chat_messages (
   INDEX idx_chat_user (user_id),
   INDEX idx_chat_email (email_nguoi_gui),
   INDEX idx_chat_time (tao_luc)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ==============================
+-- 12 CONTACTS (Contact Form Submissions)
+-- Store contact form submissions from website visitors
+-- ==============================
+CREATE TABLE IF NOT EXISTS contacts (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  ten VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  dien_thoai VARCHAR(30),
+  tieu_de VARCHAR(500) NOT NULL,
+  noi_dung TEXT NOT NULL,
+  tao_luc TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_contacts_email (email),
+  INDEX idx_contacts_time (tao_luc)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
