@@ -13,6 +13,8 @@ export default function Banners() {
     status: 'active'
   });
   const [bannerImagePreview, setBannerImagePreview] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmData, setDeleteConfirmData] = useState(null);
 
   useEffect(() => {
     const loadBanners = async () => {
@@ -102,33 +104,42 @@ export default function Banners() {
     }
   };
 
-  const handleDeleteBanner = async (id) => {
-    if (!confirm('Bạn chắc chắn muốn xóa banner này? Ảnh liên quan cũng sẽ bị xóa.')) return;
+  const handleDeleteBanner = (id) => {
+    setDeleteConfirmData({
+      type: 'banner',
+      id,
+      name: banners.find(b => b.id === id)?.tieu_de || 'banner'
+    });
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirmData) return;
+
     try {
-      // Get banner to find the image file
-      const banner = banners.find(b => b.id === id);
+      const banner = banners.find(b => b.id === deleteConfirmData.id);
       if (banner && banner.duong_dan) {
-        // Try to delete the image file
         try {
-          // Extract filename from path like "/public/uploads/products/filename.jpg"
           const fileName = banner.duong_dan.split('/').pop();
           if (fileName) {
             await apiFetch(`/uploads/delete`, {
               method: 'POST',
               body: { fileName, type: 'banners' }
-            }).catch(() => null); // Ignore if endpoint doesn't exist
+            }).catch(() => null);
           }
         } catch (err) {
           console.error('Error deleting banner image file:', err);
         }
       }
       
-      // Delete the banner record
-      await apiFetch(`/banners/${id}`, { method: 'DELETE' });
-      setBanners(banners.filter(b => b.id !== id));
+      await apiFetch(`/banners/${deleteConfirmData.id}`, { method: 'DELETE' });
+      setBanners(banners.filter(b => b.id !== deleteConfirmData.id));
       alert('Xóa banner thành công');
     } catch (err) {
       alert('Lỗi xóa banner: ' + err.message);
+    } finally {
+      setShowDeleteConfirm(false);
+      setDeleteConfirmData(null);
     }
   };
 
@@ -191,77 +202,137 @@ export default function Banners() {
         </tbody>
       </table>
 
+      {/* DELETE CONFIRMATION MODAL */}
+      {showDeleteConfirm && deleteConfirmData && (
+        <div className="modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{minWidth: '400px'}}>
+            <div style={{ padding: '30px', textAlign: 'center' }}>
+              <div style={{
+                width: '60px',
+                height: '60px',
+                margin: '0 auto 20px',
+                backgroundColor: '#fee2e2',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '28px'
+              }}>
+                ⚠️
+              </div>
+              
+              <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#111827' }}>
+                Xóa banner?
+              </h3>
+              
+              <p style={{ margin: '0 0 20px 0', color: '#6b7280', fontSize: '14px' }}>
+                Bạn chắc chắn muốn xóa <strong>"{deleteConfirmData.name}"</strong>? Ảnh liên quan cũng sẽ bị xóa.
+              </p>
+
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                <button
+                  className="btn"
+                  onClick={() => setShowDeleteConfirm(false)}
+                  style={{ minWidth: '120px' }}
+                >
+                  Hủy
+                </button>
+                <button
+                  className="btn-danger"
+                  onClick={handleConfirmDelete}
+                  style={{ minWidth: '120px' }}
+                >
+                  Xóa
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* BANNER MODAL */}
       {showBannerModal && (
         <div className="modal-overlay" onClick={() => setShowBannerModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{minWidth: '500px'}}>
-            <button className="close-btn" onClick={() => setShowBannerModal(false)}>✕</button>
-            <h3>{editingBanner ? 'Sửa banner' : 'Thêm banner mới'}</h3>
+            <div className="modal-header">
+              <h3>{editingBanner ? 'Sửa banner' : 'Thêm banner mới'}</h3>
+              <button className="close-btn" onClick={() => setShowBannerModal(false)}>✕</button>
+            </div>
             
-            <div style={{ marginTop: '20px', display: 'grid', gridTemplateColumns: '1fr', gap: '15px' }}>
-              <div>
-                <label style={{fontWeight: '600', display: 'block', marginBottom: '5px'}}>Tiêu đề *</label>
-                <input
-                  type="text"
-                  value={bannerForm.title}
-                  onChange={(e) => setBannerForm({...bannerForm, title: e.target.value})}
-                  style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px' }}
-                />
-              </div>
+            <div className="modal-body">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '18px' }}>
+                <div>
+                  <label style={{fontWeight: '600', display: 'block', marginBottom: '8px', color: '#374151', fontSize: '14px'}}>Tiêu đề *</label>
+                  <input
+                    type="text"
+                    value={bannerForm.title}
+                    onChange={(e) => setBannerForm({...bannerForm, title: e.target.value})}
+                    style={{ width: '100%', padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px', fontFamily: 'inherit', transition: 'all 0.2s' }}
+                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                  />
+                </div>
 
-              <div>
-                <label style={{fontWeight: '600', display: 'block', marginBottom: '5px'}}>Liên kết URL</label>
-                <input
-                  type="text"
-                  value={bannerForm.link}
-                  onChange={(e) => setBannerForm({...bannerForm, link: e.target.value})}
-                  placeholder="https://example.com"
-                  style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px' }}
-                />
-              </div>
+                <div>
+                  <label style={{fontWeight: '600', display: 'block', marginBottom: '8px', color: '#374151', fontSize: '14px'}}>Liên kết URL</label>
+                  <input
+                    type="text"
+                    value={bannerForm.link}
+                    onChange={(e) => setBannerForm({...bannerForm, link: e.target.value})}
+                    placeholder="https://example.com"
+                    style={{ width: '100%', padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px', fontFamily: 'inherit', transition: 'all 0.2s' }}
+                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                  />
+                </div>
 
-              <div>
-                <label style={{fontWeight: '600', display: 'block', marginBottom: '5px'}}>Vị trí hiển thị</label>
-                <input
-                  type="number"
-                  value={bannerForm.position}
-                  onChange={(e) => setBannerForm({...bannerForm, position: e.target.value})}
-                  placeholder="0"
-                  style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px' }}
-                />
-              </div>
+                <div>
+                  <label style={{fontWeight: '600', display: 'block', marginBottom: '8px', color: '#374151', fontSize: '14px'}}>Vị trí hiển thị</label>
+                  <input
+                    type="number"
+                    value={bannerForm.position}
+                    onChange={(e) => setBannerForm({...bannerForm, position: e.target.value})}
+                    placeholder="0"
+                    style={{ width: '100%', padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px', fontFamily: 'inherit', transition: 'all 0.2s' }}
+                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                  />
+                </div>
 
-              <div>
-                <label style={{fontWeight: '600', display: 'block', marginBottom: '5px'}}>Trạng thái</label>
-                <select
-                  value={bannerForm.status}
-                  onChange={(e) => setBannerForm({...bannerForm, status: e.target.value})}
-                  style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px' }}
-                >
-                  <option value="active">Kích hoạt</option>
-                  <option value="inactive">Tắt</option>
-                </select>
-              </div>
+                <div>
+                  <label style={{fontWeight: '600', display: 'block', marginBottom: '8px', color: '#374151', fontSize: '14px'}}>Trạng thái</label>
+                  <select
+                    value={bannerForm.status}
+                    onChange={(e) => setBannerForm({...bannerForm, status: e.target.value})}
+                    style={{ width: '100%', padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px', fontFamily: 'inherit', transition: 'all 0.2s', cursor: 'pointer' }}
+                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                    onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                  >
+                    <option value="active">Kích hoạt</option>
+                    <option value="inactive">Tắt</option>
+                  </select>
+                </div>
 
-              <div>
-                <label style={{fontWeight: '600', display: 'block', marginBottom: '5px'}}>Hình ảnh banner</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleBannerImageChange}
-                  style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px' }}
-                />
-                {bannerImagePreview && (
-                  <img src={bannerImagePreview} alt="preview" style={{ marginTop: '10px', maxHeight: '150px', borderRadius: '4px' }} />
-                )}
+                <div>
+                  <label style={{fontWeight: '600', display: 'block', marginBottom: '8px', color: '#374151', fontSize: '14px'}}>Hình ảnh banner</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleBannerImageChange}
+                    style={{ width: '100%', padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px', fontFamily: 'inherit', cursor: 'pointer' }}
+                  />
+                  {bannerImagePreview && (
+                    <img src={bannerImagePreview} alt="preview" style={{ marginTop: '12px', maxHeight: '180px', borderRadius: '6px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} />
+                  )}
+                </div>
               </div>
             </div>
 
-            <div style={{ marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+            <div className="modal-footer">
+              <button className="btn" onClick={() => setShowBannerModal(false)}>Hủy</button>
               <button className="btn btn-primary" onClick={handleSaveBanner}>
                 {editingBanner ? 'Cập nhật' : 'Thêm'}
               </button>
-              <button className="btn" onClick={() => setShowBannerModal(false)}>Hủy</button>
             </div>
           </div>
         </div>

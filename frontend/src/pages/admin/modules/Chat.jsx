@@ -136,87 +136,28 @@ export default function Chat() {
   }
 
   return (
-    <div className="admin-panel" style={{ 
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
-      gap: '0'
-    }}>
-      {/* Header */}
-      <div style={{ 
-        padding: '20px',
-        borderBottom: '1px solid #e5e7eb',
-        backgroundColor: '#fff',
-        flexShrink: 0
-      }}>
-        <h2 style={{ margin: '0', fontSize: '24px', fontWeight: '600', color: '#333' }}>Chat Trực Tiếp</h2>
-        <p style={{ margin: '5px 0 0 0', fontSize: '14px', color: '#666' }}>Giao tiếp với khách hàng</p>
-      </div>
-
+    <div className="chat-container">    
       {/* Main Content */}
-      <div style={{ 
-        display: 'grid',
-        gridTemplateColumns: '320px 1fr',
-        gap: '0',
-        flex: 1,
-        minHeight: '0',
-        overflow: 'hidden'
-      }}>
+      <div className="chat-grid">
         {/* Users List */}
-        <div style={{ 
-          borderRight: '1px solid #e5e7eb',
-          display: 'flex',
-          flexDirection: 'column',
-          backgroundColor: '#fafafa',
-          overflow: 'hidden'
-        }}>
-          <div style={{ 
-            padding: '15px',
-            borderBottom: '1px solid #e5e7eb',
-            backgroundColor: '#fff'
-          }}>
-            <h3 style={{ margin: '0', fontSize: '16px', fontWeight: '600', color: '#333' }}>Khách hàng</h3>
-            <p style={{ margin: '5px 0 0 0', fontSize: '12px', color: '#999' }}>
-              {users.length} người đang chat
-            </p>
+        <div className="chat-users-panel">
+          <div className="chat-users-header">
+            <h3>Khách hàng</h3>
+            <p className="chat-users-count">{users.length} người đang chat</p>
           </div>
           
-          <div style={{
-            padding: '12px 15px',
-            borderBottom: '1px solid #e5e7eb',
-            backgroundColor: '#fff'
-          }}>
+          <div className="chat-search">
             <input
               type="text"
               placeholder="Tìm kiếm khách hàng..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                border: '1px solid #d1d5db',
-                borderRadius: '6px',
-                fontSize: '13px',
-                boxSizing: 'border-box',
-                color: '#333'
-              }}
             />
           </div>
           
-          <div style={{ 
-            flex: 1,
-            overflowY: 'auto',
-            overflowX: 'hidden',
-            minHeight: '0'
-          }}>
+          <div className="chat-users-list">
             {users.length === 0 ? (
-              <div style={{ 
-                padding: '30px 20px',
-                textAlign: 'center',
-                color: '#999'
-              }}>
-                <p style={{ fontSize: '14px', margin: '0' }}>Chưa có cuộc trò chuyện</p>
-              </div>
+              <div className="chat-users-empty">Chưa có cuộc trò chuyện</div>
             ) : (
               users.filter(user => 
                 (user.ten || 'Khách hàng').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -225,56 +166,11 @@ export default function Chat() {
                 <div
                   key={user.user_id}
                   onClick={() => handleSelectUser(user.user_id)}
-                  style={{
-                    padding: '15px',
-                    borderBottom: '1px solid #e5e7eb',
-                    cursor: 'pointer',
-                    backgroundColor: selectedUserId === user.user_id ? '#fff' : 'transparent',
-                    borderLeft: selectedUserId === user.user_id ? '4px solid #667eea' : '4px solid transparent',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (selectedUserId !== user.user_id) {
-                      e.currentTarget.style.backgroundColor = '#f5f5f5';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (selectedUserId !== user.user_id) {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }
-                  }}
+                  className={`chat-user-item ${selectedUserId === user.user_id ? 'active' : ''}`}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
-                    <div style={{ flex: 1, minWidth: '0' }}>
-                      <div style={{ 
-                        fontWeight: '600', 
-                        fontSize: '15px',
-                        color: '#333',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
-                      }}>
-                        {user.ten || 'Khách hàng'}
-                      </div>
-                      <div style={{ 
-                        fontSize: '12px', 
-                        color: '#999',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        marginTop: '4px'
-                      }}>
-                        {user.email || 'Không có email'}
-                      </div>
-                      <div style={{ 
-                        fontSize: '11px', 
-                        color: '#bbb',
-                        marginTop: '6px'
-                      }}>
-                        {user.message_count || 0} tin nhắn
-                      </div>
-                    </div>
-                  </div>
+                  <div className="chat-user-name">{user.ten || 'Khách hàng'}</div>
+                  <div className="chat-user-email">{user.email || 'Không có email'}</div>
+                  <div className="chat-user-count">{user.message_count || 0} tin nhắn</div>
                 </div>
               ))
             )}
@@ -282,87 +178,32 @@ export default function Chat() {
         </div>
 
         {/* Chat Area */}
-        <div style={{ 
-          display: 'flex',
-          flexDirection: 'column',
-          backgroundColor: '#fff',
-          overflow: 'hidden'
-        }}>
+        <div className="chat-area">
           {selectedUserId ? (
             <>
               {/* Chat Header */}
-              <div style={{ 
-                padding: '20px',
-                borderBottom: '1px solid #e5e7eb',
-                backgroundColor: '#f9fafb',
-                flexShrink: 0
-              }}>
-                <h3 style={{ margin: '0', fontSize: '16px', fontWeight: '600', color: '#333' }}>
-                  Chat với khách hàng
-                </h3>
+              <div className="chat-header">
+                <h3>Chat với khách hàng</h3>
               </div>
 
               {/* Messages */}
-              <div style={{ 
-                flex: 1,
-                overflowY: 'auto',
-                overflowX: 'hidden',
-                padding: '20px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '12px',
-                minHeight: '0'
-              }}>
+              <div className="chat-messages">
                 {messages.length === 0 ? (
-                  <div style={{ 
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    height: '100%',
-                    color: '#999'
-                  }}>
+                  <div className="chat-empty">
                     <p style={{ fontSize: '14px', margin: '0' }}>Chưa có tin nhắn</p>
                   </div>
                 ) : (
                   messages.map((msg, i) => (
                     <div
                       key={msg.id || `msg-${i}`}
-                      style={{
-                        display: 'flex',
-                        justifyContent: msg.la_nguoi_dung ? 'flex-start' : 'flex-end',
-                        marginBottom: '0'
-                      }}
+                      className={`chat-message ${msg.la_nguoi_dung ? 'user' : 'admin'}`}
                     >
-                      <div
-                        style={{
-                          maxWidth: '70%',
-                          padding: '12px 16px',
-                          borderRadius: '12px',
-                          backgroundColor: msg.la_nguoi_dung ? '#f3f4f6' : '#667eea',
-                          color: msg.la_nguoi_dung ? '#333' : 'white'
-                        }}
-                      >
-                        <p style={{ 
-                          margin: '0 0 6px 0', 
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          opacity: 0.8
-                        }}>
+                      <div className={`chat-message-bubble ${msg.la_nguoi_dung ? 'user' : 'admin'}`}>
+                        <p className="chat-message-sender">
                           {msg.la_nguoi_dung ? 'Khách hàng' : 'Admin'}
                         </p>
-                        <p style={{ 
-                          margin: '0', 
-                          wordWrap: 'break-word',
-                          fontSize: '14px',
-                          lineHeight: '1.4'
-                        }}>
-                          {msg.noi_dung}
-                        </p>
-                        <p style={{ 
-                          fontSize: '11px', 
-                          margin: '6px 0 0 0', 
-                          opacity: 0.7
-                        }}>
+                        <p className="chat-message-text">{msg.noi_dung}</p>
+                        <p className="chat-message-time">
                           {msg.tao_luc ? new Date(msg.tao_luc).toLocaleTimeString('vi-VN', { 
                             hour: '2-digit', 
                             minute: '2-digit' 
@@ -376,67 +217,30 @@ export default function Chat() {
               </div>
 
               {/* Input Area */}
-              <form onSubmit={handleSendReply} style={{ 
-                borderTop: '1px solid #e5e7eb', 
-                padding: '15px 20px',
-                backgroundColor: '#fafafa',
-                display: 'flex',
-                gap: '12px',
-                flexShrink: 0
-              }}>
-                <textarea
-                  value={replyText}
-                  onChange={(e) => setReplyText(e.target.value)}
-                  placeholder="Nhập tin nhắn..."
-                  rows="2"
-                  style={{
-                    flex: 1,
-                    padding: '10px 12px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '8px',
-                    fontFamily: 'inherit',
-                    fontSize: '14px',
-                    resize: 'none',
-                    color: '#333'
-                  }}
-                />
-                <button 
-                  type="submit"
-                  disabled={sending}
-                  style={{ 
-                    padding: '10px 20px',
-                    backgroundColor: sending ? '#ccc' : '#667eea',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: sending ? 'not-allowed' : 'pointer',
-                    fontWeight: '600',
-                    fontSize: '14px',
-                    transition: 'background-color 0.2s ease',
-                    flexShrink: 0
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!sending) e.target.style.backgroundColor = '#5568d3';
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!sending) e.target.style.backgroundColor = '#667eea';
-                  }}
-                >
-                  {sending ? 'Đang gửi...' : 'Gửi'}
-                </button>
-              </form>
+              <div className="chat-input-area">
+                <form onSubmit={handleSendReply} className="chat-input-form">
+                  <textarea
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    placeholder="Nhập tin nhắn..."
+                    rows="2"
+                    className="chat-textarea"
+                  />
+                  <button 
+                    type="submit"
+                    disabled={sending}
+                    className="chat-send-btn"
+                  >
+                    {sending ? 'Đang gửi...' : 'Gửi'}
+                  </button>
+                </form>
+              </div>
             </>
           ) : (
-            <div style={{ 
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '100%',
-              color: '#999'
-            }}>
-              <div style={{ textAlign: 'center' }}>
-                <p style={{ fontSize: '16px', margin: '0 0 10px 0' }}>👋</p>
-                <p style={{ fontSize: '14px', margin: '0' }}>Chọn khách hàng để bắt đầu trò chuyện</p>
+            <div className="chat-empty">
+              <div>
+                <div className="chat-empty-icon">👋</div>
+                <p className="chat-empty-text">Chọn khách hàng để bắt đầu trò chuyện</p>
               </div>
             </div>
           )}

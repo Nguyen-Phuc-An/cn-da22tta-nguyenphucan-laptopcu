@@ -1,21 +1,26 @@
 import React, { useContext } from 'react';
 import { CartContext } from '../context/Cart';
+import { AuthContext } from '../context/AuthContext';
 import { imageToSrc } from '../services/productImages';
+import Footer from '../components/Footer';
 import '../styles/Cart.css';
 
 export default function Cart() {
   const { items, removeFromCart, updateQuantity, clearCart } = useContext(CartContext);
+  const { user } = useContext(AuthContext);
   const [selectedItems, setSelectedItems] = React.useState(new Set());
 
   if (items.length === 0) {
     return (
-      <div className="cart-container">
-        <h1>🛒 Giỏ Hàng</h1>
-        <div className="cart-empty">
-          <p>Giỏ hàng của bạn trống rỗng</p>
-          <a href="/" className="btn-continue-shopping">← Tiếp tục mua sắm</a>
+      <>
+        <div className="cart-container">
+          <div className="cart-empty">
+            <p>Giỏ hàng của bạn trống rỗng</p>
+            <a href="/" className="btn-continue-shopping">← Tiếp tục mua sắm</a>
+          </div>
         </div>
-      </div>
+        <Footer />
+      </>
     );
   }
 
@@ -44,13 +49,19 @@ export default function Cart() {
     .filter(item => selectedItems.has(item.id))
     .reduce((sum, item) => sum + (item.gia * item.quantity), 0);
 
-  return (
-    <div className="cart-container">
-      <h1>🛒 Giỏ Hàng ({items.length} sản phẩm)</h1>
+  // Calculate edu discount
+  const EDU_DISCOUNT_PER_ITEM = 500000; // 500.000đ per item
+  const isEduVerified = user?.edu_verified === 1;
+  const selectedItemsCount = selectedItems.size;
+  const eduDiscount = isEduVerified ? selectedItemsCount * EDU_DISCOUNT_PER_ITEM : 0;
+  const finalTotal = Math.max(0, selectedItemsTotal - eduDiscount);
 
-      <div className="cart-content">
-        {/* Cart Items */}
-        <div className="cart-items">
+  return (
+    <>
+      <div className="cart-container">
+        <div className="cart-content">
+          {/* Cart Items */}
+          <div className="cart-items">
           {/* Select All Header */}
           <div className="cart-select-all" style={{
             padding: '12px 15px',            
@@ -177,14 +188,16 @@ export default function Cart() {
               <span className="amount">Miễn phí</span>
             </div>
 
-            <div className="summary-row discount">
-              <span>Giảm giá:</span>
-              <span className="amount">0₫</span>
-            </div>
+            {isEduVerified && eduDiscount > 0 && (
+              <div className="summary-row discount">
+                <span>💰 Giảm giá Edu ({selectedItemsCount} sản phẩm × 500.000₫):</span>
+                <span className="amount">-{eduDiscount.toLocaleString('vi-VN')}₫</span>
+              </div>
+            )}
 
             <div className="summary-row total">
               <span>Tổng thanh toán:</span>
-              <span className="amount-total">{selectedItemsTotal.toLocaleString('vi-VN')}₫</span>
+              <span className="amount-total">{finalTotal.toLocaleString('vi-VN')}₫</span>
             </div>
             <p style={{margin: '0', fontSize: '14px', color: '#666'}}>Vị trí nhận đơn là địa chỉ giao hàng được lấy từ thông tin mà khách hàng đã cung cấp khi đăng ký tài khoản.</p>
 
@@ -220,5 +233,7 @@ export default function Cart() {
         </div>
       </div>
     </div>
+    <Footer />
+    </>
   );
 }

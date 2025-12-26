@@ -6,7 +6,6 @@ import './BannerSlider.css';
 export default function BannerSlider() {
   const [banners, setBanners] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -15,8 +14,6 @@ export default function BannerSlider() {
         setBanners(data || []);
       } catch (err) {
         console.error('Error loading banners:', err);
-      } finally {
-        setLoading(false);
       }
     })();
   }, []);
@@ -55,7 +52,6 @@ export default function BannerSlider() {
                         }
                     } catch (err) { void err; }
                     }}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
                 </a>
             </div>
@@ -100,14 +96,12 @@ export default function BannerSlider() {
                     try {
                         const el = e && e.target;
                         if (!el) return;
-                        // avoid infinite loop: only replace if not already default
                         if (!el.dataset.fallback) {
                         el.dataset.fallback = '1';
                         el.src = '/uploads/products/default.jpg';
                         }
                     } catch (err) { void err; }
                     }}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
                 </a>
             </div>
@@ -140,6 +134,32 @@ export default function BannerSlider() {
                 ))}
                 </div>
             )}
+        </div>
+        <div className="banner-bottom">
+            <div className="banner-main">
+                <div 
+                    onClick={() => window.location.href = '/edu-verification'}
+                    style={{ display: 'block', width: 'auto', height: '100%' }}
+                    title="Xác thực học sinh để nhận giảm giá"
+                >
+                <img
+                    src="/images/banner-laptop-edu.png"
+                    style={{ cursor: 'pointer', width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }}
+                    alt="Banner Edu Verification"
+                    loading="lazy"
+                    onError={(e) => {
+                    try {
+                        const el = e && e.target;
+                        if (!el) return;
+                        if (!el.dataset.fallback) {
+                        el.dataset.fallback = '1';
+                        el.src = '/images/default.jpg';
+                        }
+                    } catch (err) { void err; }
+                    }}
+                />
+                </div>
+            </div>
         </div>  
     </div>
   );

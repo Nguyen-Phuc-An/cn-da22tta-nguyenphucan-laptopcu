@@ -7,6 +7,7 @@ import { imageToSrc, normalizeImages } from '../services/productImages';
 import { AuthContext } from '../context/AuthContext';
 import { CartContext } from '../context/Cart';
 import { ToastContext } from '../context/Toast';
+import { apiFetch } from '../services/apiClient';
 import Footer from '../components/Footer';
 import '../styles/ProductDetail.css';
 
@@ -37,9 +38,28 @@ export default function ProductDetail() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [cartQuantity, setCartQuantity] = useState(1);
+  const [eduVerified, setEduVerified] = useState(false);
+  const [eduDiscount, setEduDiscount] = useState(0);
 
   // Get product ID from URL
   const productId = typeof window !== 'undefined' ? window.location.pathname.split('/product/')[1] : null;
+
+  // Load edu status
+  useEffect(() => {
+    if (!token || !userId) return;
+    
+    (async () => {
+      try {
+        const status = await apiFetch('/auth/edu-status');
+        if (status && status.edu_verified) {
+          setEduVerified(true);
+          setEduDiscount(status.discount || 0);
+        }
+      } catch (e) {
+        console.error('Error loading edu status:', e);
+      }
+    })();
+  }, [token, userId]);
 
   useEffect(() => {
     if (!productId) return;
@@ -151,6 +171,9 @@ export default function ProductDetail() {
       : (product.images[selectedImageIndex] || {}))
     : '/uploads/products/default.jpg';
 
+  const basePrice = Number(product.gia || product.price || 0);
+  const discountedPrice = eduVerified ? basePrice - eduDiscount : basePrice;
+
   return (
     <>
       <section className="product-detail">
@@ -192,7 +215,7 @@ export default function ProductDetail() {
             </div>
           )}
 
-          <div className="camketsanpham" style={{ marginTop: '20px', padding: '15px', border: '1px solid #00003350', borderRadius: '8px' }}>
+          <div className="camketsanpham">
             <h3 className="camket-title">
               CAM KẾT SẢN PHẨM
             </h3>
@@ -202,36 +225,36 @@ export default function ProductDetail() {
             <p>🧾 Giá đã bao gồm VAT, xuất hoá đơn ngay sau khi bán hàng</p>
           </div>
 
-          <div className="product-description-section" style={{ marginTop: '20px', padding: '20px', backgroundColor: '#f9f9f9' }}>
-            <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#000033', marginTop: 0 }}>Tổng quan sản phẩm</h3>
-            <p style={{ fontSize: '14px', color: '#555', lineHeight: '1.6' }}>Laptop được thiết kế phục vụ tốt cho nhiều nhu cầu học tập, văn phòng và giải trí nhẹ. Máy có hiệu năng ổn định, độ bền cao và được kiểm tra kỹ trước khi đến tay khách hàng.</p>
+          <div className="product-description-section">
+            <h3>Tổng quan sản phẩm</h3>
+            <p>Laptop được thiết kế phục vụ tốt cho nhiều nhu cầu học tập, văn phòng và giải trí nhẹ. Máy có hiệu năng ổn định, độ bền cao và được kiểm tra kỹ trước khi đến tay khách hàng.</p>
 
-            <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#000033', marginTop: '15px', marginBottom: '8px' }}>Hiệu năng</h4>
-            <p style={{ fontSize: '14px', color: '#555', lineHeight: '1.6' }}>Máy sử dụng vi xử lý thế hệ mới, cho tốc độ phản hồi nhanh, thao tác mượt mà. Kết hợp cùng bộ nhớ RAM dư dả và ổ cứng tốc độ cao, laptop dễ dàng đáp ứng các tác vụ:</p>
-            <ul style={{ fontSize: '14px', color: '#555', marginLeft: '20px', marginTop: '8px' }}>
+            <h4>Hiệu năng</h4>
+            <p>Máy sử dụng vi xử lý thế hệ mới, cho tốc độ phản hồi nhanh, thao tác mượt mà. Kết hợp cùng bộ nhớ RAM dư dả và ổ cứng tốc độ cao, laptop dễ dàng đáp ứng các tác vụ:</p>
+            <ul>
               <li>Học tập online</li>
               <li>Làm việc văn phòng</li>
               <li>Xử lý file tài liệu, Excel, PowerPoint</li>
               <li>Lướt web, xem phim, giải trí</li>
             </ul>
 
-            <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#000033', marginTop: '15px', marginBottom: '8px' }}>Thiết kế</h4>
-            <p style={{ fontSize: '14px', color: '#555', lineHeight: '1.6' }}>Thiết kế gọn nhẹ, hiện đại, phù hợp cho sinh viên và nhân viên văn phòng. Chất liệu cứng cáp giúp máy có độ bền cao trong quá trình sử dụng.</p>
+            <h4>Thiết kế</h4>
+            <p>Thiết kế gọn nhẹ, hiện đại, phù hợp cho sinh viên và nhân viên văn phòng. Chất liệu cứng cáp giúp máy có độ bền cao trong quá trình sử dụng.</p>
 
-            <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#000033', marginTop: '15px', marginBottom: '8px' }}>Màn hình</h4>
-            <p style={{ fontSize: '14px', color: '#555', lineHeight: '1.6' }}>Trang bị màn hình độ phân giải cao, hiển thị sắc nét, màu sắc hài hòa. Góc nhìn rộng, hỗ trợ tốt khi làm việc và giải trí lâu dài.</p>
+            <h4>Màn hình</h4>
+            <p>Trang bị màn hình độ phân giải cao, hiển thị sắc nét, màu sắc hài hòa. Góc nhìn rộng, hỗ trợ tốt khi làm việc và giải trí lâu dài.</p>
 
-            <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#000033', marginTop: '15px', marginBottom: '8px' }}>Bàn phím – Touchpad</h4>
-            <p style={{ fontSize: '14px', color: '#555', lineHeight: '1.6' }}>Bàn phím gõ êm, độ nảy tốt, thuận tiện khi soạn thảo văn bản trong thời gian dài. Touchpad nhạy và hỗ trợ đầy đủ các thao tác đa điểm.</p>
+            <h4>Bàn phím – Touchpad</h4>
+            <p>Bàn phím gõ êm, độ nảy tốt, thuận tiện khi soạn thảo văn bản trong thời gian dài. Touchpad nhạy và hỗ trợ đầy đủ các thao tác đa điểm.</p>
 
-            <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#000033', marginTop: '15px', marginBottom: '8px' }}>Âm thanh – Tản nhiệt</h4>
-            <p style={{ fontSize: '14px', color: '#555', lineHeight: '1.6' }}>Hệ thống loa cho chất lượng âm rõ ràng, đáp ứng tốt nhu cầu học và giải trí cơ bản. Máy được tối ưu tản nhiệt, giúp giữ hiệu năng ổn định khi sử dụng liên tục.</p>
+            <h4>Âm thanh – Tản nhiệt</h4>
+            <p>Hệ thống loa cho chất lượng âm rõ ràng, đáp ứng tốt nhu cầu học và giải trí cơ bản. Máy được tối ưu tản nhiệt, giúp giữ hiệu năng ổn định khi sử dụng liên tục.</p>
 
-            <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#000033', marginTop: '15px', marginBottom: '8px' }}>Pin và kết nối</h4>
-            <p style={{ fontSize: '14px', color: '#555', lineHeight: '1.6' }}>Thời lượng pin phù hợp cho một ngày làm việc nhẹ nhàng. Máy hỗ trợ đầy đủ cổng kết nối phổ biến như USB, HDMI, tai nghe…, dễ dàng tương thích với nhiều thiết bị.</p>
+            <h4>Pin và kết nối</h4>
+            <p>Thời lượng pin phù hợp cho một ngày làm việc nhẹ nhàng. Máy hỗ trợ đầy đủ cổng kết nối phổ biến như USB, HDMI, tai nghe…, dễ dàng tương thích với nhiều thiết bị.</p>
 
-            <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#000033', marginTop: '15px', marginBottom: '8px' }}>Chất lượng sản phẩm</h4>
-            <p style={{ fontSize: '14px', color: '#555', lineHeight: '1.6' }}>Laptop được kiểm tra kỹ 30 bước trước khi xuất bán, đảm bảo hoạt động ổn định. Máy sạch đẹp, không lỗi ẩn, dùng bền và tiết kiệm chi phí.</p>
+            <h4>Chất lượng sản phẩm</h4>
+            <p>Laptop được kiểm tra kỹ 30 bước trước khi xuất bán, đảm bảo hoạt động ổn định. Máy sạch đẹp, không lỗi ẩn, dùng bền và tiết kiệm chi phí.</p>
           </div>          
         </div>        
 
@@ -239,24 +262,27 @@ export default function ProductDetail() {
         <div className="pd-info-section">
           <div className="pd-price">
             <h3>Giá chỉ từ:</h3>
-            <span className="price-value">{Number(product.gia || product.price || 0).toLocaleString('vi-VN')}</span>
+            <span className="price-value">{basePrice.toLocaleString('vi-VN')}</span>
             <span className="price-unit">{product.tien_te || product.currency || 'VND'}</span>
           </div>
+
+          {eduVerified && (
+            <div className="edu-discount-badge">
+              <h3>Đã xác thực Edu</h3>
+              <p className="discount-amount">Giá chỉ còn: {discountedPrice.toLocaleString('vi-VN')} đ</p>
+              <p className="new-price">Đã giảm: -{eduDiscount.toLocaleString('vi-VN')} đ</p>
+            </div>
+          )}
+
           <div className="pd-color">
             <div className="pd-color-1">
               <h3>Tình trạng sản phẩm:</h3>
-              <span className="condition-value" style={{
-                padding: '6px 8px',
-                borderRadius: '4px',
-                color: {
+              <span className="condition-value" style={{ color: {
                   'like_new': '#2e7d32',
                   'good': '#856404',
                   'fair': '#c62828',
                   'new': '#155724'
-                }[product.tinh_trang] || '#333',
-                fontWeight: '600',
-                fontSize: '15px'
-              }}>
+                }[product.tinh_trang] || '#333' }}>
                 {
                   {
                     'like_new': 'Như mới',
@@ -279,9 +305,7 @@ export default function ProductDetail() {
                     'trang': '#333',
                     'do': '#dc3545',
                     'xanh': '#0066cc'
-                  }[product.mau_sac] || '#333',
-                  fontWeight: '600',
-                  fontSize: '16px'
+                  }[product.mau_sac] || '#333'
                 }}>
                   {
                     {
@@ -295,11 +319,7 @@ export default function ProductDetail() {
                   }
                 </span>
                 {product.mau_sac && (
-                  <div style={{
-                    width: '40px',
-                    height: '20px',
-                    borderRadius: '6px',
-                    border: '2px solid #ddd',
+                  <div className="color-box" style={{
                     backgroundColor: {
                       'den': '#1a1a1a',
                       'bac': '#c0c0c0',
@@ -307,8 +327,7 @@ export default function ProductDetail() {
                       'trang': '#f5f5f5',
                       'do': '#dc3545',
                       'xanh': '#0066cc'
-                    }[product.mau_sac] || '#ccc',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                    }[product.mau_sac] || '#ccc'
                   }} title={`Màu ${product.mau_sac}`} />
                 )}
               </div>
@@ -317,26 +336,35 @@ export default function ProductDetail() {
 
           <div className="pd-price-sinhvien">
             <h4>Xác thực Edu để nhận giá dành cho Học sinh/ Sinh viên:</h4>
-            <span className="price-sinhvien-value">
-              {Number((product.gia || product.price || 0) - 500000).toLocaleString('vi-VN')}
-            </span>
-            <span className="price-sinhvien-unit">  {product.tien_te || product.currency || 'VND'}</span>
+            {!eduVerified ? (
+              <>
+                <span className="price-sinhvien-value">
+                  {Number((basePrice - 500000)).toLocaleString('vi-VN')}
+                </span>
+                <span className="price-sinhvien-unit">  {product.tien_te || product.currency || 'VND'}</span>
 
-            <p>
-              <span className="price-sinhvien-bitru">Giá gốc: {Number(product.gia || product.price || 0).toLocaleString('vi-VN')}đ</span>
-              <span className="price-tru"> - 500.000đ</span>
-            </p>
-            
-            <div className="edu-verification-box">
-              <a href="/edu-verification" className="edu-verification-link">Xác thực ngay</a>
-            </div>
+                <p>
+                  <span className="price-sinhvien-bitru">Giá gốc: {basePrice.toLocaleString('vi-VN')}đ</span>
+                  <span className="price-tru"> - 500.000đ</span>
+                </p>
+                
+                <div className="edu-verification-box">
+                  <a href="/edu-verification" className="edu-verification-link">Xác thực ngay</a>
+                </div>
+              </>
+            ) : (
+              <div className="edu-verified-box">
+                <p className="price-verified-msg">✓ Bạn đã xác thực là học sinh/sinh viên</p>
+                <p className="price-verified-subtitle">Ưu đãi giảm giá đã được áp dụng</p>
+              </div>
+            )}
           </div>
 
           <div className="pd-actions">
             {product.so_luong && parseInt(product.so_luong) > 0 ? (
               <>
-                <div style={{ padding: '10px', backgroundColor: '#e8f5e9', borderRadius: '4px', textAlign: 'center' }}>
-                  <p style={{ margin: 0, color: '#2e7d32', fontWeight: '600' }}>
+                <div className="stock-available">
+                  <p>
                     ✓ Còn hàng ({parseInt(product.so_luong)} sản phẩm)
                   </p>
                 </div>
@@ -372,7 +400,7 @@ export default function ProductDetail() {
                   </button>
                 </div>
 
-                <div style={{ display: 'flex', gap: '12px' }}>
+                <div className="pd-buttons-row">
                   <button 
                     className="add-to-cart-btn" 
                     onClick={handleAddToCart}
@@ -398,61 +426,61 @@ export default function ProductDetail() {
                 </div>
               </>
             ) : (
-              <div style={{ padding: '16px', backgroundColor: '#ffebee', borderRadius: '6px', textAlign: 'center' }}>
-                <p style={{ color: '#c62828', fontWeight: '600', margin: 0, fontSize: '16px' }}>Sản phẩm hiện đã hết hàng</p>
+              <div className="stock-unavailable">
+                <p>Sản phẩm hiện đã hết hàng</p>
               </div>
             )}
           </div>
 
-          <div className="uudai" style={{ padding: '0', border: '1px solid #00003350', borderRadius: '8px', background: '#ffe9e9ff' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '5px', height: '50px', background: '#ff8989ff', borderRadius: '8px 8px 0 0' }}>
+          <div className="uudai">
+            <div className="uudai-header">
               <h3 className="uudai-title">
                 ƯU ĐÃI KHI MUA SẢN PHẨM
               </h3>
             </div>
-            <div style={{ marginLeft: '20px' }}>
-              <p style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <div className="uudai-content">
+              <div className="uudai-item">
                 <svg width="30" height="30" viewBox="0 0 32 32">
                   <circle cx="16" cy="16" r="16" fill="#ff7eb3" />
                   <text x="16" y="21" fontSize="16" fontWeight="bold" textAnchor="middle" fill="#fff">1</text>
                 </svg>
-                Miễn phí cài đặt phần mềm trọn đời              
-              </p>
-              <p style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <span>Miễn phí cài đặt phần mềm trọn đời</span>              
+              </div>
+              <div className="uudai-item">
                 <svg width="30" height="30" viewBox="0 0 32 32">
                   <circle cx="16" cy="16" r="16" fill="#ff7eb3" />
                   <text x="16" y="21" fontSize="16" fontWeight="bold" textAnchor="middle" fill="#fff">2</text>
                 </svg>
-                Tặng balo laptop chống sốc trị giá 150.000đ                
-              </p>
-              <p style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <span>Tặng balo laptop chống sốc trị giá 150.000đ</span>                
+              </div>
+              <div className="uudai-item">
                 <svg width="30" height="30" viewBox="0 0 32 32">
                   <circle cx="16" cy="16" r="16" fill="#ff7eb3" />
                   <text x="16" y="21" fontSize="16" fontWeight="bold" textAnchor="middle" fill="#fff">3</text>
                 </svg>
-                Tặng Sim/Esim VNSKY, có ngay 5GB data 5G/ngày              
-              </p>
-              <p style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <span>Tặng Sim/Esim VNSKY, có ngay 5GB data 5G/ngày</span>              
+              </div>
+              <div className="uudai-item">
                 <svg width="30" height="30" viewBox="0 0 32 32">
                   <circle cx="16" cy="16" r="16" fill="#ff7eb3" />
                   <text x="16" y="21" fontSize="16" fontWeight="bold" textAnchor="middle" fill="#fff">4</text>
                 </svg>
-                Giảm ngay 500.000đ cho Học sinh/ Sinh viên khi xác thực Edu                
-              </p>
-              <p style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <span>Giảm ngay 500.000đ cho Học sinh/ Sinh viên khi xác thực Edu</span>                
+              </div>
+              <div className="uudai-item">
                 <svg width="30" height="30" viewBox="0 0 32 32">
                   <circle cx="16" cy="16" r="16" fill="#ff7eb3" />
                   <text x="16" y="21" fontSize="16" fontWeight="bold" textAnchor="middle" fill="#fff">5</text>
                 </svg>
-                Nhận giá tốt nhất cho khách hàng B2B khi mua số lượng lớn                
-              </p>
-              <p style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <span>Nhận giá tốt nhất cho khách hàng B2B khi mua số lượng lớn</span>                
+              </div>
+              <div className="uudai-item">
                 <svg width="30" height="30" viewBox="0 0 32 32">
                   <circle cx="16" cy="16" r="16" fill="#ff7eb3" />
                   <text x="16" y="21" fontSize="16" fontWeight="bold" textAnchor="middle" fill="#fff">6</text>
                 </svg>
-                Miễn phí vệ sinh – tra keo tản nhiệt 12 tháng               
-              </p>
+                <span>Miễn phí vệ sinh – tra keo tản nhiệt 12 tháng</span>               
+              </div>
             </div>           
           </div>
 

@@ -61,6 +61,41 @@ export default function Orders() {
     }
   };
 
+  // Status progression flow: pending -> confirmed -> shipping -> completed
+  const getNextStatus = (currentStatus) => {
+    switch(currentStatus) {
+      case 'pending':
+        return 'confirmed';
+      case 'confirmed':
+        return 'shipping';
+      case 'shipping':
+        return 'completed';
+      case 'completed':
+        return 'completed'; // Cannot progress further
+      case 'canceled':
+        return 'canceled'; // Cannot change if cancelled
+      default:
+        return 'pending';
+    }
+  };
+
+  const canProgressStatus = (currentStatus) => {
+    return currentStatus !== 'completed' && currentStatus !== 'canceled';
+  };
+
+  const handleProgressStatus = async () => {
+    const nextStatus = getNextStatus(selectedOrder.trang_thai);
+    if (nextStatus !== selectedOrder.trang_thai) {
+      await handleUpdateOrderStatus(nextStatus);
+    }
+  };
+
+  const handleCancelOrder = async () => {
+    if (window.confirm('Bạn chắc chắn muốn hủy đơn hàng này?')) {
+      await handleUpdateOrderStatus('canceled');
+    }
+  };
+
   const handleUpdateOrderStatus = async (newStatus) => {
     try {
       setLoading(true);
@@ -84,33 +119,11 @@ export default function Orders() {
     }
   };
 
-  const handleUpdateNotes = async (notes) => {
-    try {
-      setLoading(true);
-      await apiFetch(`/orders/${selectedOrder.id}`, {
-        method: 'PUT',
-        body: { ghi_chu: notes }
-      });
-      
-      const updatedOrders = orders.map(o => 
-        o.id === selectedOrder.id ? { ...o, ghi_chu: notes } : o
-      );
-      setOrders(updatedOrders);
-      setSelectedOrder({ ...selectedOrder, ghi_chu: notes });
-      
-      setError('');
-    } catch (err) {
-      setError('Lỗi cập nhật ghi chú: ' + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="admin-panel">
       <div className="panel-header">
-        <button className="btn" onClick={loadOrders} disabled={loading}>
-          Tải lại
+        <button className="btn btn-primary" onClick={loadOrders} disabled={loading}>
+          {loading ? 'Đang tải...' : 'Tải lại'}
         </button>
       </div>
 
@@ -138,15 +151,14 @@ export default function Orders() {
             <th>Tổng tiền</th>
             <th>P.T. thanh toán</th>
             <th>Trạng thái</th>
-            <th>Hành động</th>
           </tr>
         </thead>
         <tbody>
           {filteredOrders.length === 0 ? (
-            <tr><td colSpan="8" style={{ textAlign: 'center', color: '#999' }}>Không có đơn nào</td></tr>
+            <tr><td colSpan="7" style={{ textAlign: 'center', color: '#999' }}>Không có đơn nào</td></tr>
           ) : (
             filteredOrders.map(o => (
-              <tr key={o.id}>
+              <tr key={o.id} onClick={() => setSelectedOrder(o)} style={{ cursor: 'pointer' }}>
                 <td>#{o.id}</td>
                 <td>{o.ten_nguoi_nhan || '-'}</td>
                 <td>{o.dien_thoai_nhan || '-'}</td>
@@ -170,15 +182,6 @@ export default function Orders() {
                     {getStatusLabel(o.trang_thai)}
                   </span>
                 </td>
-                <td>
-                  <button 
-                    className="btn" 
-                    onClick={() => setSelectedOrder(o)}
-                    style={{ padding: '5px 12px', fontSize: '12px', cursor: 'pointer' }}
-                  >
-                    Xem chi tiết
-                  </button>
-                </td>
               </tr>
             ))
           )}
@@ -187,95 +190,158 @@ export default function Orders() {
 
       {selectedOrder && (
         <div className="modal-overlay" onClick={() => setSelectedOrder(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{maxHeight: '85vh', overflowY: 'auto'}}>
-            <button className="close-btn" onClick={() => setSelectedOrder(null)}>✕</button>
-            <h3>Chi tiết đơn hàng #{selectedOrder.id}</h3>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Chi tiết đơn hàng #{selectedOrder.id}</h3>
+              <button className="close-btn" onClick={() => setSelectedOrder(null)}>✕</button>
+            </div>
             
-            <div style={{ marginTop: '20px', paddingBottom: '15px', borderBottom: '1px solid #e5e7eb' }}>
-              <h4>Thông tin giao hàng</h4>
-              <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px'}}>
-                <div>
-                  <p><strong>Tên nhận:</strong> {selectedOrder.ten_nguoi_nhan || '-'}</p>
-                  <p><strong>SĐT:</strong> {selectedOrder.dien_thoai_nhan || '-'}</p>
-                </div>
-                <div>
-                  <p><strong>Ngày đặt:</strong> {selectedOrder.tao_luc ? new Date(selectedOrder.tao_luc).toLocaleDateString('vi-VN') : '-'}</p>
-                  <p><strong>P.T. thanh toán:</strong> {selectedOrder.phuong_thuc_thanh_toan === 'cod' ? 'COD (Thanh toán khi nhận)' : 'Chuyển khoản ngân hàng'}</p>
-                </div>
+            <div className="modal-body">
+            
+            <div className="customer-info-section">
+              <div style={{marginBottom: '16px'}}>
+                <h4 style={{margin: '0', fontSize: '16px', fontWeight: '700', color: '#111827'}}>Thông tin giao hàng</h4>
               </div>
-              <p><strong>Địa chỉ:</strong> {selectedOrder.dia_chi_nhan || '-'}</p>
+              <div className="info-field">
+                <span className="info-label">Tên nhận:</span>
+                <span className="info-value">{selectedOrder.ten_nguoi_nhan || '-'}</span>
+              </div>
+              <div className="info-field">
+                <span className="info-label">SĐT:</span>
+                <span className="info-value">{selectedOrder.dien_thoai_nhan || '-'}</span>
+              </div>
+              <div className="info-field">
+                <span className="info-label">Ngày đặt:</span>
+                <span className="info-value">{selectedOrder.tao_luc ? new Date(selectedOrder.tao_luc).toLocaleDateString('vi-VN') : '-'}</span>
+              </div>
+              <div className="info-field">
+                <span className="info-label">P.T. thanh toán:</span>
+                <span className="info-value">{selectedOrder.phuong_thuc_thanh_toan === 'cod' ? 'COD (Thanh toán khi nhận)' : 'Chuyển khoản ngân hàng'}</span>
+              </div>
+              <div className="info-field">
+                <span className="info-label">Địa chỉ:</span>
+                <span className="info-value">{selectedOrder.dia_chi_nhan || '-'}</span>
+              </div>
+              <div className="info-field" style={{borderBottom: 'none'}}>
+                <span className="info-label">Ghi chú:</span>
+                <span className="info-value">{selectedOrder.ghi_chu || '-'}</span>
+              </div>
             </div>
 
-            <div style={{ marginTop: '20px', paddingBottom: '15px', borderBottom: '1px solid #e5e7eb' }}>
+            <div className="orders-section">
               <h4>Danh sách sản phẩm</h4>
-              <table className="data-table" style={{ marginTop: '10px', fontSize: '14px' }}>
-                <thead>
-                  <tr>
-                    <th>Sản phẩm</th>
-                    <th>Số lượng</th>
-                    <th>Giá</th>
-                    <th>Tổng cộng</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Array.isArray(selectedOrder.items) && selectedOrder.items.length > 0 ? (
-                    selectedOrder.items.map((item, i) => (
-                      <tr key={i}>
-                        <td>{item.ten || item.tieu_de || item.product_name || '-'}</td>
-                        <td style={{textAlign: 'center'}}>{item.so_luong || item.quantity || 0}</td>
-                        <td style={{textAlign: 'right'}}>{(item.gia || item.price || 0).toLocaleString('vi-VN')}₫</td>
-                        <td style={{textAlign: 'right', fontWeight: '600', color: '#d32f2f'}}>
-                          {(((item.so_luong || item.quantity || 1) * (item.gia || item.price || 0))).toLocaleString('vi-VN')}₫
+              {Array.isArray(selectedOrder.items) && selectedOrder.items.length > 0 ? (
+                <table className="orders-table">
+                  <thead>
+                    <tr>
+                      <th>Sản phẩm</th>
+                      <th style={{textAlign: 'center'}}>Số lượng</th>
+                      <th style={{textAlign: 'right'}}>Đơn giá</th>
+                      <th style={{textAlign: 'right'}}>Tổng cộng</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedOrder.items.map((item, i) => {
+                      const quantity = item.so_luong || item.quantity || 0;
+                      const unitPrice = item.don_gia || item.gia || item.gia_ban || item.price || item.don_gia || 0;
+                      // Use thanh_tien from order_items if available, otherwise calculate
+                      const itemTotal = item.thanh_tien || (quantity * unitPrice);
+                      return (
+                        <tr key={i}>
+                          <td>{item.ten || item.tieu_de || item.ten_san_pham || item.product_name || '-'}</td>
+                          <td style={{textAlign: 'center'}}>{quantity}</td>
+                          <td style={{textAlign: 'right'}}>{Number(unitPrice).toLocaleString('vi-VN')}₫</td>
+                          <td style={{textAlign: 'right', fontWeight: '600', color: '#d32f2f'}}>
+                            {Number(itemTotal).toLocaleString('vi-VN')}₫
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {(selectedOrder.giam_gia_edu || 0) > 0 && (
+                      <tr style={{borderTop: '2px solid #e5e7eb', background: '#fffbeb'}}>
+                        <td colSpan="3" style={{textAlign: 'right', paddingRight: '12px', fontWeight: '600', color: '#92400e'}}>Giảm giá EDU:</td>
+                        <td style={{textAlign: 'right', color: '#10b981', fontSize: '14px', paddingRight: '12px', fontWeight: '600'}}>
+                          -{Number(selectedOrder.giam_gia_edu || 0).toLocaleString('vi-VN')}₫
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr><td colSpan="4" style={{textAlign: 'center', color: '#999'}}>Không có sản phẩm</td></tr>
-                  )}
-                  <tr style={{borderTop: '2px solid #007bff', fontWeight: '600'}}>
-                    <td colSpan="3" style={{textAlign: 'right'}}>Tổng thanh toán:</td>
-                    <td style={{textAlign: 'right', color: '#d32f2f', fontSize: '16px'}}>
-                      {(selectedOrder.tong_tien || 0).toLocaleString('vi-VN')}₫
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                    )}
+                    <tr style={{borderTop: '2px solid #667eea', fontWeight: '600', background: '#f9fafb'}}>
+                      <td colSpan="3" style={{textAlign: 'right', paddingRight: '12px'}}>Tổng thanh toán:</td>
+                      <td style={{textAlign: 'right', color: '#667eea', fontSize: '16px', paddingRight: '12px'}}>
+                        {(selectedOrder.tong_tien || 0).toLocaleString('vi-VN')}₫
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              ) : (
+                <div className="empty-state">Không có sản phẩm</div>
+              )}
             </div>
 
-            <div style={{ marginTop: '20px', paddingBottom: '15px', borderBottom: '1px solid #e5e7eb' }}>
+            <div className="orders-section">
               <h4>Cập nhật trạng thái</h4>
-              <select 
-                value={selectedOrder.trang_thai || 'pending'}
-                onChange={(e) => handleUpdateOrderStatus(e.target.value)}
-                disabled={loading}
-                style={{ padding: '8px', borderRadius: '4px', border: '1px solid #d1d5db', width: '100%', maxWidth: '300px', cursor: 'pointer' }}
-              >
-                {statuses.filter(s => s.id !== 'all').map(s => (
-                  <option key={s.id} value={s.id}>{s.label}</option>
-                ))}
-              </select>
-              <p style={{fontSize: '12px', color: '#666', marginTop: '8px'}}>
-                Trạng thái hiện tại: <strong style={{color: getStatusColor(selectedOrder.trang_thai)}}>{getStatusLabel(selectedOrder.trang_thai)}</strong>
-              </p>
+              <div style={{marginBottom: '15px'}}>
+                <p style={{fontSize: '13px', color: '#6b7280', marginBottom: '10px'}}>
+                  Trạng thái hiện tại: <strong style={{color: getStatusColor(selectedOrder.trang_thai)}}>{getStatusLabel(selectedOrder.trang_thai)}</strong>
+                </p>
+              </div>
+              <div style={{display: 'flex', gap: '12px', flexWrap: 'wrap'}}>
+                <button
+                  onClick={handleProgressStatus}
+                  disabled={loading || !canProgressStatus(selectedOrder.trang_thai)}
+                  style={{
+                    padding: '10px 20px',
+                    background: canProgressStatus(selectedOrder.trang_thai) ? '#10b981' : '#d1d5db',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: canProgressStatus(selectedOrder.trang_thai) ? 'pointer' : 'not-allowed',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (canProgressStatus(selectedOrder.trang_thai) && !loading) {
+                      e.target.style.background = '#059669';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = canProgressStatus(selectedOrder.trang_thai) ? '#10b981' : '#d1d5db';
+                  }}
+                >
+                  {selectedOrder.trang_thai === 'completed' ? '✓ Hoàn thành' : '→ ' + getStatusLabel(getNextStatus(selectedOrder.trang_thai))}
+                </button>
+                <button
+                  onClick={handleCancelOrder}
+                  disabled={loading || selectedOrder.trang_thai === 'canceled' || selectedOrder.trang_thai === 'completed'}
+                  style={{
+                    padding: '10px 20px',
+                    background: (selectedOrder.trang_thai === 'canceled' || selectedOrder.trang_thai === 'completed') ? '#d1d5db' : '#ef4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: (selectedOrder.trang_thai === 'canceled' || selectedOrder.trang_thai === 'completed') ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (selectedOrder.trang_thai !== 'canceled' && selectedOrder.trang_thai !== 'completed' && !loading) {
+                      e.target.style.background = '#dc2626';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = (selectedOrder.trang_thai === 'canceled' || selectedOrder.trang_thai === 'completed') ? '#d1d5db' : '#ef4444';
+                  }}
+                >
+                  {selectedOrder.trang_thai === 'canceled' ? '✗ Đã hủy' : selectedOrder.trang_thai === 'completed' ? '✓ Hoàn thành (không hủy)' : '✕ Hủy đơn'}
+                </button>
+              </div>
             </div>
 
-            <div style={{ marginTop: '20px', paddingBottom: '15px' }}>
-              <h4>Ghi chú (nội bộ)</h4>
-              <textarea 
-                defaultValue={selectedOrder.ghi_chu || ''} 
-                placeholder="Ghi chú cho đơn hàng này..."
-                rows="3"
-                onBlur={(e) => {
-                  if (e.target.value !== (selectedOrder.ghi_chu || '')) {
-                    handleUpdateNotes(e.target.value);
-                  }
-                }}
-                disabled={loading}
-                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #d1d5db', fontFamily: 'inherit' }}
-              />
             </div>
 
-            <div style={{ marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+            <div className="modal-footer">
               <button className="btn" onClick={() => setSelectedOrder(null)}>Đóng</button>
             </div>
           </div>

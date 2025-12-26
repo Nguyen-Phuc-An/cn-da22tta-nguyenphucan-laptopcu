@@ -1,8 +1,6 @@
 .wishlists-page {
-  min-height: 100vh;
-  background: #f5f5f5;
+  min-height: 54vh;
   padding: 40px 20px;
-  margin-bottom: 60px;
 }
 
 .wishlists-container {
@@ -13,8 +11,7 @@
 .wishlists-page h1 {
   font-size: 32px;
   font-weight: 600;
-  margin-bottom: 30px;
-  color: #333;
+  color: #000033;
 }
 
 .alert {
@@ -64,14 +61,14 @@
 }
 
 .wishlists-empty a:hover {
-  background: #5568d3;
+  background: #000033;
 }
 
 .btn-back {
   display: inline-block;
   margin-top: 20px;
   padding: 12px 24px;
-  background: #667eea;
+  background: #000033;
   color: white;
   text-decoration: none;
   border-radius: 5px;
@@ -80,7 +77,7 @@
 }
 
 .btn-back:hover {
-  background: #5568d3;
+  background: #000033;
 }
 
 .wishlists-grid {
@@ -179,21 +176,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #667eea;
+  background: #000033;
   color: white;
 }
 
 .btn:hover {
-  background: #5568d3;
+  background: #000033;
 }
 
 .btn-view {
-  background: #667eea;
+  background: #000033;
   color: white;
 }
 
 .btn-view:hover {
-  background: #5568d3;
+  background: #000033;
 }
 
 .card-content .btn-remove {

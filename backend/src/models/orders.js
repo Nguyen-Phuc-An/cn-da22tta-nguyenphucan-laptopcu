@@ -13,7 +13,8 @@ async function createOrder({
   items = [], 
   chi_tiet_don_hang = [],
   currency = 'VND',
-  tong_tien
+  tong_tien,
+  giam_gia_edu = 0
 }) {
   const conn = await db.getConnection();
   try {
@@ -22,9 +23,10 @@ async function createOrder({
     const orderItems = items.length > 0 ? items : chi_tiet_don_hang;
     const total = tong_tien || orderItems.reduce((s, it) => s + Number(it.unit_price || it.gia_tại_thời_điểm_mua || it.gia) * Number(it.quantity || it.so_luong), 0);
     const pmethod = phuong_thuc_thanh_toan || payment_method;
+    const eduDiscount = giam_gia_edu || 0;
     const [resOrder] = await conn.query(
-      'INSERT INTO orders (khach_hang_id, ten_nguoi_nhan, dien_thoai_nhan, dia_chi_nhan, tong_tien, tien_te, phuong_thuc_thanh_toan, ghi_chu) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [userId, ten_nguoi_nhan, dien_thoai_nhan, dia_chi_nhan || shipping_address, total, currency, pmethod, ghi_chu]
+      'INSERT INTO orders (khach_hang_id, ten_nguoi_nhan, dien_thoai_nhan, dia_chi_nhan, tong_tien, giam_gia_edu, tien_te, phuong_thuc_thanh_toan, ghi_chu) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [userId, ten_nguoi_nhan, dien_thoai_nhan, dia_chi_nhan || shipping_address, total, eduDiscount, currency, pmethod, ghi_chu]
     );
     const orderId = resOrder.insertId;
     const itemValues = orderItems.map(it => [

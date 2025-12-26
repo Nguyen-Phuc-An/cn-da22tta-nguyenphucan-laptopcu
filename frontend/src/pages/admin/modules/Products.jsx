@@ -33,6 +33,8 @@ export default function Products() {
     mo_ta: ''
   });
   const [productImages, setProductImages] = useState([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmData, setDeleteConfirmData] = useState(null);
 
   // Load products
   useEffect(() => {
@@ -94,9 +96,10 @@ export default function Products() {
     try {
       const res = await apiFetch('/categories', {
         method: 'POST',
-        body: { name: categoryForm.name }
+        body: { ten: categoryForm.name }
       });
-      setCategories([...categories, res]);
+      const newCategory = { id: res.id, ten: categoryForm.name };
+      setCategories([...categories, newCategory]);
       setCategoryForm({ name: '' });
       addToast('Thêm danh mục thành công', 'success');
     } catch (err) {
@@ -112,9 +115,9 @@ export default function Products() {
     try {
       await apiFetch(`/categories/${editingCategory.id}`, {
         method: 'PUT',
-        body: { name: categoryForm.name }
+        body: { ten: categoryForm.name }
       });
-      setCategories(categories.map(c => c.id === editingCategory.id ? { ...c, name: categoryForm.name } : c));
+      setCategories(categories.map(c => c.id === editingCategory.id ? { ...c, ten: categoryForm.name } : c));
       setCategoryForm({ name: '' });
       setEditingCategory(null);
       addToast('Cập nhật danh mục thành công', 'success');
@@ -124,14 +127,12 @@ export default function Products() {
   };
 
   const handleDeleteCategory = async (id) => {
-    if (!confirm('Bạn chắc chắn muốn xóa danh mục này?')) return;
-    try {
-      await apiFetch(`/categories/${id}`, { method: 'DELETE' });
-      setCategories(categories.filter(c => c.id !== id));
-      addToast('Xóa danh mục thành công', 'success');
-    } catch (err) {
-      addToast('Lỗi xóa danh mục: ' + err.message, 'error');
-    }
+    setDeleteConfirmData({
+      type: 'category',
+      id,
+      name: categories.find(c => c.id === id)?.ten || 'danh mục'
+    });
+    setShowDeleteConfirm(true);
   };
 
   // Product functions
@@ -232,32 +233,6 @@ export default function Products() {
     }
   };
 
-  const handleDeleteProduct = async (id) => {
-    if (!confirm('Bạn chắc chắn muốn xóa sản phẩm này? Ảnh liên quan cũng sẽ bị xóa.')) return;
-    try {
-      // Delete all images of this product first
-      const product = products.find(p => p.id === id);
-      if (product && product.images && product.images.length > 0) {
-        for (const img of product.images) {
-          try {
-            if (img.id) {
-              await deleteImage(id, img.id);
-            }
-          } catch (err) {
-            console.error('Error deleting image:', err);
-          }
-        }
-      }
-      
-      // Then delete the product
-      await apiFetch(`/products/${id}`, { method: 'DELETE' });
-      setProducts(products.filter(p => p.id !== id));
-      addToast('Xóa sản phẩm thành công', 'success');
-    } catch (err) {
-      addToast('Lỗi xóa sản phẩm: ' + err.message, 'error');
-    }
-  };
-
   const getImageUrl = (product) => {
     // Use imageToSrc from productImages service (same as Home.jsx)
     if (product.images && Array.isArray(product.images) && product.images.length > 0) {
@@ -267,6 +242,48 @@ export default function Products() {
       return imageToSrc({ url: product.url });
     }
     return null;
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirmData) return;
+
+    try {
+      if (deleteConfirmData.type === 'category') {
+        await apiFetch(`/categories/${deleteConfirmData.id}`, { method: 'DELETE' });
+        setCategories(categories.filter(c => c.id !== deleteConfirmData.id));
+        addToast('Xóa danh mục thành công', 'success');
+      } else if (deleteConfirmData.type === 'product') {
+        const product = products.find(p => p.id === deleteConfirmData.id);
+        if (product && product.images && product.images.length > 0) {
+          for (const img of product.images) {
+            try {
+              if (img.id) {
+                await deleteImage(deleteConfirmData.id, img.id);
+              }
+            } catch (err) {
+              console.error('Error deleting image:', err);
+            }
+          }
+        }
+        await apiFetch(`/products/${deleteConfirmData.id}`, { method: 'DELETE' });
+        setProducts(products.filter(p => p.id !== deleteConfirmData.id));
+        addToast('Xóa sản phẩm thành công', 'success');
+      }
+    } catch (err) {
+      addToast(`Lỗi xóa ${deleteConfirmData.type === 'category' ? 'danh mục' : 'sản phẩm'}: ${err.message}`, 'error');
+    } finally {
+      setShowDeleteConfirm(false);
+      setDeleteConfirmData(null);
+    }
+  };
+
+  const handleDeleteProduct = async (id) => {
+    setDeleteConfirmData({
+      type: 'product',
+      id,
+      name: products.find(p => p.id === id)?.tieu_de || products.find(p => p.id === id)?.title || 'sản phẩm'
+    });
+    setShowDeleteConfirm(true);
   };
 
   return (
@@ -293,7 +310,7 @@ export default function Products() {
         >
           <option value="">Danh mục</option>
           {categories.map(c => (
-            <option key={c.id} value={c.id}>{c.ten || c.name}</option>
+            <option key={c.id} value={c.id}>{c.ten}</option>
           ))}
         </select>
         <select
@@ -381,10 +398,13 @@ export default function Products() {
       {showCategoryModal && (
         <div className="modal-overlay" onClick={() => setShowCategoryModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{minWidth: '500px'}}>
-            <button className="close-btn" onClick={() => setShowCategoryModal(false)}>✕</button>
-           
-            <div style={{ marginTop: '20px', marginBottom: '20px', overflowY: 'auto', height: '500px' }}>
-              <div style={{ display: 'flex', gap: '10px', marginBottom: '15px', position: 'sticky', top: '0', background: 'white'}}>
+            <div className="modal-header">
+              <h3>Quản lý danh mục</h3>
+              <button className="close-btn" onClick={() => setShowCategoryModal(false)}>✕</button>
+            </div>
+            
+            <div className="modal-body" style={{ padding: '0' }}>
+              <div style={{ padding: '15px', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: '0', background: 'white', zIndex: 10, display: 'flex', gap: '10px' }}>
                 <input
                   type="text"
                   placeholder="Tên danh mục"
@@ -412,47 +432,49 @@ export default function Products() {
                 )}
               </div>
 
-              <table className="data-table" style={{ fontSize: '14px' }}>
-                <thead>
-                  <tr>
-                    <th>Tên danh mục</th>
-                    <th style={{textAlign: 'center'}}>Hành động</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {categories.length === 0 ? (
-                    <tr><td colSpan="2" style={{ textAlign: 'center', color: '#999' }}>Không có danh mục nào</td></tr>
-                  ) : (
-                    categories.map(c => (
-                      <tr key={c.id}>
-                        <td>{c.ten || c.name}</td>
-                        <td>
-                          <button 
-                            className="btn" 
-                            onClick={() => {
-                              setEditingCategory(c);
-                              setCategoryForm({ name: c.ten || c.name });
-                            }}
-                            style={{width: '100%'}}
-                          >
-                            Sửa
-                          </button>
-                          <button 
-                            className="btn-danger" 
-                            onClick={() => handleDeleteCategory(c.id)}
-                            style={{width: '100%'}}
-                          >
-                            Xóa
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+              <div style={{ overflowY: 'auto', maxHeight: '400px' }}>
+                <table className="data-table" style={{ fontSize: '14px', margin: 0 }}>
+                  <thead style={{ position: 'sticky', top: 0, background: 'white', zIndex: 5 }}>
+                    <tr>
+                      <th>Tên danh mục</th>
+                      <th style={{textAlign: 'center'}}>Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {categories.length === 0 ? (
+                      <tr><td colSpan="2" style={{ textAlign: 'center', color: '#999' }}>Không có danh mục nào</td></tr>
+                    ) : (
+                      categories.map(c => (
+                        <tr key={c.id}>
+                          <td>{c.ten}</td>
+                          <td>
+                            <button 
+                              className="btn" 
+                              onClick={() => {
+                                setEditingCategory(c);
+                                setCategoryForm({ name: c.ten });
+                              }}
+                              style={{width: '100%'}}
+                            >
+                              Sửa
+                            </button>
+                            <button 
+                              className="btn-danger" 
+                              onClick={() => handleDeleteCategory(c.id)}
+                              style={{width: '100%'}}
+                            >
+                              Xóa
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginbottom: '10px' }}>
+            <div className="modal-footer">
               <button className="btn" onClick={() => setShowCategoryModal(false)}>Đóng</button>
             </div>
           </div>
@@ -462,11 +484,14 @@ export default function Products() {
       {/* PRODUCT MODAL */}
       {showProductModal && (
         <div className="modal-overlay" onClick={() => setShowProductModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{minWidth: '600px', maxHeight: '80vh', overflowY: 'auto'}}>
-            <button className="close-btn" onClick={() => setShowProductModal(false)}>✕</button>
-            <h3>{editingProduct ? 'Sửa sản phẩm' : 'Thêm sản phẩm mới'}</h3>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{minWidth: '600px'}}>
+            <div className="modal-header">
+              <h3>{editingProduct ? 'Sửa sản phẩm' : 'Thêm sản phẩm mới'}</h3>
+              <button className="close-btn" onClick={() => setShowProductModal(false)}>✕</button>
+            </div>
             
-            <div style={{ marginTop: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+            <div className="modal-body">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
               <div>
                 <label style={{fontWeight: '600', display: 'block', marginBottom: '5px'}}>Tiêu đề *</label>
                 <input
@@ -486,7 +511,7 @@ export default function Products() {
                 >
                   <option value="">-- Chọn danh mục --</option>
                   {categories.map(c => (
-                    <option key={c.id} value={c.id}>{c.ten || c.name}</option>
+                    <option key={c.id} value={c.id}>{c.ten}</option>
                   ))}
                 </select>
               </div>
@@ -635,11 +660,62 @@ export default function Products() {
               )}
             </div>
 
-            <div style={{ marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn" onClick={() => setShowProductModal(false)}>Hủy</button>
               <button className="btn btn-primary" onClick={handleSaveProduct}>
                 {editingProduct ? 'Cập nhật' : 'Thêm'}
               </button>
-              <button className="btn" onClick={() => setShowProductModal(false)}>Hủy</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {showDeleteConfirm && deleteConfirmData && (
+        <div className="modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{minWidth: '400px'}}>
+            <div style={{ padding: '30px', textAlign: 'center' }}>
+              <div style={{
+                width: '60px',
+                height: '60px',
+                margin: '0 auto 20px',
+                backgroundColor: '#fee2e2',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '28px'
+              }}>
+                ⚠️
+              </div>
+              
+              <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#111827' }}>
+                Xóa {deleteConfirmData.type === 'category' ? 'danh mục' : 'sản phẩm'}?
+              </h3>
+              
+              <p style={{ margin: '0 0 20px 0', color: '#6b7280', fontSize: '14px' }}>
+                Bạn chắc chắn muốn xóa <strong>"{deleteConfirmData.name}"</strong>?
+                {deleteConfirmData.type === 'product' && ' Ảnh liên quan cũng sẽ bị xóa.'}
+              </p>
+
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                <button
+                  className="btn"
+                  onClick={() => setShowDeleteConfirm(false)}
+                  style={{ minWidth: '120px' }}
+                >
+                  Hủy
+                </button>
+                <button
+                  className="btn-danger"
+                  onClick={handleConfirmDelete}
+                  style={{ minWidth: '120px' }}
+                >
+                  Xóa
+                </button>
+              </div>
             </div>
           </div>
         </div>

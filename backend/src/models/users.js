@@ -6,7 +6,7 @@ async function createUser({ email, name, passwordHash, role = 'customer', phone 
 }
 
 async function getUserById(id) {
-  const [rows] = await db.query('SELECT id, email, ten AS name, mat_khau AS mat_khau, vai_tro AS role, dien_thoai AS phone, dia_chi AS address, tao_luc AS created_at, cap_nhat_luc AS updated_at FROM users WHERE id = ?', [id]);
+  const [rows] = await db.query('SELECT id, email, ten AS name, mat_khau, vai_tro AS role, dien_thoai AS phone, dia_chi AS address, tao_luc AS created_at, cap_nhat_luc AS updated_at, edu_verified, edu_email, edu_mssv, edu_cccd, edu_school FROM users WHERE id = ?', [id]);
   return rows[0] || null;
 }
 
@@ -34,9 +34,9 @@ async function updateUser(id, { name, passwordHash, role, phone, address }) {
   return true;
 }
 
-async function deleteUser(id) {
-  await db.query('DELETE FROM users WHERE id = ?', [id]);
+async function deactivateUser(id) {
+  await db.query('UPDATE users SET is_active = 0 WHERE id = ?', [id]);
   return true;
 }
 
-module.exports = { createUser, getUserById, getUserByEmail, updateUser, deleteUser, listUsers };
+module.exports = { createUser, getUserById, getUserByEmail, updateUser, deactivateUser, listUsers };

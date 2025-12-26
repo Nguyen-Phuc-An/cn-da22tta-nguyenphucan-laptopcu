@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { apiFetch } from '../../../services/apiClient';
 import { ToastContext } from '../../../context/Toast';
-//import '../styles/StaffStyles.css';
-import '../Admin.css';
 
 export default function Staff() {
   const { addToast } = useContext(ToastContext);

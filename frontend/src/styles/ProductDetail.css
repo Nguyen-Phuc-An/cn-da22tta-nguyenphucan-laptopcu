@@ -198,6 +198,50 @@
   100% { transform: scale(1); }
 }
 .edu-verification-link:hover{
+  opacity: 0.8;
+}
+
+/* Edu Discount Badge */
+.edu-discount-badge {
+  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  color: white;
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin: 10px 0;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.edu-discount-badge h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.discount-amount {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 8px 0;
+  color: #ffeb3b;
+}
+
+.new-price {
+  font-size: 16px;
+  margin: 8px 0 0 0;
+  opacity: 0.95;
+}
+
+.edu-verified-box {
+  background: #e8f5e9;
+  border: 2px solid #4caf50;
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.edu-verified-box p {
+  margin: 0;
   text-decoration: none;
 }
 .pd-specs {
@@ -232,6 +276,159 @@
 .pd-specs li strong {
   font-weight: 600;
   color: #333;
+}
+
+/* Commitment Section */
+.camketsanpham {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #00003350;
+  border-radius: 8px;
+}
+
+.camketsanpham p {
+  margin: 8px 0;
+}
+
+/* Product Description Section */
+.product-description-section {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+
+.product-description-section h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #000033;
+  margin-top: 0;
+}
+
+.product-description-section h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #000033;
+  margin-top: 15px;
+  margin-bottom: 8px;
+}
+
+.product-description-section p {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.6;
+}
+
+.product-description-section ul {
+  font-size: 14px;
+  color: #555;
+  margin-left: 20px;
+  margin-top: 8px;
+}
+
+.product-description-section ul li {
+  margin: 4px 0;
+}
+
+/* Condition Value */
+.condition-value {
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* Color Display Box */
+.color-box {
+  width: 40px;
+  height: 20px;
+  border-radius: 6px;
+  border: 2px solid #ddd;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Price Student Section */
+.price-verified-msg {
+  color: #4caf50;
+  font-weight: 600;
+}
+
+.price-verified-subtitle {
+  font-size: 13px;
+  color: #666;
+  margin: 5px 0 0 0;
+}
+
+/* Stock Status Box */
+.stock-available {
+  padding: 10px;
+  background-color: #e8f5e9;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.stock-available p {
+  margin: 0;
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+.stock-unavailable {
+  padding: 16px;
+  background-color: #ffebee;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.stock-unavailable p {
+  color: #c62828;
+  font-weight: 600;
+  margin: 0;
+  font-size: 16px;
+}
+
+/* Buttons Row */
+.pd-buttons-row {
+  display: flex;
+  gap: 12px;
+}
+
+/* Benefits Section */
+.uudai {
+  padding: 0;
+  border: 1px solid #00003350;
+  border-radius: 8px;
+  background: #ffe9e9ff;
+}
+
+.uudai-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  height: 50px;
+  background: #ff8989ff;
+  border-radius: 8px 8px 0 0;
+}
+
+.uudai-content {
+  margin-left: 20px;
+}
+
+.uudai-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.uudai-item p {
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.uudai-item span {
+  flex: 1;
 }
 
 .pd-description h3 {

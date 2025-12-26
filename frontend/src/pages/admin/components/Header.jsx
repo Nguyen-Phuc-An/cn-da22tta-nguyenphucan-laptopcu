@@ -1,9 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { apiFetch } from '../../../services/apiClient';
 
 export default function Header({ userInfo, searchQuery, setSearchQuery, setToken }) {
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
   const displayName = (userInfo && (userInfo.ten || userInfo.name || userInfo.email)) || 'User';
   const initials = (displayName || 'U').charAt(0).toUpperCase();
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const data = await apiFetch('/admin/stats');
+        const newOrders = data.orders?.newOrdersCount || 0;
+        const newMessages = data.messages?.newMessagesCount || 0;
+        setNotificationCount(newOrders + newMessages);
+      } catch (err) {
+        console.error('Error loading notifications:', err);
+      }
+    };
+    
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000); // Refresh every 30 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogout = () => {
     setToken(null);
@@ -25,11 +44,7 @@ export default function Header({ userInfo, searchQuery, setSearchQuery, setToken
       <div className="header-actions">
         <button className="header-icon" title="Thông báo">
           🔔
-          <span className="badge">3</span>
-        </button>
-        <button className="header-icon" title="Tin nhắn">
-          💬
-          <span className="badge">5</span>
+          {notificationCount > 0 && <span className="badge">{notificationCount}</span>}
         </button>
 
         <div className="user-menu-container">
@@ -44,14 +59,14 @@ export default function Header({ userInfo, searchQuery, setSearchQuery, setToken
           {showUserMenu && (
             <div className="user-dropdown">
               <button onClick={() => alert('Hồ sơ cá nhân (sẽ triển khai)')}>
-                👤 Hồ sơ cá nhân
+                Hồ sơ cá nhân
               </button>
               <button onClick={() => alert('Đổi mật khẩu (sẽ triển khai)')}>
-                🔑 Đổi mật khẩu
+                Đổi mật khẩu
               </button>
               <hr />
               <button onClick={handleLogout}>
-                🚪 Đăng xuất
+                Đăng xuất
               </button>
             </div>
           )}

@@ -2,6 +2,9 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
+  min-height: 54vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .cart-container h1 {
@@ -13,8 +16,8 @@
 .cart-empty {
   text-align: center;
   padding: 60px 20px;
-  background: #f9f9f9;
   border-radius: 8px;
+  margin: auto;
 }
 
 .cart-empty p {
@@ -234,7 +237,7 @@
 /* Cart Summary */
 .cart-summary {
   position: sticky;
-  top: 100px;
+  padding: 20px 0;
   height: fit-content;
 }
 

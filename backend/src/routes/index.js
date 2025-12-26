@@ -65,7 +65,16 @@ router.delete('/users/:userId/images', auth, usersImagesCtrl.remove);
 try {
 	const adminCtrl = require('../controllers/adminController');
 	router.get('/admin/stats', auth, adminCtrl.stats);
+	router.get('/admin/orders/day', auth, adminCtrl.getDayOrders);
 } catch (e) { console.warn('admin stats route not added', e && e.message ? e.message : e); }
+
+// Admin: Edu Verifications
+try {
+	const authCtrl = require('../controllers/authController');
+	router.get('/admin/edu-verifications', auth, authCtrl.getAllEduVerifications);
+	router.post('/admin/edu-verifications/approve', auth, authCtrl.approveEduVerification);
+	router.post('/admin/edu-verifications/reject', auth, authCtrl.rejectEduVerification);
+} catch (e) { console.warn('edu verifications routes not added', e && e.message ? e.message : e); }
 
 /* Categories */
 router.post('/categories', categoriesCtrl.create);
@@ -98,7 +107,8 @@ router.delete('/orders/:id', ordersCtrl.remove);
 /* Reviews */
 router.post('/reviews', reviewsCtrl.createOrUpdate);
 router.get('/products/:productId/reviews', reviewsCtrl.listByProduct);
-router.delete('/products/:productId/reviews/:userId', reviewsCtrl.remove);
+router.get('/reviews/pending', auth, reviewsCtrl.getPending);
+router.delete('/products/:productId/reviews/:userId', auth, reviewsCtrl.remove);
 
 /* Wishlists */
 router.post('/wishlists', wishlistsCtrl.add);

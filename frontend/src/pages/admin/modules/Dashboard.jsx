@@ -3,7 +3,6 @@ import { apiFetch } from '../../../services/apiClient';
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
-  const [chartPeriod, setChartPeriod] = useState('day');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -42,27 +41,6 @@ export default function Dashboard() {
     );
   }
 
-  // Get chart data based on period
-  const getChartData = () => {
-    if (chartPeriod === 'day') {
-      return {
-        labels: stats.revenue7days?.map(r => new Date(r.date).toLocaleDateString('vi-VN')) || [],
-        data: stats.revenue7days?.map(r => r.total || 0) || []
-      };
-    } else if (chartPeriod === 'month') {
-      return {
-        labels: stats.revenue12months?.map(r => {
-          const [year, month] = r.month.split('-');
-          return `Tháng ${month}/${year}`;
-        }) || [],
-        data: stats.revenue12months?.map(r => r.total || 0) || []
-      };
-    }
-    return { labels: [], data: [] };
-  };
-
-  const chartData = getChartData();
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Stats Cards */}
@@ -81,9 +59,9 @@ export default function Dashboard() {
           </div>
 
           <div className="stat-card">
-            <div className="stat-label">Đơn hàng mới</div>
-            <div className="stat-value">{stats.orders?.pendingOrders || 0}</div>
-            <div className="stat-change">đơn chờ xử lý</div>
+            <div className="stat-label">Đơn hàng đã bán trong ngày</div>
+            <div className="stat-value">{stats.orders?.successfulOrdersToday || 0}</div>
+            <div className="stat-change">đơn hàng</div>
           </div>
 
           <div className="stat-card">
@@ -103,45 +81,14 @@ export default function Dashboard() {
       {/* Chart */}
       <div className="admin-panel">
         <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3 style={{ margin: '0', fontSize: '18px', fontWeight: '600', color: '#333' }}>Biểu đồ doanh thu</h3>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              onClick={() => setChartPeriod('day')}
-              style={{
-                padding: '8px 16px',
-                border: chartPeriod === 'day' ? 'none' : '1px solid #d1d5db',
-                borderRadius: '6px',
-                background: chartPeriod === 'day' ? '#667eea' : 'white',
-                color: chartPeriod === 'day' ? 'white' : '#666',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                transition: 'all 0.2s'
-              }}
-            >
-              7 ngày
-            </button>
-            <button
-              onClick={() => setChartPeriod('month')}
-              style={{
-                padding: '8px 16px',
-                border: chartPeriod === 'month' ? 'none' : '1px solid #d1d5db',
-                borderRadius: '6px',
-                background: chartPeriod === 'month' ? '#667eea' : 'white',
-                color: chartPeriod === 'month' ? 'white' : '#666',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                transition: 'all 0.2s'
-              }}
-            >
-              12 tháng
-            </button>
+          <div>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600', color: '#111827' }}>Tỷ lệ lượt mua theo hãng</h3>
+            <p style={{ margin: '0', fontSize: '13px', color: '#6b7280' }}>Hiển thị phân bố lượt mua của các hãng laptop</p>
           </div>
         </div>
 
-        {/* Line Chart SVG */}
-        {chartData.data.length > 0 ? (
+        {/* Bar Chart */}
+        {stats?.brandStats && stats.brandStats.length > 0 ? (
           <svg
             viewBox="0 0 1000 400"
             style={{
@@ -151,12 +98,12 @@ export default function Dashboard() {
               borderRadius: '8px'
             }}
           >
-            {/* Grid lines and labels */}
             {(() => {
               const padding = 60;
               const chartWidth = 1000 - padding * 2;
               const chartHeight = 400 - padding * 2;
-              const maxValue = Math.max(...chartData.data, 1);
+              const total = stats.brandStats.reduce((sum, item) => sum + item.count, 0);
+              const maxValue = Math.max(...stats.brandStats.map(b => b.count), 1);
 
               // Render grid lines
               const lines = [];
@@ -180,88 +127,88 @@ export default function Dashboard() {
                       fontSize="12"
                       fill="#999"
                     >
-                      {(value / 1000000).toFixed(0)}M
+                      {value}
                     </text>
                   </g>
                 );
               }
 
-              // Calculate points for line chart
-              const points = chartData.data.map((value, idx) => {
-                const x = padding + (chartWidth * idx) / (chartData.data.length - 1 || 1);
-                const y = padding + chartHeight - (chartHeight * value) / maxValue;
-                return { x, y, value, idx };
+              // Calculate bar positions
+              const barWidth = chartWidth / (stats.brandStats.length * 1.5);
+              const spacing = (chartWidth - barWidth * stats.brandStats.length) / (stats.brandStats.length - 1 || 1);
+              const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#00f2fe', '#43e97b', '#fa709a', '#fee140', '#30cfd0', '#330867'];
+              
+              const bars = stats.brandStats.map((brand, idx) => {
+                const x = padding + (barWidth + spacing) * idx;
+                const barHeight = (chartHeight * brand.count) / maxValue;
+                const y = padding + chartHeight - barHeight;
+                const percentage = ((brand.count / total) * 100).toFixed(1);
+                
+                return (
+                  <g key={`bar-${idx}`}>
+                    <rect
+                      x={x}
+                      y={y}
+                      width={barWidth}
+                      height={barHeight}
+                      fill={colors[idx % colors.length]}
+                      rx="4"
+                      style={{ cursor: 'pointer', transition: 'all 0.2s' }}
+                      onMouseOver={(e) => {
+                        e.target.style.filter = 'brightness(0.9)';
+                      }}
+                      onMouseOut={(e) => {
+                        e.target.style.filter = 'brightness(1)';
+                      }}
+                    />
+                    {/* X-axis labels */}
+                    <text
+                      x={x + barWidth / 2}
+                      y={padding + chartHeight + 25}
+                      textAnchor="middle"
+                      fontSize="12"
+                      fill="#666"
+                    >
+                      {brand.brand}
+                    </text>
+                    {/* Value on top of bar */}
+                    <text
+                      x={x + barWidth / 2}
+                      y={y - 5}
+                      textAnchor="middle"
+                      fontSize="11"
+                      fill="#667eea"
+                      fontWeight="600"
+                    >
+                      {percentage}%
+                    </text>
+                  </g>
+                );
               });
-
-              // Create path for line
-              let pathD = `M ${points[0]?.x || 0} ${points[0]?.y || 0}`;
-              for (let i = 1; i < points.length; i++) {
-                pathD += ` L ${points[i].x} ${points[i].y}`;
-              }
-
-              // Create area under line (gradient effect)
-              let areaD = `M ${points[0]?.x || 0} ${points[0]?.y || 0}`;
-              for (let i = 1; i < points.length; i++) {
-                areaD += ` L ${points[i].x} ${points[i].y}`;
-              }
-              areaD += ` L ${points[points.length - 1]?.x || 0} ${padding + chartHeight} L ${points[0]?.x || 0} ${padding + chartHeight} Z`;
 
               return (
                 <g>
                   {lines}
-                  {/* Area under line */}
-                  <path
-                    d={areaD}
-                    fill="#667eea"
-                    opacity="0.1"
-                  />
-                  {/* Line */}
-                  <path
-                    d={pathD}
-                    stroke="#667eea"
-                    strokeWidth="3"
-                    fill="none"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  {/* Points */}
-                  {points.map((point, idx) => (
-                    <g key={`point-${idx}`}>
-                      <circle
-                        cx={point.x}
-                        cy={point.y}
-                        r="4"
-                        fill="#667eea"
-                      />
-                      {/* X-axis labels */}
-                      <text
-                        x={point.x}
-                        y={padding + chartHeight + 25}
-                        textAnchor="middle"
-                        fontSize="12"
-                        fill="#666"
-                      >
-                        {chartData.labels[idx]}
-                      </text>
-                    </g>
-                  ))}
+                  {bars}
                   {/* Y-axis label */}
                   <text
                     x="20"
                     y="30"
                     fontSize="12"
                     fill="#999"
+                    fontWeight="600"
                   >
-                    VND
+                    Lượt mua
                   </text>
                   {/* X-axis label */}
                   <text
-                    x={1000 - 60}
+                    x={1000 - 80}
                     y={padding + chartHeight + 50}
                     fontSize="12"
                     fill="#999"
+                    fontWeight="600"
                   >
-                    {chartPeriod === 'day' ? 'Ngày' : 'Tháng'}
+                    Hãng
                   </text>
                 </g>
               );
@@ -275,15 +222,20 @@ export default function Dashboard() {
             justifyContent: 'center',
             backgroundColor: '#fafafa',
             borderRadius: '8px',
-            color: '#999'
+            color: '#999',
+            flexDirection: 'column',
+            gap: '10px'
           }}>
-            Chưa có dữ liệu
+            <p style={{ fontSize: '14px', margin: '0' }}>Chưa có dữ liệu lượt mua</p>
+            <p style={{ fontSize: '12px', margin: '0', color: '#bbb' }}>
+              Dữ liệu sẽ hiển thị khi có lượt mua sản phẩm
+            </p>
           </div>
         )}
 
         {/* Chart Legend */}
-        <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#f9fafb', borderRadius: '6px', fontSize: '13px', color: '#666' }}>
-          <strong>Giải thích:</strong> Biểu đồ hiển thị tổng doanh thu từ các đơn hàng đã hoàn thành ({chartPeriod === 'day' ? '7 ngày gần nhất' : '12 tháng gần nhất'})
+        <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#f9fafb', borderRadius: '6px', fontSize: '13px', color: '#666', borderLeft: '4px solid #667eea' }}>
+          <strong style={{ color: '#111827' }}>Giải thích:</strong> Biểu đồ cột thể hiện số lượt mua và tỷ lệ phần trăm của từng hãng laptop so với tổng số lượt mua trên hệ thống. Trục X là tên hãng, trục Y là số lượt mua.
         </div>
       </div>
     </div>

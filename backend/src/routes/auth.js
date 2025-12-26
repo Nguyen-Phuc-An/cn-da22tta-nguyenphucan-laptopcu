@@ -9,5 +9,7 @@ const router = express.Router();
 router.post('/register', avatarUpload.single('avatar'), authCtrl.register);
 router.post('/login', authCtrl.login);
 router.post('/change-password', auth, authCtrl.changePassword);
+router.post('/edu-verification', auth, authCtrl.eduVerification);
+router.get('/edu-status', auth, authCtrl.getEduStatus);
 
 module.exports = router;

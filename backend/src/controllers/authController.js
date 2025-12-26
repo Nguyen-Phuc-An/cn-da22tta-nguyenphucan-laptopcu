@@ -120,4 +120,182 @@ async function changePassword(req, res) {
   }
 }
 
-module.exports = { register, login, changePassword };
+// Verify Edu - Student/Teacher verification
+async function eduVerification(req, res) {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'unauthorized' });
+    }
+
+    const { edu_email, edu_mssv, edu_cccd, edu_school } = req.body || {};
+    if (!edu_email || !edu_mssv || !edu_cccd || !edu_school) {
+      return res.status(400).json({ error: 'all fields required: edu_email, edu_mssv, edu_cccd, edu_school' });
+    }
+
+    // Validate email format
+    if (typeof edu_email !== 'string' || !edu_email.includes('@')) {
+      return res.status(400).json({ error: 'invalid email format' });
+    }
+
+    // Validate MSSV (student ID)
+    if (String(edu_mssv).length < 8) {
+      return res.status(400).json({ error: 'student id must be at least 8 characters' });
+    }
+
+    // Validate ID/Passport
+    if (String(edu_cccd).length < 9) {
+      return res.status(400).json({ error: 'id/passport must be at least 9 characters' });
+    }
+
+    const db = require('../db');
+    
+    // Update user with edu info - set edu_verified to 0 (pending approval)
+    const query = `
+      UPDATE users 
+      SET edu_verified = 0, 
+          edu_email = ?, 
+          edu_mssv = ?, 
+          edu_cccd = ?, 
+          edu_school = ?,
+          cap_nhat_luc = NOW()
+      WHERE id = ?
+    `;
+    
+    const [result] = await db.query(query, [edu_email, edu_mssv, edu_cccd, edu_school, userId]);
+
+    console.log(`[eduVerification] User ${userId} edu verification submitted`);
+    
+    // Fetch updated user data to return
+    const selectQuery = `SELECT id, email, ten as name, edu_verified, edu_email, edu_mssv, edu_cccd, edu_school FROM users WHERE id = ?`;
+    const [updatedUser] = await db.query(selectQuery, [userId]);
+    
+    res.json({ 
+      success: true, 
+      message: 'edu verification submitted successfully. you will be verified within 24-48 hours',
+      user: updatedUser[0] || { edu_verified: 0, edu_email, edu_mssv, edu_cccd, edu_school }
+    });
+  } catch (err) {
+    console.error('[eduVerification] Error:', err);
+    res.status(500).json({ error: 'server error', details: err.message });
+  }
+}
+
+// Get Edu Status
+async function getEduStatus(req, res) {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'unauthorized' });
+    }
+
+    const user = await usersModel.getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'user not found' });
+    }
+
+    res.json({
+      edu_verified: user.edu_verified || false,
+      edu_email: user.edu_email || null,
+      edu_school: user.edu_school || null,
+      discount: user.edu_verified ? 500000 : 0
+    });
+  } catch (err) {
+    console.error('[getEduStatus] Error:', err);
+    res.status(500).json({ error: 'server error', details: err.message });
+  }
+}
+
+// Admin: Get All Edu Verifications
+async function getAllEduVerifications(req, res) {
+  try {
+    const db = require('../db');
+    
+    console.log('[getAllEduVerifications] User:', req.user);
+    
+    const query = `
+      SELECT id, email, ten as name, 
+             edu_email, edu_mssv, edu_cccd, edu_school, 
+             edu_verified, tao_luc as created_at
+      FROM users 
+      WHERE edu_email IS NOT NULL
+      ORDER BY tao_luc DESC
+    `;
+    
+    console.log('[getAllEduVerifications] Executing query');
+    const [verifications] = await db.query(query);
+    console.log('[getAllEduVerifications] Found', verifications.length, 'verifications');
+    res.json(verifications);
+  } catch (err) {
+    console.error('[getAllEduVerifications] Error:', err);
+    res.status(500).json({ error: 'server error', details: err.message });
+  }
+}
+
+// Admin: Approve Edu Verification
+async function approveEduVerification(req, res) {
+  try {
+    const { user_id } = req.body;
+    if (!user_id) {
+      return res.status(400).json({ error: 'user_id is required' });
+    }
+
+    const db = require('../db');
+    
+    const query = `
+      UPDATE users 
+      SET edu_verified = 1,
+          cap_nhat_luc = NOW()
+      WHERE id = ?
+    `;
+    
+    const [result] = await db.query(query, [user_id]);
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'user not found' });
+    }
+
+    console.log(`[approveEduVerification] User ${user_id} edu verification approved`);
+    res.json({ success: true, message: 'edu verification approved' });
+  } catch (err) {
+    console.error('[approveEduVerification] Error:', err);
+    res.status(500).json({ error: 'server error', details: err.message });
+  }
+}
+
+// Admin: Reject Edu Verification
+async function rejectEduVerification(req, res) {
+  try {
+    const { user_id } = req.body;
+    if (!user_id) {
+      return res.status(400).json({ error: 'user_id is required' });
+    }
+
+    const db = require('../db');
+    
+    const query = `
+      UPDATE users 
+      SET edu_verified = -1,
+          edu_email = NULL,
+          edu_mssv = NULL,
+          edu_cccd = NULL,
+          edu_school = NULL,
+          cap_nhat_luc = NOW()
+      WHERE id = ?
+    `;
+    
+    const [result] = await db.query(query, [user_id]);
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'user not found' });
+    }
+
+    console.log(`[rejectEduVerification] User ${user_id} edu verification rejected`);
+    res.json({ success: true, message: 'edu verification rejected' });
+  } catch (err) {
+    console.error('[rejectEduVerification] Error:', err);
+    res.status(500).json({ error: 'server error', details: err.message });
+  }
+}
+
+module.exports = { register, login, changePassword, eduVerification, getEduStatus, getAllEduVerifications, approveEduVerification, rejectEduVerification };

@@ -55,7 +55,7 @@ async function update(req, res) {
 async function remove(req, res) {
   try {
     const id = req.params.id;
-    await users.deleteUser(id);
+    await users.deactivateUser(id);
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 }

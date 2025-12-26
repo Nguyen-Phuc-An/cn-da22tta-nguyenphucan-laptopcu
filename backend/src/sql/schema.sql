@@ -17,9 +17,16 @@ CREATE TABLE IF NOT EXISTS users (
   vai_tro ENUM('admin','staff','customer') NOT NULL DEFAULT 'customer',
   dien_thoai VARCHAR(30) NOT NULL,
   dia_chi TEXT NOT NULL,
+  edu_verified TINYINT(1) DEFAULT 0,
+  edu_email VARCHAR(255) DEFAULT NULL,
+  edu_mssv VARCHAR(50) DEFAULT NULL,
+  edu_cccd VARCHAR(50) DEFAULT NULL,
+  edu_school VARCHAR(255) DEFAULT NULL,
+  is_active TINYINT(1) DEFAULT 1,
   tao_luc TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   cap_nhat_luc TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
 
 -- ==============================
 -- 2 USERS_IMAGES
@@ -127,6 +134,7 @@ CREATE TABLE IF NOT EXISTS orders (
   dien_thoai_nhan VARCHAR(30),
   dia_chi_nhan TEXT,
   tong_tien DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  giam_gia_edu DECIMAL(12,2) DEFAULT 0.00,
   tien_te CHAR(3) DEFAULT 'VND',
   trang_thai ENUM('pending','confirmed','shipping','completed','canceled') NOT NULL DEFAULT 'pending',
   phuong_thuc_thanh_toan VARCHAR(100),

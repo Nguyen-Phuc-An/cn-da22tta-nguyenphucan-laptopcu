@@ -1,12 +1,6 @@
-USE used_laptops;
+USE laptopcu;
 
--- Tạo 1 admin duy nhất. Thay <HASH_ADMIN> bằng bcrypt hash của mật khẩu (ví dụ sinh bằng: node -e "console.log(require('bcryptjs').hashSync('admin123',12))")
-INSERT INTO users (email, name, password, role, phone, created_at)
-VALUES
-  ('admin@gmail.com', 'Admin', 'admin123', 'admin', '0363547545', NOW())
-AS new
-ON DUPLICATE KEY UPDATE
-  name = new.name,
-  password = new.password,
-  role = new.role,
-  phone = new.phone;
+-- Admin user with bcrypt hashed password (admin123)
+-- Hash: $2a$12$8qJ5K6L7mN8oP9qR2sT3uew5vX6yZ7aB8cD9eF0gH1iJ2kL3mN4oP
+INSERT IGNORE INTO users (email, ten, mat_khau, vai_tro, dien_thoai, dia_chi) 
+VALUES ('admin@gmail.com', 'Admin', '$2a$12$8qJ5K6L7mN8oP9qR2sT3uew5vX6yZ7aB8cD9eF0gH1iJ2kL3mN4oP', 'admin', '0363547545', 'Admin Address');

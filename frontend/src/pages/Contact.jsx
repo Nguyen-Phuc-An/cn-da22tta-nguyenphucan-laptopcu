@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { createContact } from '../services/contacts';
 import { ToastContext } from '../context/ToastContext';
+import '../styles/Contact.css';
 
 export default function Contact() {
   const { addToast } = useContext(ToastContext);
@@ -42,54 +43,54 @@ export default function Contact() {
   };
 
   return (
-    <div style={{ padding: '0 40px', maxWidth: '1200px', margin: '0 auto', marginTop: '-10px'}}>
-      <h1 style={{ fontSize: '2.5rem', marginBottom: '10px', color: '#333', textAlign: 'center' }}>Liên hệ với chúng tôi</h1>
+    <div className="contact-container">
+      <h1>Liên hệ với chúng tôi</h1>
       
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', marginBottom: '40px' }}>
+      <div className="contact-content">
         {/* Contact Info */}
-        <div>
-          <h2 style={{ fontSize: '1.5rem', marginBottom: '20px', color: '#1414a7' }}>Thông tin liên hệ</h2>
+        <div className="contact-info">
+          <h2>Thông tin liên hệ</h2>
           
-          <div style={{ marginBottom: '25px' }}>
-            <h3 style={{ marginBottom: '8px', color: '#333' }}>📍 Địa chỉ</h3>
-            <p style={{ color: '#555', fontSize: '1.1rem' }}>
-              123 Đường Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh, Việt Nam
+          <div className="contact-info-item">
+            <h3>📍 Địa chỉ</h3>
+            <p>
+              330/13 Quốc lộ 53, Hòa Hảo, Hưng Mỹ, Vĩnh Long
             </p>
           </div>
 
-          <div style={{ marginBottom: '25px' }}>
-            <h3 style={{ marginBottom: '8px', color: '#333' }}>📞 Điện thoại</h3>
-            <p style={{ color: '#555', fontSize: '1.1rem' }}>
-              <a href="tel:0123456789" style={{ color: '#1414a7', textDecoration: 'none' }}>
-                (+84) 123 456 789
+          <div className="contact-info-item">
+            <h3>📞 Điện thoại</h3>
+            <p>
+              <a href="tel:0123456789">
+                (+84) 363 547 545
               </a>
             </p>
           </div>
 
-          <div style={{ marginBottom: '25px' }}>
-            <h3 style={{ marginBottom: '8px', color: '#333' }}>📧 Email</h3>
-            <p style={{ color: '#555', fontSize: '1.1rem' }}>
-              <a href="mailto:info@anlaptopcu.com" style={{ color: '#1414a7', textDecoration: 'none' }}>
-                info@anlaptopcu.com
+          <div className="contact-info-item">
+            <h3>📧 Email</h3>
+            <p>
+              <a href="mailto:info@anlaptopcu.com">
+                anphuc1203@gmail.com
               </a>
             </p>
           </div>
 
-          <div>
-            <h3 style={{ marginBottom: '8px', color: '#333' }}>🕐 Giờ hoạt động</h3>
-            <p style={{ color: '#555', fontSize: '1.1rem' }}>
-              Thứ Hai - Chủ Nhật: 9:00 AM - 9:00 PM
+          <div className="contact-info-item">
+            <h3>🕐 Giờ hoạt động</h3>
+            <p>
+              Thứ Hai - Chủ Nhật: 7:00 AM - 9:00 PM
             </p>
           </div>
         </div>
 
         {/* Contact Form */}
-        <div>
-          <h2 style={{ fontSize: '1.5rem', marginBottom: '20px', color: '#1414a7' }}>Gửi tin nhắn</h2>
+        <div className="contact-form">
+          <h2>Gửi tin nhắn</h2>
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', color: '#333' }}>
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>
                 Họ và tên *
               </label>
               <input
@@ -99,18 +100,11 @@ export default function Contact() {
                 onChange={handleChange}
                 required
                 disabled={loading}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '1rem'
-                }}
               />
             </div>
 
-            <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', color: '#333' }}>
+            <div className="form-group">
+              <label>
                 Email *
               </label>
               <input
@@ -120,18 +114,11 @@ export default function Contact() {
                 onChange={handleChange}
                 required
                 disabled={loading}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '1rem'
-                }}
               />
             </div>
 
-            <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', color: '#333' }}>
+            <div className="form-group">
+              <label>
                 Số điện thoại
               </label>
               <input
@@ -140,18 +127,11 @@ export default function Contact() {
                 value={formData.phone}
                 onChange={handleChange}
                 disabled={loading}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '1rem'
-                }}
               />
             </div>
 
-            <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', color: '#333' }}>
+            <div className="form-group">
+              <label>
                 Tiêu đề *
               </label>
               <input
@@ -161,18 +141,11 @@ export default function Contact() {
                 onChange={handleChange}
                 required
                 disabled={loading}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '1rem'
-                }}
               />
             </div>
 
-            <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', color: '#333' }}>
+            <div className="form-group">
+              <label>
                 Nội dung *
               </label>
               <textarea
@@ -181,38 +154,13 @@ export default function Contact() {
                 onChange={handleChange}
                 required
                 disabled={loading}
-                rows="5"
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '1rem',
-                  fontFamily: 'inherit'
-                }}
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              style={{
-                padding: '12px 20px',
-                backgroundColor: loading ? '#ccc' : '#1414a7',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                fontSize: '1.1rem',
-                fontWeight: '500',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                transition: 'background-color 0.3s'
-              }}
-              onMouseOver={(e) => {
-                if (!loading) e.target.style.backgroundColor = '#0d0d7f';
-              }}
-              onMouseOut={(e) => {
-                if (!loading) e.target.style.backgroundColor = '#1414a7';
-              }}
+              className="submit-button"
             >
               {loading ? 'Đang gửi...' : 'Gửi tin nhắn'}
             </button>

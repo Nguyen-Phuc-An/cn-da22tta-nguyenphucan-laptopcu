@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { getAllContacts, deleteContact } from '../../../services/contacts';
+import { getAllContacts } from '../../../services/contacts';
 import { ToastContext } from '../../../context/ToastContext';
-import '../styles/Contacts.css';
 
 export default function Contacts() {
   const { addToast } = useContext(ToastContext);
@@ -25,20 +24,6 @@ export default function Contacts() {
   useEffect(() => {
     fetchContacts();
   }, [fetchContacts]);
-
-  const handleDelete = async (id) => {
-    if (window.confirm('Bạn chắc chắn muốn xóa liên hệ này?')) {
-      try {
-        await deleteContact(id);
-        setContacts(contacts.filter(c => c.id !== id));
-        setSelectedContact(null);
-        addToast('Xóa liên hệ thành công', 'success');
-      } catch (error) {
-        console.error('Error deleting contact:', error);
-        addToast('Không thể xóa liên hệ', 'error');
-      }
-    }
-  };
 
   if (loading) {
     return <div className="contacts-container"><p>Đang tải...</p></div>;
@@ -81,22 +66,6 @@ export default function Contacts() {
         <div className="contacts-detail">
           {selectedContact ? (
             <div>
-              <div className="detail-header">
-                <div>
-                  <h3>{selectedContact.ten}</h3>
-                  <p className="detail-date">
-                    {new Date(selectedContact.tao_luc).toLocaleString('vi-VN')}
-                  </p>
-                </div>
-                <button
-                  className="delete-btn"
-                  onClick={() => handleDelete(selectedContact.id)}
-                  title="Xóa liên hệ"
-                >
-                  🗑️ Xóa
-                </button>
-              </div>
-
               <div className="detail-info">
                 <div className="info-row">
                   <label>Email:</label>

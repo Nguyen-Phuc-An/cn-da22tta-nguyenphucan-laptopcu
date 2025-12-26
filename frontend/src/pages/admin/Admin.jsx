@@ -8,6 +8,7 @@ import Banners from './modules/Banners';
 import Chat from './modules/Chat';
 import Staff from './modules/Staff';
 import Contacts from './modules/Contacts';
+import EduVerifications from './modules/EduVerifications';
 import ProfileModal from './modals/ProfileModal';
 import ChangePasswordModal from './modals/ChangePasswordModal';
 import { apiFetch } from '../../services/apiClient';
@@ -70,53 +71,7 @@ export default function Admin() {
 
   return (
     <div className="admin-container">
-      {/* HEADER - FIXED TOP */}
-      <header className="admin-header">
-        <div className="header-actions">
-          <button 
-            className="icon-btn" 
-            title="Thông báo"
-            onClick={() => setActiveModule('orders')}
-          >
-            🔔
-            {pendingOrders > 0 && <span className="badge">{pendingOrders}</span>}
-          </button>
-          <button 
-            className="icon-btn" 
-            title="Tin nhắn"
-            onClick={() => setActiveModule('chat')}
-          >
-            💬
-            {unreadMessages > 0 && <span className="badge">{unreadMessages}</span>}
-          </button>
-
-          <div className="user-menu-wrapper">
-            <button
-              className="user-btn"
-              onClick={() => setShowUserMenu(!showUserMenu)}
-            >
-              <span className="user-avatar">{userInitial}</span>
-              <span className="user-name">{displayName}</span>
-            </button>
-            {showUserMenu && (
-              <div className="user-dropdown">
-                <button onClick={() => { setShowProfileModal(true); setShowUserMenu(false); }}>
-                  👤 Hồ sơ cá nhân
-                </button>
-                <button onClick={() => { setShowPasswordModal(true); setShowUserMenu(false); }}>
-                  🔐 Đổi mật khẩu
-                </button>
-                <hr />
-                <button onClick={handleLogout} className="logout-btn">
-                  🚪 Đăng xuất
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* LAYOUT: SIDEBAR + CONTENT */}
+      {/* LAYOUT: SIDEBAR + MAIN */}
       <div className="admin-layout">
         {/* SIDEBAR */}
         <aside className="admin-sidebar">
@@ -166,6 +121,12 @@ export default function Admin() {
             >
               Liên hệ
             </button>
+            <button
+              className={`menu-item ${activeModule === 'edu-verifications' ? 'active' : ''}`}
+              onClick={() => setActiveModule('edu-verifications')}
+            >
+              Xác thực Edu
+            </button>
             {isAdmin && (
               <button
                 className={`menu-item ${activeModule === 'staff' ? 'active' : ''}`}
@@ -179,6 +140,52 @@ export default function Admin() {
 
         {/* MAIN CONTENT */}
         <main className="admin-main">
+          {/* HEADER */}
+          <header className="admin-header">
+            <div className="header-actions">
+              <button 
+                className="icon-btn" 
+                title="Thông báo"
+                onClick={() => setActiveModule('orders')}
+              >
+                🔔
+                {pendingOrders > 0 && <span className="badge">{pendingOrders}</span>}
+              </button>
+              <button 
+                className="icon-btn" 
+                title="Tin nhắn"
+                onClick={() => setActiveModule('chat')}
+              >
+                💬
+                {unreadMessages > 0 && <span className="badge">{unreadMessages}</span>}
+              </button>
+
+              <div className="user-menu-wrapper">
+                <button
+                  className="user-btn"
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                >
+                  <span className="user-avatar">{userInitial}</span>
+                  <span className="user-name">{displayName}</span>
+                </button>
+                {showUserMenu && (
+                  <div className="user-dropdown">
+                    <button onClick={() => { setShowProfileModal(true); setShowUserMenu(false); }}>
+                      👤 Hồ sơ cá nhân
+                    </button>
+                    <button onClick={() => { setShowPasswordModal(true); setShowUserMenu(false); }}>
+                      🔐 Đổi mật khẩu
+                    </button>
+                    <hr />
+                    <button onClick={handleLogout} className="logout-btn">
+                      🚪 Đăng xuất
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </header>
+
           {/* CONTENT AREA */}
           <div className="admin-content">
             {activeModule === 'dashboard' && <Dashboard />}
@@ -188,6 +195,7 @@ export default function Admin() {
             {activeModule === 'banners' && <Banners />}
             {activeModule === 'chat' && <Chat />}
             {activeModule === 'contacts' && <Contacts />}
+            {activeModule === 'edu-verifications' && <EduVerifications />}
             {activeModule === 'staff' && isAdmin && <Staff />}
           </div>
         </main>

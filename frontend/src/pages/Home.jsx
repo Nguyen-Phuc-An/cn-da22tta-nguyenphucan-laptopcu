@@ -40,7 +40,7 @@ export default function Home() {
   const [favourites, setFavourites] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [displayCount, setDisplayCount] = useState(20); // 5 rows × 5 products per row
+  const [displayCount, setDisplayCount] = useState(10); // 5 rows × 5 products per row
 
   // filter UI state
   const [activeCriterion, setActiveCriterion] = useState(null); // which criterion panel is open
@@ -68,7 +68,7 @@ export default function Home() {
 
   // Reset display count when filters change
   useEffect(() => {
-    setDisplayCount(20);
+    setDisplayCount(10);
   }, [selectedCategory, filters, priceSort, priceRange, searchQuery]);
 
   // Load search query from sessionStorage on mount
@@ -487,7 +487,7 @@ export default function Home() {
           {displayCount < visibleProducts.length && (
             <div style={{ textAlign: 'center', marginTop: '30px', marginBottom: '30px' }}>
               <button
-                onClick={() => setDisplayCount(prev => prev + 20)}
+                onClick={() => setDisplayCount(prev => prev + 10)}
                 style={{
                   padding: '12px 24px',
                   backgroundColor: '#007bff',
@@ -502,7 +502,7 @@ export default function Home() {
                 onMouseEnter={(e) => e.target.style.backgroundColor = '#0056b3'}
                 onMouseLeave={(e) => e.target.style.backgroundColor = '#007bff'}
               >
-                Xem thêm + {Math.min(20, visibleProducts.length - displayCount)} sản phẩm
+                Xem thêm + {Math.min(10, visibleProducts.length - displayCount)} sản phẩm
               </button>
             </div>
           )}

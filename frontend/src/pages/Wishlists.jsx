@@ -4,6 +4,7 @@ import { ToastContext } from '../context/Toast';
 import { listWishlist, removeFromWishlist } from '../api/wishlists';
 import { listImages as listProductImages } from '../api/productImages';
 import { imageToSrc, normalizeImages } from '../services/productImages';
+import Footer from '../components/Footer';
 import '../styles/Wishlists.css';
 
 function decodeJwt(token) {
@@ -28,14 +29,12 @@ export default function Wishlists() {
   const userId = userInfo?.id;
 
   const [wishlistItems, setWishlistItems] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (!userId) return;
     (async () => {
       try {
-        setLoading(true);
         setError('');
         const data = await listWishlist(userId);
         const items = Array.isArray(data) ? data : (data && data.data ? data.data : []);
@@ -59,8 +58,6 @@ export default function Wishlists() {
         setError('Lỗi tải danh sách yêu thích');
         addToast('Lỗi tải danh sách yêu thích', 'error');
         console.error(err);
-      } finally {
-        setLoading(false);
       }
     })();
   }, [userId, addToast]);
@@ -79,19 +76,23 @@ export default function Wishlists() {
 
   if (!token) {
     return (
-      <section className="wishlists-page">
-        <div className="wishlists-container">
-          <div className="wishlists-empty">
-            <h2>Danh sách yêu thích</h2>
-            <p>Bạn chưa đăng nhập. Vui lòng <a href="/">quay lại trang chủ</a> để đăng nhập.</p>
+      <>
+        <section className="wishlists-page">
+          <div className="wishlists-container">
+            <div className="wishlists-empty">
+              <h2>Danh sách yêu thích</h2>
+              <p>Bạn chưa đăng nhập. Vui lòng <a href="/">quay lại trang chủ</a> để đăng nhập.</p>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+        <Footer />
+      </>
     );
   }
 
   return (
-    <section className="wishlists-page">
+    <>
+      <section className="wishlists-page">
       <div className="wishlists-container">
         <h1>Danh sách yêu thích</h1>
 
@@ -151,5 +152,7 @@ export default function Wishlists() {
         )}
       </div>
     </section>
+    <Footer />
+    </>
   );
 }
