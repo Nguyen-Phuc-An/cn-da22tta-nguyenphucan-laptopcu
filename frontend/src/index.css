@@ -64,6 +64,11 @@ h1 {
   padding: 0 16px;
 }
 
+/* User pages - add padding-top to account for fixed header */
+.container.user-container {
+  padding-top: 80px;
+}
+
 /* Header */
 .site-header {
   display: flex;
@@ -74,7 +79,7 @@ h1 {
   width: 100%;
   background: linear-gradient(0deg, #1414a7, #000033);
   box-shadow: 0 2px 8px rgba(15,23,42,0.04);
-  position: sticky;
+  position: fixed;
   top: 0;
   z-index: 1000;
 }
@@ -245,7 +250,6 @@ h1 {
 
 .app main.container {
   flex: 1 1 auto;
-  padding: 0 0;
 }
 
 /* Footer */

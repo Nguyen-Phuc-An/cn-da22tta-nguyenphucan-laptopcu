@@ -144,7 +144,12 @@ export default function App() {
         }
         handleSetToken(null);
       }} />
-        <main className="container">
+        {(() => {
+          const p = typeof window !== 'undefined' ? window.location.pathname : '';
+          const isAdminPage = p && p.startsWith('/admin') && isOperator;
+          const containerClass = isAdminPage ? 'container' : 'container user-container';
+          return (
+            <main className={containerClass}>
           {/* Simple pathname routing: /admin for admin dashboard, /product/:id for product detail, /profile for user profile, /wishlists for wishlist, /cart for cart, /checkout for checkout, /order-success/:id for order success (pretty URLs) */}
           {(() => {
             const p = typeof window !== 'undefined' ? window.location.pathname : '';
@@ -183,7 +188,9 @@ export default function App() {
             }
             return <Home />;
           })()}
-        </main>
+            </main>
+          );
+        })()}
         {/* hide footer on admin dashboard (for admins), product detail, profile page, wishlists page, cart, checkout, and order success; show footer for customers even if path is /admin */}
         {(() => {
           const p = typeof window !== 'undefined' ? window.location.pathname : '';

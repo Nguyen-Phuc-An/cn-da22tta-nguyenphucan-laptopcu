@@ -74,6 +74,7 @@ export default function Banners() {
       return;
     }
     try {
+      // For text-only updates or no image change
       const payload = {
         tieu_de: bannerForm.title,
         link: bannerForm.link,
@@ -89,14 +90,34 @@ export default function Banners() {
         setBanners(banners.map(b => b.id === editingBanner.id ? { ...b, ...payload } : b));
         alert('Cập nhật banner thành công');
       } else {
-        const res = await apiFetch('/banners', {
-          method: 'POST',
-          body: payload
-        });
-        // res contains { id }, need to fetch full banner data
-        const newBanner = await apiFetch(`/banners/${res.id}`);
-        setBanners([...banners, newBanner]);
-        alert('Thêm banner thành công');
+        // Check if we have a new image file to upload
+        const fileInput = document.querySelector('input[type="file"][accept="image/*"]');
+        if (bannerImagePreview && fileInput && fileInput.files.length > 0) {
+          // For new banner with image: use FormData
+          const formData = new FormData();
+          formData.append('tieu_de', bannerForm.title);
+          formData.append('link', bannerForm.link);
+          formData.append('vi_tri', parseInt(bannerForm.position) || 0);
+          formData.append('trang_thai', bannerForm.status);
+          formData.append('hinh_anh', fileInput.files[0]);
+
+          // Use apiFetch which handles token and API base correctly
+          const res = await apiFetch('/banners', {
+            method: 'POST',
+            body: formData,
+            isFormData: true
+          });
+          setBanners([...banners, res]);
+          alert('Thêm banner thành công');
+        } else {
+          // Text-only banner without image
+          const res = await apiFetch('/banners', {
+            method: 'POST',
+            body: payload
+          });
+          setBanners([...banners, res]);
+          alert('Thêm banner thành công');
+        }
       }
       setShowBannerModal(false);
     } catch (err) {
