@@ -2,12 +2,13 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Copy package files first (for better layer caching)
 COPY package*.json ./
 
-RUN npm cache clean --force && \
-    npm install --legacy-peer-deps --no-optional --prefer-offline || \
-    npm install --legacy-peer-deps --no-optional
+# Install dependencies
+RUN npm ci --only=production || npm install --legacy-peer-deps --prefer-offline
 
+# Copy app code
 COPY . .
 
 EXPOSE 3000

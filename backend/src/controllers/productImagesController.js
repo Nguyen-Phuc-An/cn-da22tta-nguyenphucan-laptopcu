@@ -7,6 +7,7 @@ const { absUploadDir } = require('../middlewares/upload');
 // upload files via multer before calling this handler
 async function upload(req, res) {
   try {
+    console.log('[productImages.upload] START - productId:', req.params.productId, 'files received:', req.files?.length || 0);
     const productId = req.params.productId;
     const product = await products.getProductById(productId);
     if (!product) return res.status(404).json({ error: 'product not found' });

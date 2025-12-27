@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { apiFetch } from '../../../services/apiClient';
 import { imageToSrc, normalizeImages } from '../../../services/productImages';
-import { listImages as listProductImages, deleteImage } from '../../../api/productImages';
+import { listImages as listProductImages, deleteImage, uploadImages } from '../../../api/productImages';
 import { ToastContext } from '../../../context/Toast';
 
 export default function Products() {
@@ -26,7 +26,12 @@ export default function Products() {
     cpu: '',
     ram: '',
     o_cung: '',
+    kich_thuoc_man_hinh: '',
+    card_do_hoa: '',
+    mau_sac: '',
+    do_phan_giai: '',
     gia: '',
+    tien_te: 'VND',
     so_luong: '',
     tinh_trang: 'like_new',
     trang_thai: 'available',
@@ -145,16 +150,21 @@ export default function Products() {
         cpu: product.cpu || '',
         ram: product.ram || '',
         o_cung: product.o_cung || '',
+        kich_thuoc_man_hinh: product.kich_thuoc_man_hinh || '',
+        card_do_hoa: product.card_do_hoa || '',
+        mau_sac: product.mau_sac || '',
+        do_phan_giai: product.do_phan_giai || '',
         gia: product.gia || '',
+        tien_te: product.tien_te || 'VND',
         so_luong: product.so_luong || '',
         tinh_trang: product.tinh_trang || 'like_new',
         trang_thai: product.trang_thai || 'available',
         mo_ta: product.mo_ta || ''
       });
-      // Load existing images
+      // Load existing images with full_url from server
       const existingImages = product.images ? product.images.map(img => {
-        const url = typeof img === 'string' ? img : imageToSrc(img || {});
-        return { type: 'existing', url, id: img.id };
+        const url = img.full_url || (typeof img === 'string' ? img : imageToSrc(img || {}));
+        return { type: 'existing', url, id: img.id || img.ma };
       }) : [];
       setProductImages(existingImages);
     } else {
@@ -165,7 +175,12 @@ export default function Products() {
         cpu: '',
         ram: '',
         o_cung: '',
+        kich_thuoc_man_hinh: '',
+        card_do_hoa: '',
+        mau_sac: '',
+        do_phan_giai: '',
         gia: '',
+        tien_te: 'VND',
         so_luong: '',
         tinh_trang: 'like_new',
         trang_thai: 'available',
@@ -177,16 +192,18 @@ export default function Products() {
   };
 
   const handleProductImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
+    const files = Array.from(e.target.files || []);
+    
+    files.forEach(file => {
       const reader = new FileReader();
       reader.onload = (event) => {
-        setProductImages([...productImages, { type: 'new', url: event.target.result, file }]);
+        setProductImages(prev => [...prev, { type: 'new', url: event.target.result, file }]);
       };
       reader.readAsDataURL(file);
-      // Reset input
-      e.target.value = '';
-    }
+    });
+    
+    // Reset input
+    e.target.value = '';
   };
 
   const handleRemoveProductImage = (index) => {
@@ -205,41 +222,96 @@ export default function Products() {
         cpu: productForm.cpu,
         ram: productForm.ram,
         o_cung: productForm.o_cung,
+        kich_thuoc_man_hinh: productForm.kich_thuoc_man_hinh,
+        card_do_hoa: productForm.card_do_hoa,
+        mau_sac: productForm.mau_sac,
+        do_phan_giai: productForm.do_phan_giai,
         gia: parseInt(productForm.gia) || 0,
+        tien_te: productForm.tien_te,
         so_luong: parseInt(productForm.so_luong) || 0,
         tinh_trang: productForm.tinh_trang,
         trang_thai: productForm.trang_thai,
         mo_ta: productForm.mo_ta
       };
 
+      let productId = editingProduct?.id;
+      
+      // Save/update product info
       if (editingProduct) {
         await apiFetch(`/products/${editingProduct.id}`, {
           method: 'PUT',
           body: payload
         });
-        setProducts(products.map(p => p.id === editingProduct.id ? { ...p, ...payload } : p));
         addToast('Cập nhật sản phẩm thành công', 'success');
       } else {
         const res = await apiFetch('/products', {
           method: 'POST',
           body: payload
         });
-        setProducts([...products, res]);
+        productId = res.id;
         addToast('Thêm sản phẩm thành công', 'success');
       }
+
+      // Upload new images if any
+      const newImages = productImages.filter(img => img.type === 'new' && img.file);
+      
+      if (newImages.length > 0 && productId) {
+        try {
+          const filesToUpload = newImages.map(img => img.file);
+          await uploadImages(productId, filesToUpload);
+          addToast('Ảnh đã được tải lên thành công', 'success');
+        } catch (err) {
+          console.error('Error uploading images:', err);
+          addToast('Lỗi tải ảnh: ' + err.message, 'error');
+        }
+      }
+      
+      // Reload product with updated images
+      try {
+        const updatedProduct = await apiFetch(`/products/${productId}`);
+        const imgs = await listProductImages(productId).catch(() => []);
+        
+        // Map images correctly
+        updatedProduct.images = Array.isArray(imgs) ? imgs.map(img => ({
+          id: img.id || img.ma,
+          url: img.full_url || img.url || img.duong_dan || '',
+          duong_dan: img.duong_dan || img.url || ''
+        })) : [];
+        
+        if (editingProduct) {
+          setProducts(products.map(p => p.id === productId ? updatedProduct : p));
+        } else {
+          setProducts([...products, updatedProduct]);
+        }
+        setFilteredProducts(products => 
+          editingProduct 
+            ? products.map(p => p.id === productId ? updatedProduct : p)
+            : [...products, updatedProduct]
+        );
+      } catch (err) {
+        console.error('Error reloading product:', err);
+      }
+
       setShowProductModal(false);
+      setProductImages([]);
     } catch (err) {
       addToast('Lỗi lưu sản phẩm: ' + err.message, 'error');
+      console.error('handleSaveProduct error:', err);
     }
   };
 
   const getImageUrl = (product) => {
-    // Use imageToSrc from productImages service (same as Home.jsx)
     if (product.images && Array.isArray(product.images) && product.images.length > 0) {
       const first = product.images[0];
-      return imageToSrc(typeof first === 'string' ? { url: first } : (first || {}));
-    } else if (typeof product.url === 'string' && product.url) {
-      return imageToSrc({ url: product.url });
+      
+      // If image object has full_url from server, use it directly
+      if (typeof first === 'object' && first?.full_url) {
+        return first.full_url;
+      }
+      
+      // Otherwise use imageToSrc service
+      const imgData = typeof first === 'string' ? { url: first } : (first || {});
+      return imageToSrc(imgData);
     }
     return null;
   };
@@ -254,20 +326,27 @@ export default function Products() {
         addToast('Xóa danh mục thành công', 'success');
       } else if (deleteConfirmData.type === 'product') {
         const product = products.find(p => p.id === deleteConfirmData.id);
+        
+        // Delete all images associated with product
         if (product && product.images && product.images.length > 0) {
           for (const img of product.images) {
             try {
-              if (img.id) {
-                await deleteImage(deleteConfirmData.id, img.id);
+              const imgId = img.id || img.ma;
+              if (imgId) {
+                await deleteImage(deleteConfirmData.id, imgId).catch(err => {
+                  console.warn('Image delete via API failed, continuing...', err);
+                });
               }
             } catch (err) {
               console.error('Error deleting image:', err);
             }
           }
         }
+        
+        // Delete product (backend should cascade delete images)
         await apiFetch(`/products/${deleteConfirmData.id}`, { method: 'DELETE' });
         setProducts(products.filter(p => p.id !== deleteConfirmData.id));
-        addToast('Xóa sản phẩm thành công', 'success');
+        addToast('Xóa sản phẩm và các hình ảnh thành công', 'success');
       }
     } catch (err) {
       addToast(`Lỗi xóa ${deleteConfirmData.type === 'category' ? 'danh mục' : 'sản phẩm'}: ${err.message}`, 'error');
@@ -547,13 +626,76 @@ export default function Products() {
               </div>
 
               <div>
-                <label style={{fontWeight: '600', display: 'block', marginBottom: '5px'}}>Giá (VND)</label>
+                <label style={{fontWeight: '600', display: 'block', marginBottom: '5px'}}>Kích thước màn hình</label>
+                <input
+                  type="text"
+                  placeholder="Ví dụ: 15.6 inch"
+                  value={productForm.kich_thuoc_man_hinh}
+                  onChange={(e) => setProductForm({...productForm, kich_thuoc_man_hinh: e.target.value})}
+                  style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px' }}
+                />
+              </div>
+
+              <div>
+                <label style={{fontWeight: '600', display: 'block', marginBottom: '5px'}}>Card đồ họa</label>
+                <input
+                  type="text"
+                  placeholder="Ví dụ: NVIDIA GeForce RTX 3060"
+                  value={productForm.card_do_hoa}
+                  onChange={(e) => setProductForm({...productForm, card_do_hoa: e.target.value})}
+                  style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px' }}
+                />
+              </div>
+
+              <div>
+                <label style={{fontWeight: '600', display: 'block', marginBottom: '5px'}}>Màu sắc</label>
+                <select
+                  value={productForm.mau_sac}
+                  onChange={(e) => setProductForm({...productForm, mau_sac: e.target.value})}
+                  style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px' }}
+                >
+                  <option value="">-- Chọn màu --</option>
+                  <option value="den">Đen</option>
+                  <option value="bac">Bạc</option>
+                  <option value="xam">Xám</option>
+                  <option value="trang">Trắng</option>
+                  <option value="do">Đỏ</option>
+                  <option value="xanh">Xanh</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{fontWeight: '600', display: 'block', marginBottom: '5px'}}>Độ phân giải</label>
+                <input
+                  type="text"
+                  placeholder="Ví dụ: 1920x1080"
+                  value={productForm.do_phan_giai}
+                  onChange={(e) => setProductForm({...productForm, do_phan_giai: e.target.value})}
+                  style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px' }}
+                />
+              </div>
+
+              <div>
+                <label style={{fontWeight: '600', display: 'block', marginBottom: '5px'}}>Giá</label>
                 <input
                   type="number"
                   value={productForm.gia}
                   onChange={(e) => setProductForm({...productForm, gia: e.target.value})}
                   style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px' }}
                 />
+              </div>
+
+              <div>
+                <label style={{fontWeight: '600', display: 'block', marginBottom: '5px'}}>Tiền tệ</label>
+                <select
+                  value={productForm.tien_te}
+                  onChange={(e) => setProductForm({...productForm, tien_te: e.target.value})}
+                  style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px' }}
+                >
+                  <option value="VND">VND (Đồng)</option>
+                  <option value="USD">USD (Đô la)</option>
+                  <option value="EUR">EUR (Euro)</option>
+                </select>
               </div>
 
               <div>
@@ -608,6 +750,7 @@ export default function Products() {
               <label style={{fontWeight: '600', display: 'block', marginBottom: '5px'}}>Hình ảnh sản phẩm</label>
               <input
                 type="file"
+                multiple
                 accept="image/*"
                 onChange={handleProductImageChange}
                 style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px' }}

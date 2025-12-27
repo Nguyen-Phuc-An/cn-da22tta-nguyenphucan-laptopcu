@@ -1,0 +1,419 @@
+### API Test Collection for LaptopCu
+### Base URL: http://localhost:3000/api
+### Dùng REST Client extension trong VS Code để test
+
+@baseUrl = http://localhost:3000/api
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3MDk2NzE5NDUsImV4cCI6MTcwOTc1ODM0NX0.V_qV5_YvLXfW3_3U-P-6C0hQ1hMdZ4xZ1Z1Z1Z1Z1Z8
+
+## ==================== AUTHENTICATION ====================
+
+### 1. Register - Đăng ký tài khoản
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123",
+  "name": "Test User"
+}
+
+### 2. Login - Đăng nhập
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@gmail.com",
+  "password": "admin123"
+}
+
+### 3. Verify Email
+POST {{baseUrl}}/auth/verify-email
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "verificationCode": "123456"
+}
+
+## ==================== USERS ====================
+
+### 4. Get All Users - Lấy danh sách users
+GET {{baseUrl}}/users
+
+### 5. Get User By ID - Lấy thông tin user
+GET {{baseUrl}}/users/1
+
+### 6. Create User - Tạo user
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "email": "newuser@example.com",
+  "name": "New User",
+  "password": "password123",
+  "phone": "0987654321",
+  "address": "123 Main St"
+}
+
+### 7. Update User - Sửa thông tin user
+PUT {{baseUrl}}/users/2
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Updated Name",
+  "phone": "0912345678",
+  "address": "456 Oak Ave"
+}
+
+### 8. Delete User - Xóa user
+DELETE {{baseUrl}}/users/2
+Authorization: Bearer {{token}}
+
+## ==================== USER IMAGES ====================
+
+### 9. Get User Images - Lấy ảnh của user
+GET {{baseUrl}}/users/1/images
+
+### 10. Get Main User Image - Lấy ảnh đại diện
+GET {{baseUrl}}/users/1/images/main
+
+### 11. Set Main User Image - Đặt ảnh đại diện
+POST {{baseUrl}}/users/1/images/main
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "imageId": 1
+}
+
+### 12. Delete User Image - Xóa ảnh user
+DELETE {{baseUrl}}/users/1/images
+Authorization: Bearer {{token}}
+
+## ==================== CATEGORIES ====================
+
+### 13. Get All Categories - Lấy danh sách danh mục
+GET {{baseUrl}}/categories
+
+### 14. Get Category By ID - Lấy danh mục theo ID
+GET {{baseUrl}}/categories/1
+
+### 15. Create Category - Tạo danh mục
+POST {{baseUrl}}/categories
+Content-Type: application/json
+
+{
+  "name": "New Category"
+}
+
+### 16. Update Category - Sửa danh mục
+PUT {{baseUrl}}/categories/1
+Content-Type: application/json
+
+{
+  "name": "Updated Category"
+}
+
+### 17. Delete Category - Xóa danh mục
+DELETE {{baseUrl}}/categories/1
+
+## ==================== PRODUCTS ====================
+
+### 18. Get All Products - Lấy danh sách sản phẩm
+GET {{baseUrl}}/products
+
+### 19. Get Product By ID - Lấy chi tiết sản phẩm
+GET {{baseUrl}}/products/1
+
+### 20. Create Product - Tạo sản phẩm
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+  "title": "New Laptop",
+  "category_id": 1,
+  "cpu": "Intel i7",
+  "ram": "16GB",
+  "o_cung": "512GB SSD",
+  "kich_thuoc_man_hinh": "15.6 inch",
+  "card_do_hoa": "RTX 3060",
+  "mau_sac": "Silver",
+  "do_phan_giai": "1920x1080",
+  "gia": "15000000",
+  "tien_te": "VND",
+  "so_luong": 5,
+  "tinh_trang": "like_new",
+  "trang_thai": "available",
+  "mo_ta": "High performance laptop"
+}
+
+### 21. Update Product - Sửa sản phẩm
+PUT {{baseUrl}}/products/1
+Content-Type: application/json
+
+{
+  "title": "Updated Laptop",
+  "gia": "16000000",
+  "so_luong": 3
+}
+
+### 22. Delete Product - Xóa sản phẩm
+DELETE {{baseUrl}}/products/1
+Authorization: Bearer {{token}}
+
+## ==================== PRODUCT IMAGES ====================
+
+### 23. Get Product Images - Lấy ảnh sản phẩm
+GET {{baseUrl}}/products/1/images
+
+### 24. Upload Product Images - Upload ảnh sản phẩm
+POST {{baseUrl}}/products/1/images
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+Authorization: Bearer {{token}}
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="images"; filename="image1.jpg"
+Content-Type: image/jpeg
+
+< ./path/to/image1.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 25. Delete Product Image - Xóa ảnh sản phẩm
+DELETE {{baseUrl}}/products/1/images/1
+Authorization: Bearer {{token}}
+
+## ==================== ORDERS ====================
+
+### 26. Get All Orders - Lấy danh sách đơn hàng
+GET {{baseUrl}}/orders
+
+### 27. Get Order By ID - Lấy chi tiết đơn hàng
+GET {{baseUrl}}/orders/1
+
+### 28. Get User Orders - Lấy đơn hàng của user
+GET {{baseUrl}}/users/1/orders
+
+### 29. Create Order - Tạo đơn hàng
+POST {{baseUrl}}/orders
+Content-Type: application/json
+
+{
+  "user_id": 1,
+  "items": [
+    {
+      "product_id": 1,
+      "quantity": 2,
+      "price": "15000000"
+    }
+  ],
+  "total_price": "30000000",
+  "status": "pending"
+}
+
+### 30. Update Order - Sửa đơn hàng
+PUT {{baseUrl}}/orders/1
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "product_id": 1,
+      "quantity": 3,
+      "price": "15000000"
+    }
+  ],
+  "total_price": "45000000"
+}
+
+### 31. Update Order Status - Cập nhật trạng thái đơn hàng
+PUT {{baseUrl}}/orders/1/status
+Content-Type: application/json
+
+{
+  "status": "processing"
+}
+
+### 32. Delete Order - Xóa đơn hàng
+DELETE {{baseUrl}}/orders/1
+Authorization: Bearer {{token}}
+
+## ==================== REVIEWS ====================
+
+### 33. Create/Update Review - Tạo hoặc sửa đánh giá
+POST {{baseUrl}}/reviews
+Content-Type: application/json
+
+{
+  "product_id": 1,
+  "user_id": 1,
+  "rating": 5,
+  "comment": "Great product!",
+  "title": "Excellent"
+}
+
+### 34. Get Product Reviews - Lấy đánh giá sản phẩm
+GET {{baseUrl}}/products/1/reviews
+
+### 35. Get Pending Reviews - Lấy đánh giá chưa duyệt
+GET {{baseUrl}}/reviews/pending
+Authorization: Bearer {{token}}
+
+### 36. Delete Review - Xóa đánh giá
+DELETE {{baseUrl}}/products/1/reviews/1
+Authorization: Bearer {{token}}
+
+## ==================== WISHLISTS ====================
+
+### 37. Add to Wishlist - Thêm vào yêu thích
+POST {{baseUrl}}/wishlists
+Content-Type: application/json
+
+{
+  "user_id": 1,
+  "product_id": 1
+}
+
+### 38. Get Wishlist - Lấy danh sách yêu thích
+GET {{baseUrl}}/users/1/wishlists
+
+### 39. Remove from Wishlist - Xóa khỏi yêu thích
+DELETE {{baseUrl}}/users/1/wishlists/1
+
+## ==================== BANNERS ====================
+
+### 40. Get All Banners - Lấy danh sách banner
+GET {{baseUrl}}/banners
+
+### 41. Create Banner - Tạo banner
+POST {{baseUrl}}/banners
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+Authorization: Bearer {{token}}
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="title"
+
+New Banner
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="link"
+
+https://example.com
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="hinh_anh"; filename="banner.jpg"
+Content-Type: image/jpeg
+
+< ./path/to/banner.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 42. Update Banner - Sửa banner
+PUT {{baseUrl}}/banners/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "Updated Banner",
+  "link": "https://updated.com"
+}
+
+### 43. Delete Banner - Xóa banner
+DELETE {{baseUrl}}/banners/1
+Authorization: Bearer {{token}}
+
+## ==================== MESSAGES/CHAT ====================
+
+### 44. Get Chat Users - Lấy danh sách user chat
+GET {{baseUrl}}/messages/chat/users
+Authorization: Bearer {{token}}
+
+### 45. Get Chat History - Lấy lịch chat với user
+GET {{baseUrl}}/messages/chat/user/2
+Authorization: Bearer {{token}}
+
+### 46. Send Message - Gửi tin nhắn
+POST {{baseUrl}}/messages/chat
+Content-Type: application/json
+
+{
+  "from_user_id": 1,
+  "to_user_id": 2,
+  "message": "Hello!"
+}
+
+## ==================== CONTACTS ====================
+
+### 47. Create Contact - Tạo liên hệ
+POST {{baseUrl}}/contacts
+Content-Type: application/json
+
+{
+  "name": "Contact Name",
+  "email": "contact@example.com",
+  "phone": "0987654321",
+  "message": "Contact message"
+}
+
+### 48. Get All Contacts - Lấy danh sách liên hệ
+GET {{baseUrl}}/contacts
+Authorization: Bearer {{token}}
+
+### 49. Get Contact By ID - Lấy chi tiết liên hệ
+GET {{baseUrl}}/contacts/1
+Authorization: Bearer {{token}}
+
+### 50. Delete Contact - Xóa liên hệ
+DELETE {{baseUrl}}/contacts/1
+Authorization: Bearer {{token}}
+
+## ==================== ADMIN STATS ====================
+
+### 51. Get Admin Stats - Lấy thống kê admin
+GET {{baseUrl}}/admin/stats
+Authorization: Bearer {{token}}
+
+### 52. Get Day Orders - Lấy đơn hàng theo ngày
+GET {{baseUrl}}/admin/orders/day
+Authorization: Bearer {{token}}
+
+## ==================== EDU VERIFICATION ====================
+
+### 53. Get Edu Verifications - Lấy danh sách xác minh edu
+GET {{baseUrl}}/admin/edu-verifications
+Authorization: Bearer {{token}}
+
+### 54. Approve Edu Verification - Duyệt xác minh edu
+POST {{baseUrl}}/admin/edu-verifications/approve
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "userId": 1
+}
+
+### 55. Reject Edu Verification - Từ chối xác minh edu
+POST {{baseUrl}}/admin/edu-verifications/reject
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "userId": 1,
+  "reason": "Invalid document"
+}
+
+## ==================== DEBUG ENDPOINTS ====================
+
+### 56. Check Uploads Directory - Kiểm tra thư mục uploads
+GET {{baseUrl}}/debug/uploads
+
+### 57. Test Write Permission - Test quyền ghi file
+POST {{baseUrl}}/debug/uploads/test-write
+
+### 58. Test Upload - Test upload file
+POST {{baseUrl}}/debug/uploads/upload-test
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="images"; filename="test.jpg"
+Content-Type: image/jpeg
+
+< ./path/to/test.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--

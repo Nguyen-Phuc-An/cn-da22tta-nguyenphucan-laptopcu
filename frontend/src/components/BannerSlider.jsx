@@ -54,20 +54,23 @@ export default function BannerSlider() {
 
   // Get banner image URL
   const getBannerImageUrl = (banner) => {
-    if (!banner) return '/uploads/products/default.jpg';
+    if (!banner || !banner.duong_dan) return '/uploads/products/default.jpg';
     
-    // Banner image is stored in duong_dan field
-    let imagePath = banner.duong_dan || banner.url || '';
-    if (!imagePath) return '/uploads/products/default.jpg';
+    let imagePath = banner.duong_dan;
     
-    // If it's a relative path, prepend API base
-    if (!imagePath.startsWith('http') && !imagePath.startsWith('data:')) {
-      const apiBase = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
-      // Remove /api from base if present
-      const baseUrl = apiBase.replace('/api', '');
-      imagePath = `${baseUrl}/${imagePath}`;
+    // If it's already absolute URL, return as-is
+    if (imagePath.startsWith('http') || imagePath.startsWith('data:')) {
+      return imagePath;
     }
-    return imagePath;
+    
+    // For relative paths, prepend API base
+    const apiBase = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
+    const baseUrl = apiBase.replace('/api', '');
+    
+    // Clean up path - remove leading slashes and add one
+    const cleanPath = imagePath.replace(/^\/+/, '/');
+    
+    return baseUrl + cleanPath;
   };
 
   // Get first and second banner from backend
