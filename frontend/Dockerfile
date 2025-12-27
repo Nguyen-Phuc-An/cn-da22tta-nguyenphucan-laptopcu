@@ -8,6 +8,10 @@ RUN npm ci
 
 COPY . .
 
+# Set API URL for production build
+ARG VITE_API_BASE=http://localhost:3000
+ENV VITE_API_BASE=$VITE_API_BASE
+
 RUN npm run build
 
 FROM node:20-alpine

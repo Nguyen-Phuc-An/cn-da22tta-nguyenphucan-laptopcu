@@ -149,7 +149,7 @@ export default function Admin() {
                 onClick={() => setActiveModule('orders')}
               >
                 🔔
-                {pendingOrders > 0 && <span className="badge">{pendingOrders}</span>}
+                {pendingOrders > 0 && <span className="badges">{pendingOrders}</span>}
               </button>
               <button 
                 className="icon-btn" 
@@ -157,7 +157,7 @@ export default function Admin() {
                 onClick={() => setActiveModule('chat')}
               >
                 💬
-                {unreadMessages > 0 && <span className="badge">{unreadMessages}</span>}
+                {unreadMessages > 0 && <span className="badges">{unreadMessages}</span>}
               </button>
 
               <div className="user-menu-wrapper">

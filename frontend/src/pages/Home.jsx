@@ -393,9 +393,9 @@ export default function Home() {
         <div className="empty">Không tìm thấy sản phẩm bạn tìm.</div>
       ) : (
         <>
-          <div id="products" className="grid">
+          <div id="products" className="products-grid">
           {visibleProducts.slice(0, displayCount).map(p => (
-            <div className="card" key={p.id} onClick={() => window.location.href = `/product/${p.id}`} style={{ cursor: 'pointer' }}>
+            <div className="product-card" key={p.id} onClick={() => window.location.href = `/product/${p.id}`} style={{ cursor: 'pointer' }}>
               {(() => {
                 // prefer first image from p.images (normalized by admin fetch), fall back to common fields
                 let src = '/uploads/products/default.jpg';
@@ -430,12 +430,12 @@ export default function Home() {
                   />
                 );
               })()}
-              <h4 className="card-title">{p.tieu_de || p.title}</h4>
-              <p className="card-price">{Number(p.gia || p.price || 0).toLocaleString('vi-VN')} {p.tien_te || p.currency || 'VND'}</p>
+              <h4 className="product-card-title">{p.tieu_de || p.title}</h4>
+              <p className="product-card-price">{Number(p.gia || p.price || 0).toLocaleString('vi-VN')} {p.tien_te || p.currency || 'VND'}</p>
 
-              <div className="card-badges">
-                <span className="badge badge-purple">Học sinh/ sinh viên giảm thêm 500.000đ</span>
-                <span className="badge badge-gray">Tặng Sim/Esim VNSKY, có ngay 5GB data 5G/ngày</span>
+              <div className="product-card-badges">
+                <span className="product-badge product-badge-purple">Học sinh/ sinh viên giảm thêm 500.000đ</span>
+                <span className="product-badge product-badge-gray">Tặng Sim/Esim VNSKY, có ngay 5GB data 5G/ngày</span>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '12px' }}>
