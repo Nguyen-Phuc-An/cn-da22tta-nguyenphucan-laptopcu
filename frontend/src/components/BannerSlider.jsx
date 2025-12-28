@@ -4,6 +4,7 @@ import './BannerSlider.css';
 
 export default function BannerSlider() {
   const [banners, setBanners] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -16,6 +17,17 @@ export default function BannerSlider() {
       }
     })();
   }, []);
+
+  // Auto-slide banner every 5 seconds
+  useEffect(() => {
+    if (!banners || banners.length === 0) return;
+    
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % banners.length);
+    }, 5000);
+    
+    return () => clearInterval(interval);
+  }, [banners]);
 
   if (!banners || banners.length === 0) {
     console.log('[BannerSlider] No active banners from backend, showing fallback');
@@ -73,9 +85,15 @@ export default function BannerSlider() {
     return baseUrl + cleanPath;
   };
 
-  // Get first and second banner from backend
-  const bannerLeft = banners[0];
-  const bannerRight = banners.length > 1 ? banners[1] : null;
+  // Get banner by index (cycling through all banners)
+  const getBannerByIndex = (offset) => {
+    if (!banners || banners.length === 0) return null;
+    const index = (currentIndex + offset) % banners.length;
+    return banners[index];
+  };
+
+  const bannerLeft = getBannerByIndex(0);
+  const bannerRight = getBannerByIndex(1);
 
   return (
     <div className="banner-slider">

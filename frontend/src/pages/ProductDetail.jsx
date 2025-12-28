@@ -3,6 +3,7 @@ import { FaShoppingCart } from "react-icons/fa";
 import { getProducts } from '../api/products';
 import { listImages as listProductImages } from '../api/productImages';
 import { addToWishlist, removeFromWishlist, listWishlist } from '../api/wishlists';
+import { listReviewsByProduct } from '../api/reviews';
 import { imageToSrc, normalizeImages } from '../services/productImages';
 import { AuthContext } from '../context/AuthContext';
 import { CartContext } from '../context/Cart';
@@ -40,6 +41,7 @@ export default function ProductDetail() {
   const [cartQuantity, setCartQuantity] = useState(1);
   const [eduVerified, setEduVerified] = useState(false);
   const [eduDiscount, setEduDiscount] = useState(0);
+  const [reviews, setReviews] = useState([]);
 
   // Get product ID from URL
   const productId = typeof window !== 'undefined' ? window.location.pathname.split('/product/')[1] : null;
@@ -91,6 +93,21 @@ export default function ProductDetail() {
     })();
     return () => { mounted = false; };
   }, [productId]);
+
+  // Load reviews
+  useEffect(() => {
+    if (!product) return;
+    
+    (async () => {
+      try {
+        const reviewData = await listReviewsByProduct(product.id);
+        const reviewList = Array.isArray(reviewData) ? reviewData : (reviewData && reviewData.data ? reviewData.data : []);
+        setReviews(reviewList);
+      } catch (e) {
+        console.error('Lỗi tải đánh giá:', e);
+      }
+    })();
+  }, [product]);
 
   // Load wishlist to check if product is favorite
   useEffect(() => {
@@ -501,6 +518,68 @@ export default function ProductDetail() {
         </div>
       </div>
     </section>
+
+    {/* Reviews Section */}
+    <section className="reviews-section" style={{ padding: '0 20px' }}>
+      <div className="reviews-container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '30px', borderBottom: '2px solid #e0e0e0', paddingBottom: '15px' }}>
+          Đánh giá sản phẩm ({reviews.length})
+        </h2>
+
+        {reviews && reviews.length > 0 ? (
+          <div className="reviews-list">
+            {reviews.map((review, idx) => (
+              <div key={idx} className="review-item" style={{ 
+                backgroundColor: '#fff', 
+                padding: '20px', 
+                marginBottom: '15px', 
+                borderRadius: '8px',
+                border: '1px solid #e0e0e0',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '10px' }}>
+                  <div>
+                    <h4 style={{ margin: '0 0 5px 0', fontSize: '16px', fontWeight: 'bold', color: '#333' }}>
+                      {review.user_name || review.ho_ten || review.full_name || 'Khách hàng ẩn danh'}
+                    </h4>
+                    <p style={{ margin: '0', fontSize: '13px', color: '#888' }}>
+                      {new Date(review.tao_luc || review.created_at).toLocaleDateString('vi-VN')}
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    {[...Array(5)].map((_, i) => (
+                      <span key={i} style={{ fontSize: '18px', color: i < (review.diem || review.rating || 0) ? '#ffc107' : '#ddd' }}>★</span>
+                    ))}
+                  </div>
+                </div>
+                
+                {review.tieu_de && (
+                  <h5 style={{ margin: '10px 0 5px 0', fontSize: '15px', fontWeight: '600', color: '#333' }}>
+                    {review.tieu_de}
+                  </h5>
+                )}
+                
+                <p style={{ margin: '10px 0', lineHeight: '1.6', color: '#555', fontSize: '14px' }}>
+                  {review.noi_dung || review.content || 'Không có nội dung'}
+                </p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '40px', 
+            backgroundColor: '#fff',
+            borderRadius: '8px',
+            border: '1px solid #e0e0e0'
+          }}>
+            <p style={{ fontSize: '16px', color: '#999', margin: '0' }}>Chưa có đánh giá nào cho sản phẩm này</p>
+            <p style={{ fontSize: '14px', color: '#bbb', margin: '10px 0 0 0' }}>Hãy là người đầu tiên đánh giá sản phẩm</p>
+          </div>
+        )}
+      </div>
+    </section>
+
     <Footer />
     </>
   );

@@ -18,9 +18,16 @@ export default function ProfileModal({ token, onClose }) {
     return (
       <div className="modal-overlay" onClick={onClose}>
         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-          <h2>Hồ sơ cá nhân</h2>
-          <p>Không thể tải thông tin người dùng</p>
-          <button onClick={onClose} className="btn-primary">Đóng</button>
+          <div className="modal-header">
+            <h2>Hồ sơ cá nhân</h2>
+            <button className="close-btn" onClick={onClose}>✕</button>
+          </div>
+          <div className="modal-body">
+            <p>Không thể tải thông tin người dùng</p>
+          </div>
+          <div className="modal-footer">
+            <button onClick={onClose} className="btn btn-secondary">Đóng</button>
+          </div>
         </div>
       </div>
     );
@@ -29,96 +36,47 @@ export default function ProfileModal({ token, onClose }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ margin: 0 }}>Hồ sơ cá nhân</h2>
-          <button 
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              fontSize: '24px',
-              cursor: 'pointer',
-              color: '#999'
-            }}
-          >
-            ✕
-          </button>
+        <div className="modal-header">
+          <h2>Hồ sơ cá nhân</h2>
+          <button className="close-btn" onClick={onClose}>✕</button>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', color: '#333' }}>
-              Tên
-            </label>
-            <input
-              type="text"
-              value={userInfo.ten || userInfo.name || ''}
-              disabled
-              style={{
-                width: '100%',
-                padding: '10px',
-                border: '1px solid #d1d5db',
-                borderRadius: '6px',
-                backgroundColor: '#f9fafb',
-                color: '#666'
-              }}
-            />
-          </div>
+        <div className="modal-body">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <div>
+              <label>Tên</label>
+              <input
+                type="text"
+                value={userInfo.ten || userInfo.name || ''}
+                disabled
+                style={{ width: '100%', boxSizing: 'border-box', backgroundColor: '#f9fafb', color: '#666' }}
+              />
+            </div>
 
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', color: '#333' }}>
-              Email
-            </label>
-            <input
-              type="email"
-              value={userInfo.email || ''}
-              disabled
-              style={{
-                width: '100%',
-                padding: '10px',
-                border: '1px solid #d1d5db',
-                borderRadius: '6px',
-                backgroundColor: '#f9fafb',
-                color: '#666'
-              }}
-            />
-          </div>
+            <div>
+              <label>Email</label>
+              <input
+                type="email"
+                value={userInfo.email || ''}
+                disabled
+                style={{ width: '100%', boxSizing: 'border-box', backgroundColor: '#f9fafb', color: '#666' }}
+              />
+            </div>
 
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', color: '#333' }}>
-              Vai trò
-            </label>
-            <input
-              type="text"
-              value={userInfo.role === 'admin' || userInfo.isAdmin || userInfo.is_admin ? 'Quản trị viên' : 'Nhân viên'}
-              disabled
-              style={{
-                width: '100%',
-                padding: '10px',
-                border: '1px solid #d1d5db',
-                borderRadius: '6px',
-                backgroundColor: '#f9fafb',
-                color: '#666'
-              }}
-            />
+            <div>
+              <label>Vai trò</label>
+              <input
+                type="text"
+                value={userInfo.role === 'admin' || userInfo.isAdmin || userInfo.is_admin ? 'Quản trị viên' : 'Nhân viên'}
+                disabled
+                style={{ width: '100%', boxSizing: 'border-box', backgroundColor: '#f9fafb', color: '#666' }}
+              />
+            </div>
           </div>
+        </div>
 
-          <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '10px' }}>
-            <button 
-              onClick={onClose}
-              style={{
-                padding: '10px 20px',
-                border: '1px solid #d1d5db',
-                borderRadius: '6px',
-                background: 'white',
-                cursor: 'pointer',
-                fontWeight: '500',
-                color: '#666'
-              }}
-            >
-              Đóng
-            </button>
-          </div>
+        <div className="modal-footer">
+          <button onClick={onClose} className="btn btn-secondary">Đóng</button>
         </div>
       </div>
     </div>

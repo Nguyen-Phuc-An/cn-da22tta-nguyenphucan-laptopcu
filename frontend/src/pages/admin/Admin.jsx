@@ -145,19 +145,19 @@ export default function Admin() {
             <div className="header-actions">
               <button 
                 className="icon-btn" 
-                title="Thông báo"
+                title="Đơn hàng mới"
                 onClick={() => setActiveModule('orders')}
               >
-                🔔
-                {pendingOrders > 0 && <span className="badges">{pendingOrders}</span>}
+                📦
+                {pendingOrders > 0 && <span className="status-dot"></span>}
               </button>
               <button 
                 className="icon-btn" 
-                title="Tin nhắn"
+                title="Tin nhắn mới"
                 onClick={() => setActiveModule('chat')}
               >
                 💬
-                {unreadMessages > 0 && <span className="badges">{unreadMessages}</span>}
+                {unreadMessages > 0 && <span className="status-dot"></span>}
               </button>
 
               <div className="user-menu-wrapper">
@@ -178,7 +178,7 @@ export default function Admin() {
                     </button>
                     <hr />
                     <button onClick={handleLogout} className="logout-btn">
-                      🚪 Đăng xuất
+                      Đăng xuất
                     </button>
                   </div>
                 )}

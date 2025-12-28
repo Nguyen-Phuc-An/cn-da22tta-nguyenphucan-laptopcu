@@ -4,12 +4,13 @@ import { apiFetch } from '../../../services/apiClient';
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [period, setPeriod] = useState('week');
 
   useEffect(() => {
     const loadStats = async () => {
       try {
         setLoading(true);
-        const data = await apiFetch('/admin/stats');
+        const data = await apiFetch(`/admin/stats?period=${period}`);
         console.log('Stats data:', data);
         setStats(data);
       } catch (err) {
@@ -19,7 +20,7 @@ export default function Dashboard() {
       }
     };
     loadStats();
-  }, []);
+  }, [period]);
 
   if (loading) {
     return (
@@ -84,6 +85,56 @@ export default function Dashboard() {
           <div>
             <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600', color: '#111827' }}>Tỷ lệ lượt mua theo hãng</h3>
             <p style={{ margin: '0', fontSize: '13px', color: '#6b7280' }}>Hiển thị phân bố lượt mua của các hãng laptop</p>
+          </div>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button
+              onClick={() => setPeriod('week')}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '6px',
+                border: period === 'week' ? '2px solid #667eea' : '1px solid #ddd',
+                backgroundColor: period === 'week' ? '#667eea' : '#fff',
+                color: period === 'week' ? '#fff' : '#333',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: period === 'week' ? '600' : '400',
+                transition: 'all 0.2s'
+              }}
+            >
+              Tuần
+            </button>
+            <button
+              onClick={() => setPeriod('month')}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '6px',
+                border: period === 'month' ? '2px solid #667eea' : '1px solid #ddd',
+                backgroundColor: period === 'month' ? '#667eea' : '#fff',
+                color: period === 'month' ? '#fff' : '#333',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: period === 'month' ? '600' : '400',
+                transition: 'all 0.2s'
+              }}
+            >
+              Tháng
+            </button>
+            <button
+              onClick={() => setPeriod('year')}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '6px',
+                border: period === 'year' ? '2px solid #667eea' : '1px solid #ddd',
+                backgroundColor: period === 'year' ? '#667eea' : '#fff',
+                color: period === 'year' ? '#fff' : '#333',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: period === 'year' ? '600' : '400',
+                transition: 'all 0.2s'
+              }}
+            >
+              Năm
+            </button>
           </div>
         </div>
 

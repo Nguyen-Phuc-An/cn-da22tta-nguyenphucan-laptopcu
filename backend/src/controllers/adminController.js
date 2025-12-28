@@ -75,25 +75,50 @@ async function stats(req, res) {
       revenue12months.push({ month: key, total: found ? Number(found.total) : 0, orders: found ? Number(found.cnt) : 0 });
     }
 
-    // Brand statistics from purchased products
+    // Brand statistics from purchased products - with time period filter
+    const period = req.query.period || 'week'; // 'week', 'month', 'year'
+    let dateFilter = '';
+    
+    if (period === 'week') {
+      const weekStart = new Date();
+      weekStart.setHours(0,0,0,0);
+      weekStart.setDate(weekStart.getDate() - 6);
+      dateFilter = `o.tao_luc >= '${toMySQL(weekStart)}'`;
+    } else if (period === 'month') {
+      const monthStart = new Date();
+      monthStart.setHours(0,0,0,0);
+      monthStart.setDate(1);
+      dateFilter = `o.tao_luc >= '${toMySQL(monthStart)}'`;
+    } else if (period === 'year') {
+      const yearStart = new Date();
+      yearStart.setHours(0,0,0,0);
+      yearStart.setMonth(0);
+      yearStart.setDate(1);
+      dateFilter = `o.tao_luc >= '${toMySQL(yearStart)}'`;
+    }
+    
     const [brandData] = await db.query(`
       SELECT 
+        p.id,
         p.tieu_de,
         COUNT(oi.id) as tong_so_lan
       FROM order_items oi
       JOIN products p ON oi.san_pham_id = p.id
+      JOIN orders o ON oi.don_hang_id = o.id
+      WHERE ${dateFilter} AND o.trang_thai IN ('completed','shipping','confirmed')
       GROUP BY oi.san_pham_id
       ORDER BY tong_so_lan DESC
     `);
 
-    // Extract brand names from product titles and aggregate
+    // Extract brand names from product titles
     const brandMap = {};
-    const brands = ['Apple', 'Dell', 'HP', 'Lenovo', 'ASUS', 'Acer', 'MSI', 'Razer', 'Sony', 'Samsung', 'LG', 'Toshiba'];
+    const brands = ['Apple', 'Dell', 'HP', 'Lenovo', 'ASUS', 'Acer', 'MSI', 'Razer', 'Sony', 'Samsung', 'LG', 'Toshiba', 'Vivobook', 'Pavilion', 'IdeaPad', 'Aspire', 'ThinkPad', 'MacBook', 'XPS'];
     
     brandData.forEach(item => {
       let foundBrand = null;
+      const titleUpper = item.tieu_de.toUpperCase();
       for (const brand of brands) {
-        if (item.tieu_de.includes(brand)) {
+        if (titleUpper.includes(brand.toUpperCase())) {
           foundBrand = brand;
           break;
         }

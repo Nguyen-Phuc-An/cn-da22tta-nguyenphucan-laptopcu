@@ -9,7 +9,7 @@ export default function Footer() {
 
         {/* Cột 1 – Giới thiệu */}
 
-        <div style={{ textAlign: 'center', marginBottom: '12px', borderRight: '1px solid #4a5568' }}>
+        <div style={{ textAlign: 'center', marginBottom: '12px', margin: "0 auto" }}>
           <img src="http://localhost:3000/public/uploads/products/Logo.png" alt="Logo" style={{ height: '200px', objectFit: 'contain', display: 'block'}} onError={(e) => e.target.style.display = 'none'} />
         </div>          
 

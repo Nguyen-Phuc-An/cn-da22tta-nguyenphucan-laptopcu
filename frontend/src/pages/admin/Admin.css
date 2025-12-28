@@ -98,6 +98,18 @@
   justify-content: center;
 }
 
+.status-dot {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  background: #22c55e;
+  border-radius: 50%;
+  border: 2px solid white;
+  display: block;
+}
+
 .user-menu-wrapper {
   position: relative;
 }

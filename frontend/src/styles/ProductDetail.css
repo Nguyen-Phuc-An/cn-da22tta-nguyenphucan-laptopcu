@@ -203,7 +203,7 @@
 
 /* Edu Discount Badge */
 .edu-discount-badge {
-  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  background: #000033;
   color: white;
   padding: 15px 20px;
   border-radius: 8px;
@@ -295,6 +295,7 @@
   margin-top: 20px;
   padding: 20px;
   background-color: #f9f9f9;
+  border-radius: 12px;
 }
 
 .product-description-section h3 {
@@ -412,12 +413,14 @@
 
 .uudai-content {
   margin-left: 20px;
+  margin-top: 10px;
 }
 
 .uudai-item {
   display: flex;
   align-items: center;
   gap: 5px;
+  margin-bottom: 10px;
 }
 
 .uudai-item p {
