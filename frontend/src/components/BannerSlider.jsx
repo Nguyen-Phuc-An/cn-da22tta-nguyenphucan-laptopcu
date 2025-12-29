@@ -97,7 +97,28 @@ export default function BannerSlider() {
 
   return (
     <div className="banner-slider">
+        {/* Banner Left with Both Arrows and Dots */}
         <div className="banner-left">
+            {banners && banners.length > 0 && (
+              <>
+                <button
+                  className="banner-arrow banner-arrow-left"
+                  onClick={() => setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length)}
+                  title="Ảnh trước"
+                  aria-label="Previous banner"
+                >
+                  ❮
+                </button>
+                <button
+                  className="banner-arrow banner-arrow-right"
+                  onClick={() => setCurrentIndex((prev) => (prev + 1) % banners.length)}
+                  title="Ảnh tiếp theo"
+                  aria-label="Next banner"
+                >
+                  ❯
+                </button>
+              </>
+            )}
             <div className="banner-main">
                 <a href={bannerLeft.link || '#'} title={bannerLeft.tieu_de} style={{ display: 'block', width: '100%', height: '100%' }}>
                 <img
@@ -117,9 +138,43 @@ export default function BannerSlider() {
                 />
                 </a>
             </div>
+            {/* Dots for Banner Left */}
+            {banners && banners.length > 0 && (
+              <div className="banner-dots banner-dots-left">
+                {banners.map((_, index) => (
+                  <button
+                    key={index}
+                    className={`banner-dot ${index === currentIndex ? 'active' : ''}`}
+                    onClick={() => setCurrentIndex(index)}
+                    title={`Xem ảnh ${index + 1}`}
+                    aria-label={`Go to banner ${index + 1}`}
+                  />
+                ))}
+              </div>
+            )}
         </div>
         {bannerRight && (
         <div className="banner-right">
+            {banners && banners.length > 0 && (
+              <>
+                <button
+                  className="banner-arrow banner-arrow-left"
+                  onClick={() => setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length)}
+                  title="Ảnh trước"
+                  aria-label="Previous banner"
+                >
+                  ❮
+                </button>
+                <button
+                  className="banner-arrow banner-arrow-right"
+                  onClick={() => setCurrentIndex((prev) => (prev + 1) % banners.length)}
+                  title="Ảnh tiếp theo"
+                  aria-label="Next banner"
+                >
+                  ❯
+                </button>
+              </>
+            )}
             <div className="banner-main">
                 <a href={bannerRight.link || '#'} title={bannerRight.tieu_de} style={{ display: 'block', width: '100%', height: '100%' }}>
                 <img
@@ -139,6 +194,20 @@ export default function BannerSlider() {
                 />
                 </a>
             </div>
+            {/* Dots for Banner Right */}
+            {banners && banners.length > 0 && (
+              <div className="banner-dots banner-dots-right">
+                {banners.map((_, index) => (
+                  <button
+                    key={index}
+                    className={`banner-dot ${index === currentIndex ? 'active' : ''}`}
+                    onClick={() => setCurrentIndex(index)}
+                    title={`Xem ảnh ${index + 1}`}
+                    aria-label={`Go to banner ${index + 1}`}
+                  />
+                ))}
+              </div>
+            )}
         </div>
         )}
         <div className="banner-bottom">
@@ -166,7 +235,7 @@ export default function BannerSlider() {
                 />
                 </div>
             </div>
-        </div>  
+        </div>
     </div>
   );
 }

@@ -59,8 +59,12 @@ async function stats(req, res) {
     for (let i=0;i<7;i++){
       const d = new Date(daysStart); d.setDate(daysStart.getDate()+i);
       const key = d.toISOString().slice(0,10);
-      const found = dayRows.find(r => String(r.d) === key);
-      console.log(`DEBUG: day ${i}, key=${key}, found=${found ? 'yes' : 'no'}, d.d=${found?.d}`);
+      // r.d is a Date object from MySQL, convert to string for comparison
+      const found = dayRows.find(r => {
+        const dbDate = r.d instanceof Date ? r.d.toISOString().slice(0,10) : String(r.d);
+        return dbDate === key;
+      });
+      console.log(`DEBUG: day ${i}, key=${key}, found=${found ? 'yes' : 'no'}, found.d=${found?.d}`);
       revenue7days.push({ date: key, total: found ? Number(found.total) : 0, orders: found ? Number(found.cnt) : 0 });
     }
 
@@ -99,42 +103,22 @@ async function stats(req, res) {
     
     const [brandData] = await db.query(`
       SELECT 
-        p.id,
-        p.tieu_de,
+        c.ten as hang,
         COUNT(oi.id) as tong_so_lan
       FROM order_items oi
       JOIN products p ON oi.san_pham_id = p.id
+      JOIN categories c ON p.danh_muc_id = c.id
       JOIN orders o ON oi.don_hang_id = o.id
       WHERE ${dateFilter} AND o.trang_thai IN ('completed','shipping','confirmed')
-      GROUP BY oi.san_pham_id
+      GROUP BY p.danh_muc_id, c.ten
       ORDER BY tong_so_lan DESC
     `);
 
-    // Extract brand names from product titles
-    const brandMap = {};
-    const brands = ['Apple', 'Dell', 'HP', 'Lenovo', 'ASUS', 'Acer', 'MSI', 'Razer', 'Sony', 'Samsung', 'LG', 'Toshiba', 'Vivobook', 'Pavilion', 'IdeaPad', 'Aspire', 'ThinkPad', 'MacBook', 'XPS'];
-    
-    brandData.forEach(item => {
-      let foundBrand = null;
-      const titleUpper = item.tieu_de.toUpperCase();
-      for (const brand of brands) {
-        if (titleUpper.includes(brand.toUpperCase())) {
-          foundBrand = brand;
-          break;
-        }
-      }
-      
-      if (foundBrand) {
-        if (!brandMap[foundBrand]) {
-          brandMap[foundBrand] = 0;
-        }
-        brandMap[foundBrand] += item.tong_so_lan;
-      }
-    });
-
-    const brandStats = Object.entries(brandMap)
-      .map(([brand, count]) => ({ brand, count: Number(count) }))
-      .sort((a, b) => b.count - a.count);
+    // Convert to brandStats format
+    const brandStats = brandData.map(item => ({ 
+      brand: item.hang || 'Unknown', 
+      count: Number(item.tong_so_lan) 
+    }));
 
     res.json({
       products: { totalProducts: Number(totalProducts), sellingCount: Number(sellingCount), outOfStock: Number(outOfStock), hiddenCount: Number(hiddenCount) },

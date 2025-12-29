@@ -9,6 +9,7 @@ import Chat from './modules/Chat';
 import Staff from './modules/Staff';
 import Contacts from './modules/Contacts';
 import EduVerifications from './modules/EduVerifications';
+import Reviews from './modules/Reviews';
 import ProfileModal from './modals/ProfileModal';
 import ChangePasswordModal from './modals/ChangePasswordModal';
 import { apiFetch } from '../../services/apiClient';
@@ -127,6 +128,12 @@ export default function Admin() {
             >
               Xác thực Edu
             </button>
+            <button
+              className={`menu-item ${activeModule === 'reviews' ? 'active' : ''}`}
+              onClick={() => setActiveModule('reviews')}
+            >
+              Đánh giá
+            </button>
             {isAdmin && (
               <button
                 className={`menu-item ${activeModule === 'staff' ? 'active' : ''}`}
@@ -196,6 +203,7 @@ export default function Admin() {
             {activeModule === 'chat' && <Chat />}
             {activeModule === 'contacts' && <Contacts />}
             {activeModule === 'edu-verifications' && <EduVerifications />}
+            {activeModule === 'reviews' && <Reviews />}
             {activeModule === 'staff' && isAdmin && <Staff />}
           </div>
         </main>

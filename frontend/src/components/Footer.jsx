@@ -56,7 +56,6 @@ export default function Footer() {
             <a style={{ color: '#a0aec0', textDecoration: 'none', cursor: 'pointer', transition: 'color 0.3s' }} href="#" onMouseEnter={(e) => e.target.style.color = '#fff'} onMouseLeave={(e) => e.target.style.color = '#a0aec0'}><FaInstagram /></a>
           </div>
         </div>
-
       </div>
 
       {/* HÀNG DƯỚI */}

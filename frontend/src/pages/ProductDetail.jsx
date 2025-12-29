@@ -191,6 +191,18 @@ export default function ProductDetail() {
   const basePrice = Number(product.gia || product.price || 0);
   const discountedPrice = eduVerified ? basePrice - eduDiscount : basePrice;
 
+  // Hàm tạo trả lời tự động dựa vào số sao
+  const getAutoReply = (rating) => {
+    const autoReplies = {
+      5: 'Cảm ơn bạn đã đánh giá sản phẩm của tôi! Chúng tôi rất vui khi được phục vụ bạn. 😊',
+      4: 'Cảm ơn bạn đã đánh giá! Chúng tôi sẽ tiếp tục cải thiện để đáp ứng tốt hơn nhu cầu của bạn. 👍',
+      3: 'Cảm ơn bạn đã dành thời gian đánh giá. Chúng tôi sẽ rất quý giá những nhận xét của bạn để cải thiện dịch vụ. 💪',
+      2: 'Cảm ơn bạn đã gửi phản hồi. Chúng tôi rất xin lỗi nếu chưa đáp ứng kỳ vọng của bạn. Vui lòng liên hệ chúng tôi để được hỗ trợ tốt hơn. 🤝',
+      1: 'Cảm ơn bạn đã gửi phản hồi. Chúng tôi xin lỗi vì các khó khăn bạn gặp phải. Vui lòng liên hệ chúng tôi ngay để giải quyết vấn đề này. 📞'
+    };
+    return autoReplies[rating] || 'Cảm ơn bạn đã đánh giá sản phẩm của tôi!';
+  };
+
   return (
     <>
       <section className="product-detail">
@@ -562,6 +574,27 @@ export default function ProductDetail() {
                 <p style={{ margin: '10px 0', lineHeight: '1.6', color: '#555', fontSize: '14px' }}>
                   {review.noi_dung || review.content || 'Không có nội dung'}
                 </p>
+
+                {/* Phần trả lời tự động từ shop */}
+                <div style={{ 
+                  marginTop: '15px', 
+                  padding: '12px', 
+                  backgroundColor: '#f5f5f5',
+                  borderLeft: '3px solid #4CAF50',
+                  borderRadius: '4px'
+                }}>
+                  <h6 style={{ margin: '0 0 8px 0', fontSize: '13px', fontWeight: 'bold', color: '#4CAF50' }}>
+                    🏪 Trả lời từ Shop
+                  </h6>
+                  <p style={{ margin: '0', fontSize: '13px', color: '#666', lineHeight: '1.5' }}>
+                    {review.noi_dung_tra_loi || getAutoReply(review.diem || review.rating || 5)}
+                  </p>
+                  {review.tao_luc_tra_loi && (
+                    <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#999' }}>
+                      📅 {new Date(review.tao_luc_tra_loi).toLocaleDateString('vi-VN')}
+                    </p>
+                  )}
+                </div>
               </div>
             ))}
           </div>
