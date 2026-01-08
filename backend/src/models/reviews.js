@@ -18,6 +18,20 @@ async function getReviewsByProduct(productId) {
   return rows;
 }
 
+// Get all reviews with product and user info (for admin)
+async function getAllReviews() {
+  const [rows] = await db.query(
+    `SELECT r.*, 
+            u.ten as user_name, 
+            p.tieu_de as product_name 
+     FROM reviews r 
+     LEFT JOIN users u ON r.khach_hang_id = u.id 
+     LEFT JOIN products p ON r.san_pham_id = p.id 
+     ORDER BY r.tao_luc DESC`
+  );
+  return rows;
+}
+
 async function deleteReview(product_id, user_id) {
   await db.query('DELETE FROM reviews WHERE san_pham_id = ? AND khach_hang_id = ?', [product_id, user_id]);
   return true;
@@ -77,4 +91,4 @@ async function getPendingReviewsForUser(userId) {
   return rows;
 }
 
-module.exports = { createOrUpdateReview, getReviewsByProduct, deleteReview, getPendingReviewsForUser };
+module.exports = { createOrUpdateReview, getReviewsByProduct, getAllReviews, deleteReview, getPendingReviewsForUser };

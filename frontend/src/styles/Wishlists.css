@@ -1,6 +1,6 @@
 .wishlists-page {
   min-height: 54vh;
-  padding: 40px 20px;
+  padding: 0 40px 20px;
 }
 
 .wishlists-container {
@@ -12,6 +12,7 @@
   font-size: 32px;
   font-weight: 600;
   color: #000033;
+  text-align: center;
 }
 
 .alert {

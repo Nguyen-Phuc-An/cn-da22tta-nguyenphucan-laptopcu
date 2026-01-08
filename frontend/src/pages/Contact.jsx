@@ -79,7 +79,7 @@ export default function Contact() {
           <div className="contact-info-item">
             <h3>🕐 Giờ hoạt động</h3>
             <p>
-              Thứ Hai - Chủ Nhật: 7:00 AM - 9:00 PM
+              Thứ Hai - Chủ Nhật: 7:00 AM - 7:00 PM
             </p>
           </div>
         </div>

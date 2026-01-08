@@ -12,3 +12,4 @@ export function listReviewsByProduct(productId, params = {}) {
 export function deleteReview(productId, userId) {
 	return apiFetch(`/products/${productId}/reviews/${userId}`, { method: 'DELETE' });
 }
+

@@ -13,6 +13,7 @@ import OrderSuccess from './pages/OrderSuccess';
 import EduVerification from './pages/EduVerification';
 import Reviews from './pages/Reviews';
 import ProductDetail from './pages/ProductDetail';
+import Policy from './pages/Policy';
 import Admin from './pages/admin/Admin';
 import AuthModal from './components/AuthModal';
 import { setToken as apiSetToken, apiFetch } from './services/apiClient';
@@ -170,6 +171,9 @@ export default function App() {
             }
             if (p && p.startsWith('/contact')) {
               return <Contact />;
+            }
+            if (p && p.startsWith('/policy')) {
+              return <Policy />;
             }
             if (p && p.startsWith('/edu-verification')) {
               return <EduVerification />;

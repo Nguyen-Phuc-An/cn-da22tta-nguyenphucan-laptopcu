@@ -9,6 +9,7 @@ import Chat from './modules/Chat';
 import Staff from './modules/Staff';
 import Contacts from './modules/Contacts';
 import EduVerifications from './modules/EduVerifications';
+import Reviews from './modules/Reviews';
 import ProfileModal from './modals/ProfileModal';
 import ChangePasswordModal from './modals/ChangePasswordModal';
 import { apiFetch } from '../../services/apiClient';
@@ -127,6 +128,12 @@ export default function Admin() {
             >
               Xác thực Edu
             </button>
+            <button
+              className={`menu-item ${activeModule === 'reviews' ? 'active' : ''}`}
+              onClick={() => setActiveModule('reviews')}
+            >
+              Đánh giá
+            </button>
             {isAdmin && (
               <button
                 className={`menu-item ${activeModule === 'staff' ? 'active' : ''}`}
@@ -145,19 +152,19 @@ export default function Admin() {
             <div className="header-actions">
               <button 
                 className="icon-btn" 
-                title="Thông báo"
+                title="Đơn hàng mới"
                 onClick={() => setActiveModule('orders')}
               >
-                🔔
-                {pendingOrders > 0 && <span className="badges">{pendingOrders}</span>}
+                📦
+                {pendingOrders > 0 && <span className="status-dot"></span>}
               </button>
               <button 
                 className="icon-btn" 
-                title="Tin nhắn"
+                title="Tin nhắn mới"
                 onClick={() => setActiveModule('chat')}
               >
                 💬
-                {unreadMessages > 0 && <span className="badges">{unreadMessages}</span>}
+                {unreadMessages > 0 && <span className="status-dot"></span>}
               </button>
 
               <div className="user-menu-wrapper">
@@ -178,7 +185,7 @@ export default function Admin() {
                     </button>
                     <hr />
                     <button onClick={handleLogout} className="logout-btn">
-                      🚪 Đăng xuất
+                      Đăng xuất
                     </button>
                   </div>
                 )}
@@ -196,6 +203,7 @@ export default function Admin() {
             {activeModule === 'chat' && <Chat />}
             {activeModule === 'contacts' && <Contacts />}
             {activeModule === 'edu-verifications' && <EduVerifications />}
+            {activeModule === 'reviews' && <Reviews />}
             {activeModule === 'staff' && isAdmin && <Staff />}
           </div>
         </main>

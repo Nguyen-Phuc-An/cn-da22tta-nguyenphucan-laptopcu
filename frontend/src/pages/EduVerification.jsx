@@ -191,7 +191,7 @@ export default function EduVerification() {
           </div>
 
           <div className="edu-form-group">
-            <label htmlFor="eduEmail">Email sinh viên (@st.tvu.edu.vn hoặc @example.edu.vn):</label>
+            <label htmlFor="eduEmail">Email sinh viên (@st.tvu.edu.vn):</label>
             <input
               type="email"
               id="eduEmail"

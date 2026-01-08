@@ -107,8 +107,10 @@ router.delete('/orders/:id', ordersCtrl.remove);
 /* Reviews */
 router.post('/reviews', reviewsCtrl.createOrUpdate);
 router.get('/products/:productId/reviews', reviewsCtrl.listByProduct);
+router.get('/admin/reviews', auth, reviewsCtrl.listAll);
 router.get('/reviews/pending', auth, reviewsCtrl.getPending);
 router.delete('/products/:productId/reviews/:userId', auth, reviewsCtrl.remove);
+router.delete('/admin/reviews/:productId/:userId', auth, reviewsCtrl.remove);
 
 /* Wishlists */
 router.post('/wishlists', wishlistsCtrl.add);

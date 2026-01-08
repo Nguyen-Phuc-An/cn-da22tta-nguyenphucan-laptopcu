@@ -206,7 +206,28 @@ export default function Products() {
     e.target.value = '';
   };
 
-  const handleRemoveProductImage = (index) => {
+  const handleRemoveProductImage = async (index) => {
+    const img = productImages[index];
+    
+    // Nếu là ảnh cũ (có id từ database), xóa từ server
+    if (img.id) {
+      try {
+        const response = await apiFetch(`/products/${editingProduct.id}/images/${img.id}`, {
+          method: 'DELETE'
+        });
+        if (!response.ok) {
+          addToast('Xóa ảnh thất bại', 'error');
+          return;
+        }
+        addToast('Xóa ảnh thành công', 'success');
+      } catch (error) {
+        console.error('Error deleting image:', error);
+        addToast('Lỗi khi xóa ảnh', 'error');
+        return;
+      }
+    }
+    
+    // Xóa khỏi local state
     setProductImages(productImages.filter((_, i) => i !== index));
   };
 

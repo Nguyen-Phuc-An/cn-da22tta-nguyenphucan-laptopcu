@@ -1,0 +1,89 @@
+.policy-content {
+  max-width: 900px;
+  margin: 0 auto;
+  background: #fff;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.policy-content h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #121f3a;
+  margin-bottom: 30px;
+  border-bottom: 3px solid #007bff;
+  padding-bottom: 15px;
+}
+
+.policy-body {
+  font-size: 16px;
+  line-height: 1.8;
+  color: #333;
+}
+
+.policy-body section {
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.policy-body section:last-child {
+  border-bottom: none;
+}
+
+.policy-body h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #121f3a;
+  margin-bottom: 15px;
+  margin-top: 20px;
+}
+
+.policy-body p {
+  margin: 10px 0 15px 0;
+}
+
+.policy-body ul,
+.policy-body ol {
+  margin: 15px 0;
+  padding-left: 30px;
+}
+
+.policy-body li {
+  margin: 8px 0;
+  line-height: 1.6;
+}
+
+.policy-body ul li {
+  list-style-type: disc;
+}
+
+.policy-body ol li {
+  list-style-type: decimal;
+}
+
+.policy-body strong {
+  color: #121f3a;
+  font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .policy-content {
+    padding: 20px;
+  }
+
+  .policy-content h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+
+  .policy-body h2 {
+    font-size: 18px;
+  }
+
+  .policy-body {
+    font-size: 14px;
+  }
+}

@@ -7,19 +7,18 @@ export default function About() {
       <div className="about-section about-intro">
         <h2>Giới thiệu</h2>
         <p style={{width: '650px'}}>
-          AN Laptop Cũ là nơi tin cậy để mua bán các thiết bị laptop chất lượng cao với giá cạnh tranh. 
-          Chúng tôi cam kết cung cấp các sản phẩm chính hãng, đã được kiểm định kỹ lưỡng và có bảo hành đầy đủ.
+          AN Laptop Cũ là nền tảng mua bán laptop đã qua sử dụng đáng tin cậy, chuyên cung cấp các thiết bị chất lượng cao với mức giá cạnh tranh. 
+          Chúng tôi cam kết mang đến cho khách hàng những sản phẩm chính hãng, được kiểm tra và đánh giá kỹ lưỡng trước khi đến tay người dùng, đi kèm chính sách bảo hành rõ ràng nhằm đảm bảo sự an tâm trong suốt quá trình sử dụng.
         </p>
       </div>
 
       <div className="about-section about-vision">
         <h2>Tầm nhìn & Sứ mệnh</h2>
         <p>
-          <strong>Tầm nhìn:</strong> Trở thành nền tảng mua bán laptop cũ uy tín hàng đầu tại Việt Nam.
+          <strong>Tầm nhìn:</strong> AN Laptop Cũ hướng tới mục tiêu trở thành nền tảng mua bán laptop cũ uy tín hàng đầu tại Việt Nam, được khách hàng tin tưởng lựa chọn khi có nhu cầu mua hoặc bán thiết bị công nghệ đã qua sử dụng.
         </p>
         <p>
-          <strong>Sứ mệnh:</strong> Giúp khách hàng tiếp cận công nghệ chất lượng với giá phải chăng, 
-          đồng thời tạo cơ hội cho những người muốn bán lại thiết bị cũ của mình.
+          <strong>Sứ mệnh:</strong> Chúng tôi mong muốn giúp khách hàng dễ dàng tiếp cận các sản phẩm công nghệ chất lượng với chi phí hợp lý, góp phần mang lại giá trị thiết thực và trải nghiệm mua sắm hiệu quả cho người dùng.
         </p>
       </div>
 
