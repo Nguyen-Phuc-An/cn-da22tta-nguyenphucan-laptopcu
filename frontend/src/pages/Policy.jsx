@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import '../styles/Policy.css';
 
 export default function Policy() {
-  const policyType = window.location.pathname.split('/policy/')[1];
+  const policyType = new URLSearchParams(window.location.search).get('section');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -78,7 +78,7 @@ export default function Policy() {
           </div>
         );
 
-      case 'exchange':
+      case 'return':
         return (
           <div className="policy-content">
             <h1>Chính sách đổi trả</h1>
@@ -392,7 +392,12 @@ export default function Policy() {
         );
 
       default:
-        return <Home />;
+        return (
+          <div className="policy-content">
+            <h1>Chính sách</h1>
+            <p>Vui lòng chọn một chính sách để xem chi tiết.</p>
+          </div>
+        );
     }
   };
 

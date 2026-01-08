@@ -172,7 +172,7 @@ export default function App() {
             if (p && p.startsWith('/contact')) {
               return <Contact />;
             }
-            if (p && p.startsWith('/policy/')) {
+            if (p && p.startsWith('/policy')) {
               return <Policy />;
             }
             if (p && p.startsWith('/edu-verification')) {
