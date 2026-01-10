@@ -1,14 +1,14 @@
 const users = require('../models/users');
 require('dotenv').config();
 
-// Pre-hashed password for "admin123" (bcrypt). You can override with ADMIN_PASSWORD_HASH env var.
+// Cấu hình mặc định cho tài khoản admin
 const DEFAULT_ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@gmail.com';
 const DEFAULT_ADMIN_NAME = process.env.ADMIN_NAME || 'Admin';
 const DEFAULT_ADMIN_ROLE = process.env.ADMIN_ROLE || 'admin';
 const DEFAULT_ADMIN_PHONE = process.env.ADMIN_PHONE || '0363547545';
 const DEFAULT_ADMIN_ADDRESS = process.env.ADMIN_ADDRESS || 'Vĩnh Long';
 const DEFAULT_ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '$2b$12$w1l7ZIjpE2wn/Fi3glneieA4OdGSCPiZy30Ww9Xv9h6hVqesYf44K';
-
+// Hàm khởi tạo tài khoản admin nếu chưa có
 async function initAdminAccount() {
   try {
     const email = String(DEFAULT_ADMIN_EMAIL).trim().toLowerCase();

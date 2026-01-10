@@ -11,11 +11,12 @@ export default function OrderSuccess() {
   const [copySuccess, setCopySuccess] = useState(false);
   const [error, setError] = useState(null);
 
+  // Tải thông tin đơn hàng
   useEffect(() => {
     if (!orderId || !token) {
       return;
     }
-
+    // Tải đơn hàng từ API
     (async () => {
       try {
         const res = await apiFetch(`/orders/${orderId}`);
@@ -35,7 +36,7 @@ export default function OrderSuccess() {
       }
     })();
   }, [orderId, token, user]);
-
+  // Xử lý sao chép nội dung chuyển khoản
   const handleCopyTransferContent = () => {
     if (!order) return;
     const transferContent = `Thanh toan mua laptop - Don hang ${order.id}`;
@@ -44,7 +45,7 @@ export default function OrderSuccess() {
       setTimeout(() => setCopySuccess(false), 2000);
     });
   };
-
+  // Nếu không có đơn hàng để hiển thị
   if (!order) {
     return (
       <>

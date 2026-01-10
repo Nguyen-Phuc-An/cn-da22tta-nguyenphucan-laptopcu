@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'change_this_secret';
-
+// Middleware xác thực người dùng
 function requireAuth(req, res, next) {
   const auth = req.get('authorization') || '';
   const m = auth.match(/^Bearer\s+(.+)$/i);
@@ -19,6 +19,4 @@ function requireAuth(req, res, next) {
     return res.status(401).json({ error: 'invalid token', reason: err.message });
   }
 }
-
-// export the middleware function directly for simple require() usage
 module.exports = requireAuth;

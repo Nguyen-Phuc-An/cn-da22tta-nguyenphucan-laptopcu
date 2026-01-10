@@ -1,6 +1,6 @@
 const db = require('../db');
 
-// Send a chat message
+// Gửi tin nhắn trong cuộc trò chuyện
 async function sendMessage({ user_id = null, email_nguoi_gui = null, content, sender_name = null, is_user = true }) {
   if (!content || (!user_id && !email_nguoi_gui)) {
     throw new Error('content and (user_id or email_nguoi_gui) required');
@@ -12,8 +12,7 @@ async function sendMessage({ user_id = null, email_nguoi_gui = null, content, se
   );
   return res.insertId;
 }
-
-// Get messages for a conversation (by user_id or email)
+// Lấy tin nhắn cho một cuộc trò chuyện (theo user_id hoặc email)
 async function getMessages(identifier) {
   const isUserId = !isNaN(identifier);
   let query, params;
@@ -29,8 +28,7 @@ async function getMessages(identifier) {
   const [rows] = await db.query(query, params);
   return rows;
 }
-
-// Get all conversations (grouped by user_id or email)
+// Lấy tất cả các cuộc trò chuyện (nhóm theo user_id hoặc email)
 async function getConversations() {
   const [rows] = await db.query(`
     SELECT 
@@ -49,18 +47,17 @@ async function getConversations() {
   `);
   return rows;
 }
-
-// Get conversation details with messages
+// Lấy chi tiết cuộc trò chuyện cùng tin nhắn
 async function getConversationWithMessages(identifier) {
   let query, params;
 
-  // Check if identifier is in format "user_123"
+  // Kiểm tra nếu identifier
   if (identifier.startsWith('user_')) {
     const user_id = Number(identifier.substring(5));
     query = `SELECT * FROM chat_messages WHERE user_id = ? ORDER BY tao_luc ASC`;
     params = [user_id];
   } else {
-    // Assume it's an email
+    // Giả sử đó là email
     query = `SELECT * FROM chat_messages WHERE email_nguoi_gui = ? ORDER BY tao_luc ASC`;
     params = [identifier];
   }

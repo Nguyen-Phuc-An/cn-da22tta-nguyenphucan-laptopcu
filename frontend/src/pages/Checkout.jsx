@@ -53,7 +53,7 @@ export default function Checkout() {
   const isEduVerified = user?.edu_verified === 1;
   const eduDiscount = isEduVerified ? items.length * EDU_DISCOUNT_PER_ITEM : 0;
 
-  // Load user data on mount
+  // Tải thông tin người dùng để điền sẵn vào form
   useEffect(() => {
     if (!userId) return;
     
@@ -76,8 +76,7 @@ export default function Checkout() {
     })();
   }, [userId]);
 
-  // Redirect if not logged in
-  // Redirect if not logged in
+  // Nếu không đăng nhập
   if (!token) {
     return (
       <>
@@ -92,7 +91,7 @@ export default function Checkout() {
     );
   }
 
-  // Redirect if cart is empty
+  // Nếu giỏ hàng trống
   if (items.length === 0) {
     return (
       <>
@@ -106,11 +105,11 @@ export default function Checkout() {
       </>
     );
   }
-
+  // Tính tổng đơn hàng
   const totalPrice = items.reduce((sum, item) => sum + (item.gia * item.quantity), 0);
   const shippingFee = 0;
   const finalTotal = Math.max(0, totalPrice - eduDiscount + shippingFee);
-
+  // Xử lý gửi đơn hàng
   const handleSubmitOrder = async () => {
     try {
       setLoading(true);
@@ -145,7 +144,7 @@ export default function Checkout() {
         body: orderPayload
       });
 
-      console.log('Order response:', res); // Debug log
+      console.log('Order response:', res); // Debug
       
       if (res) {
         const orderData = res.data || res;

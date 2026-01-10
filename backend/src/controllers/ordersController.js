@@ -1,5 +1,5 @@
 const orders = require('../models/orders');
-
+// Tạo đơn hàng mới
 async function create(req, res) {
   try { 
     const id = await orders.createOrder(req.body || {}); 
@@ -9,7 +9,7 @@ async function create(req, res) {
     res.status(500).json({ error: e.message }); 
   }
 }
-
+// Lấy thông tin một đơn hàng theo ID
 async function getOne(req, res) {
   try { 
     const o = await orders.getOrderById(req.params.id); 
@@ -19,7 +19,7 @@ async function getOne(req, res) {
     res.status(500).json({ error: e.message }); 
   }
 }
-
+// Lấy danh sách tất cả đơn hàng
 async function listAll(req, res) {
   try { 
     const rows = await orders.listAll({ 
@@ -32,7 +32,7 @@ async function listAll(req, res) {
     res.status(500).json({ error: e.message }); 
   }
 }
-
+// Lấy danh sách đơn hàng của một người dùng
 async function listForUser(req, res) {
   try { 
     const rows = await orders.listOrdersForUser(req.params.userId, { limit: req.query.limit, offset: req.query.offset }); 
@@ -41,7 +41,7 @@ async function listForUser(req, res) {
     res.status(500).json({ error: e.message }); 
   }
 }
-
+// Cập nhật trạng thái đơn hàng
 async function updateStatus(req, res) {
   try { 
     await orders.updateOrderStatus(req.params.id, req.body.trang_thai || req.body.status); 
@@ -50,7 +50,7 @@ async function updateStatus(req, res) {
     res.status(500).json({ error: e.message }); 
   }
 }
-
+// Cập nhật thông tin đơn hàng
 async function update(req, res) {
   try { 
     const ok = await orders.updateOrder(req.params.id, req.body); 
@@ -59,7 +59,7 @@ async function update(req, res) {
     res.status(500).json({ error: e.message }); 
   }
 }
-
+// Xóa đơn hàng
 async function remove(req, res) {
   try { 
     await orders.deleteOrder(req.params.id); 

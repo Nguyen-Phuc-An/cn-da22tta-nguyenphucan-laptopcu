@@ -14,7 +14,7 @@ export default function AuthModal({ mode = 'login', onClose, onAuthSuccess }) {
   const [error, setError] = useState('');
   const formRef = useRef(null);
 
-  // close when clicking outside the form
+  // Tắt modal khi click ra ngoài form
   useEffect(() => {
     function onDocMouseDown(e) {
       try {
@@ -28,7 +28,7 @@ export default function AuthModal({ mode = 'login', onClose, onAuthSuccess }) {
     return () => document.removeEventListener('mousedown', onDocMouseDown);
   }, [onClose]);
 
-  // focus email input when modal opens or when switching between login/register
+  // focus vào email khi mode thay đổi
   useEffect(() => {
     try {
       if (emailRef && emailRef.current) {
@@ -40,9 +40,9 @@ export default function AuthModal({ mode = 'login', onClose, onAuthSuccess }) {
     } catch (err) { void err; }
   }, [m]);
 
-  // sync internal mode when prop changes
+  // Cập nhật mode khi prop thay đổi
   useEffect(() => { setMode(mode); }, [mode]);
-
+  // Xử lý submit form
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');

@@ -13,7 +13,7 @@ export default function Chat() {
   const messagesEndRef = useRef(null);
   const socketRef = useRef(null);
 
-  // Load users who have chatted
+  // Tải danh sách người dùng đã chat
   const loadChatUsers = useCallback(async () => {
     try {
       const res = await apiFetch('/messages/chat/users');
@@ -27,13 +27,12 @@ export default function Chat() {
     }
   }, []);
 
-  // Initialize WebSocket connection
+  // Khởi tạo kết nối WebSocket
   useEffect(() => {
     loadChatUsers();
 
-    // Initialize WebSocket connection
-    if (socketRef.current) return;
-
+    // Prevent multiple socket connections
+    if (socketRef.current) return;    
     const socket = io('http://localhost:3000', { 
       path: '/socket.io/',
       transports: ['websocket', 'polling'],
@@ -43,15 +42,15 @@ export default function Chat() {
       reconnectionAttempts: 5,
       forceNew: false
     });
-
+    // Khi kết nối thành công
     socket.on('connect', () => {
       console.log('[WebSocket] Admin connected:', socket.id);
       socket.emit('admin_join');
     });
-
+    // Khi nhận được tin nhắn từ người dùng
     socket.on('user_message', (data) => {
       console.log('[WebSocket] Received user message:', data);
-      // Update messages if this is from the selected user
+      // Cập nhật tin nhắn nếu đây là từ người dùng được chọn
       if (data.user_id === selectedUserId) {
         setMessages(prev => [...prev, {
           id: data.id,
@@ -60,14 +59,14 @@ export default function Chat() {
           tao_luc: data.tao_luc
         }]);
       }
-      // Refresh users list to show new/updated conversations
+      // Làm mới danh sách người dùng để hiển thị các cuộc trò chuyện mới/cập nhật
       loadChatUsers();
     });
-
+    // Khi ngắt kết nối
     socket.on('disconnect', () => {
       console.log('[WebSocket] Admin disconnected');
     });
-
+    // Lưu tham chiếu socket
     socketRef.current = socket;
 
     return () => {
@@ -75,18 +74,18 @@ export default function Chat() {
     };
   }, [loadChatUsers, selectedUserId]);
 
-  // Auto scroll to bottom
+  // Cuộn xuống cuối khi có tin nhắn mới
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
+  // Chọn người dùng để chat
   const handleSelectUser = async (userId) => {
     console.log('[Chat] Selected user:', userId);
     setSelectedUserId(userId);
     setMessages([]);
 
     try {
-      // Load chat history for this user
+      // Tải lịch sử chat cho người dùng này
       const res = await apiFetch(`/messages/chat/user/${userId}`);
       const data = Array.isArray(res) ? res : res?.data || [];
       console.log('[Chat] Loaded messages for user:', data.length);
@@ -96,7 +95,7 @@ export default function Chat() {
       setMessages([]);
     }
   };
-
+  // Gửi phản hồi cho người dùng
   const handleSendReply = async (e) => {
     e.preventDefault();
     if (!replyText.trim() || !selectedUserId) return;
@@ -104,14 +103,14 @@ export default function Chat() {
     setSending(true);
     try {
       if (socketRef.current && socketRef.current.connected) {
-        // Send via WebSocket
+        // Gửi tin nhắn qua WebSocket
         socketRef.current.emit('admin_message', {
           user_id: selectedUserId,
           noi_dung: replyText
         });
         setReplyText('');
         
-        // Add message to UI immediately
+        // Thêm tin nhắn vào giao diện ngay lập tức
         setMessages(prev => [...prev, {
           id: Date.now(),
           noi_dung: replyText,
@@ -126,7 +125,7 @@ export default function Chat() {
       setSending(false);
     }
   };
-
+  // Hiển thị giao diện
   if (loading) {
     return (
       <div style={{ padding: '20px', textAlign: 'center', color: '#999' }}>

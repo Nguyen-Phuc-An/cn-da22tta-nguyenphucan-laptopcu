@@ -12,6 +12,7 @@ import BannerSlider from '../components/BannerSlider';
 import { imageToSrc, normalizeImages } from '../services/productImages';
 import { listImages as listProductImages } from '../api/productImages';
 
+// Giải mã JWT để lấy thông tin người dùng
 function decodeJwt(token) {
   if (!token) return null;
   try {
@@ -48,12 +49,12 @@ export default function Home() {
   const [priceSort, setPriceSort] = useState(null); // 'asc' | 'desc' | null
   const [priceRange, setPriceRange] = useState({ from: '', to: '' });
   const criteriaRef = useRef(null);
-
+  // Xóa bộ lọc cho một tiêu chí
   function clearCriterion(crit) {
     setFilters(f => ({ ...f, [crit]: [] }));
     setActiveCriterion(null);
   }
-
+  // Xóa tất cả bộ lọc
   function clearAllFilters() {
     setFilters({ tinh_trang: [], o_cung: [], ram: [], cpu: [], kich_thuoc_man_hinh: [] });
     setPriceRange({ from: '', to: '' });
@@ -61,30 +62,30 @@ export default function Home() {
     setActiveCriterion(null);
     setSearchQuery('');
   }
-
+  // Xóa truy vấn tìm kiếm
   function clearSearch() {
     setSearchQuery('');
   }
 
-  // Reset display count when filters change
+  // Đặt lại số lượng hiển thị khi bộ lọc thay đổi
   useEffect(() => {
     setDisplayCount(10);
   }, [selectedCategory, filters, priceSort, priceRange, searchQuery]);
 
-  // Load search query from sessionStorage on mount
+  // Tải truy vấn tìm kiếm từ sessionStorage khi component được mount
   useEffect(() => {
     const query = sessionStorage.getItem('searchQuery');
     if (query) {
       setSearchQuery(query);
       sessionStorage.removeItem('searchQuery');
     }
-    // Load current search from sessionStorage if it exists
+    // Tải truy vấn tìm kiếm hiện tại nếu có
     const currentSearch = sessionStorage.getItem('currentSearchQuery');
     if (currentSearch && !query) {
       setSearchQuery(currentSearch);
     }
   }, [setSearchQuery]);
-
+  // Lưu truy vấn tìm kiếm vào sessionStorage khi nó thay đổi
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -107,7 +108,7 @@ export default function Home() {
     return () => { mounted = false; };
   }, []);
 
-  // Load user's wishlist if logged in
+  // Tải wishlist của người dùng
   useEffect(() => {
     if (!userId) return;
     (async () => {
@@ -122,7 +123,7 @@ export default function Home() {
     })();
   }, [userId]);
 
-  // close open criterion panel when clicking outside the criteria area
+  // Tắt bảng tiêu chí khi nhấp ra ngoài
   useEffect(() => {
     function onDocClick(e) {
       try {
@@ -135,7 +136,7 @@ export default function Home() {
     document.addEventListener('mousedown', onDocClick);
     return () => { document.removeEventListener('mousedown', onDocClick); };
   }, [activeCriterion]);
-
+  // Tải danh mục
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -149,16 +150,16 @@ export default function Home() {
     return () => { mounted = false; };
   }, []);
 
-  // fixed criterion options (per product attributes)
+  // Các tùy chọn tiêu chí cố định (theo thuộc tính sản phẩm)
   const FIXED_OPTIONS = {
     tinh_trang: ['like_new','good','fair','poor'],
     o_cung: ['128GB','256GB','512GB','1TB'],
     ram: ['4GB','8GB','12GB','16GB','24GB','32GB'],
     cpu: ['Intel Core i3','Intel Core i5','Intel Core i7','Intel Core Ultra 7','AMD Ryzen 3','AMD Ryzen 5','AMD Ryzen 7','AMD Ryzen 9','Intel Core U5'],
-    kich_thuoc_man_hinh: ['Khoảng 13"','Khoảng 14"','Khoảng 15"']
+    kich_thuoc_man_hinh: ['Khoảng 14"','Khoảng 15"','Khoảng 16"']
   };
 
-  // apply filters and sorting
+  // Áp dụng bộ lọc và sắp xếp
   const visibleProducts = useMemo(() => {
     if (!Array.isArray(products)) return [];
     let out = products.slice();

@@ -41,14 +41,15 @@ export default function Products() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmData, setDeleteConfirmData] = useState(null);
 
-  // Load products
+  // Tải sản phẩm khi component mount
   useEffect(() => {
+    // Load products
     const loadProducts = async () => {
       try {
         const res = await apiFetch('/products');
         const data = Array.isArray(res) ? res : res?.data || [];
         
-        // Fetch images for each product
+        // Tải hình ảnh cho mỗi sản phẩm
         const withImages = await Promise.all(data.map(async p => {
           try {
             const imgs = await listProductImages(p.id).catch(() => []);
@@ -82,7 +83,7 @@ export default function Products() {
     loadCategories();
   }, []);
 
-  // Apply filters
+  // Áp dụng bộ lọc
   useEffect(() => {
     let result = products;
     if (filters.title) result = result.filter(p => (p.tieu_de || p.title || '').toLowerCase().includes(filters.title.toLowerCase()));
@@ -92,7 +93,7 @@ export default function Products() {
     setFilteredProducts(result);
   }, [filters, products]);
 
-  // Category functions
+  // Category local functions 
   const handleAddCategory = async () => {
     if (!categoryForm.name.trim()) {
       addToast('Vui lòng nhập tên danh mục', 'error');
@@ -111,7 +112,7 @@ export default function Products() {
       addToast('Lỗi thêm danh mục: ' + err.message, 'error');
     }
   };
-
+  // Cập nhật danh mục
   const handleUpdateCategory = async () => {
     if (!categoryForm.name.trim()) {
       addToast('Vui lòng nhập tên danh mục', 'error');
@@ -130,7 +131,7 @@ export default function Products() {
       addToast('Lỗi cập nhật danh mục: ' + err.message, 'error');
     }
   };
-
+  // Xóa danh mục
   const handleDeleteCategory = async (id) => {
     setDeleteConfirmData({
       type: 'category',
@@ -190,7 +191,7 @@ export default function Products() {
     }
     setShowProductModal(true);
   };
-
+  // Xử lý thay đổi ảnh sản phẩm
   const handleProductImageChange = (e) => {
     const files = Array.from(e.target.files || []);
     
@@ -202,10 +203,10 @@ export default function Products() {
       reader.readAsDataURL(file);
     });
     
-    // Reset input
+    // Đặt lại input
     e.target.value = '';
   };
-
+  // Xóa ảnh sản phẩm
   const handleRemoveProductImage = async (index) => {
     const img = productImages[index];
     
@@ -230,7 +231,7 @@ export default function Products() {
     // Xóa khỏi local state
     setProductImages(productImages.filter((_, i) => i !== index));
   };
-
+  // Lưu sản phẩm (thêm hoặc cập nhật)
   const handleSaveProduct = async () => {
     if (!productForm.title.trim() || !productForm.category_id) {
       addToast('Vui lòng nhập đủ thông tin bắt buộc', 'error');
@@ -320,23 +321,23 @@ export default function Products() {
       console.error('handleSaveProduct error:', err);
     }
   };
-
+  // Lấy URL hình ảnh sản phẩm
   const getImageUrl = (product) => {
     if (product.images && Array.isArray(product.images) && product.images.length > 0) {
       const first = product.images[0];
       
-      // If image object has full_url from server, use it directly
+      // Nếu là object với full_url, dùng trực tiếp
       if (typeof first === 'object' && first?.full_url) {
         return first.full_url;
       }
       
-      // Otherwise use imageToSrc service
+      // Ngược lại, sử dụng dịch vụ imageToSrc
       const imgData = typeof first === 'string' ? { url: first } : (first || {});
       return imageToSrc(imgData);
     }
     return null;
   };
-
+  // Xử lý xác nhận xóa
   const handleConfirmDelete = async () => {
     if (!deleteConfirmData) return;
 
@@ -348,7 +349,7 @@ export default function Products() {
       } else if (deleteConfirmData.type === 'product') {
         const product = products.find(p => p.id === deleteConfirmData.id);
         
-        // Delete all images associated with product
+        // Xóa tất cả hình ảnh liên quan đến sản phẩm
         if (product && product.images && product.images.length > 0) {
           for (const img of product.images) {
             try {
@@ -364,7 +365,7 @@ export default function Products() {
           }
         }
         
-        // Delete product (backend should cascade delete images)
+        // Xóa sản phẩm (backend sẽ tự động xóa các hình ảnh liên quan)
         await apiFetch(`/products/${deleteConfirmData.id}`, { method: 'DELETE' });
         setProducts(products.filter(p => p.id !== deleteConfirmData.id));
         addToast('Xóa sản phẩm và các hình ảnh thành công', 'success');
@@ -376,7 +377,7 @@ export default function Products() {
       setDeleteConfirmData(null);
     }
   };
-
+  // Xử lý xóa sản phẩm
   const handleDeleteProduct = async (id) => {
     setDeleteConfirmData({
       type: 'product',
@@ -500,7 +501,7 @@ export default function Products() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{minWidth: '500px'}}>
             <div className="modal-header">
               <h3>Quản lý danh mục</h3>
-              <button className="close-btn" onClick={() => setShowCategoryModal(false)}>✕</button>
+              <button className="close-btn" onClick={() => setShowCategoryModal(false)}><i className="bi bi-x-lg"></i></button>
             </div>
             
             <div className="modal-body" style={{ padding: '0' }}>
@@ -587,7 +588,7 @@ export default function Products() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{minWidth: '600px'}}>
             <div className="modal-header">
               <h3>{editingProduct ? 'Sửa sản phẩm' : 'Thêm sản phẩm mới'}</h3>
-              <button className="close-btn" onClick={() => setShowProductModal(false)}>✕</button>
+              <button className="close-btn" onClick={() => setShowProductModal(false)}><i className="bi bi-x-lg"></i></button>
             </div>
             
             <div className="modal-body">
@@ -802,7 +803,7 @@ export default function Products() {
                           padding: 0
                         }}
                       >
-                        ✕
+                        <i className="bi bi-x-lg" style={{color: 'white'}}></i>
                       </button>
                       {img.type === 'existing' && (
                         <span style={{

@@ -7,7 +7,7 @@ export default function ChangePasswordModal({ onClose }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
-
+  // Xử lý đổi mật khẩu
   const handleChangePassword = async (e) => {
     e.preventDefault();
 
@@ -60,7 +60,7 @@ export default function ChangePasswordModal({ onClose }) {
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>Đổi mật khẩu</h2>
-          <button className="close-btn" onClick={onClose}>✕</button>
+          <button className="close-btn" onClick={onClose}><i className="bi bi-x-lg"></i></button>
         </div>
 
         <div className="modal-body">

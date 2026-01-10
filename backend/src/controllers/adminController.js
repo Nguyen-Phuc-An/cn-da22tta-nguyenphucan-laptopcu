@@ -1,34 +1,34 @@
 const db = require('../db');
 
-// Helper to format JS Date to MySQL DATETIME string
+// Hỗ trợ chuyển đổi Date sang định dạng MySQL DATETIME
 function toMySQL(dt) {
   const pad = n => String(n).padStart(2, '0');
   return `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())} ${pad(dt.getHours())}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}`;
 }
-
+// Thống kê cho admin dashboard
 async function stats(req, res) {
   try {
-    // Ensure only admin users can access
+    // Chỉ cho phép user là admin truy cập
     if (!req.user || !(req.user.role === 'admin' || req.user.isAdmin || req.user.is_admin)) {
       return res.status(403).json({ error: 'forbidden' });
     }
 
-    // Totals for products
+    // Tổng số sản phẩm
     const [[{ totalProducts }]] = await db.query('SELECT COUNT(*) AS totalProducts FROM products');
     const [[{ sellingCount }]] = await db.query("SELECT COUNT(*) AS sellingCount FROM products WHERE trang_thai = 'available'");
     const [[{ outOfStock }]] = await db.query('SELECT COUNT(*) AS outOfStock FROM products WHERE so_luong = 0');
     const [[{ hiddenCount }]] = await db.query("SELECT COUNT(*) AS hiddenCount FROM products WHERE trang_thai = 'hidden'");
 
-    // Users
+    // Tổng số người dùng
     const [[{ totalUsers }]] = await db.query('SELECT COUNT(*) AS totalUsers FROM users');
 
-    // New users this week
+    // Người dùng mới trong tuần qua
     const weekStart = new Date();
     weekStart.setHours(0,0,0,0);
     weekStart.setDate(weekStart.getDate() - 6); // last 7 days
     const [[{ newUsersWeek }]] = await db.query('SELECT COUNT(*) AS newUsersWeek FROM users WHERE tao_luc >= ?', [toMySQL(weekStart)]);
 
-    // Orders: revenue today and this month, count of successful orders
+    // Doanh thu và đơn hàng thành công hôm nay và tháng này
     const todayStart = new Date(); todayStart.setHours(0,0,0,0);
     const monthStart = new Date(); monthStart.setHours(0,0,0,0); monthStart.setDate(1);
     const successStatuses = ['completed','shipping','confirmed'];
@@ -38,23 +38,23 @@ async function stats(req, res) {
     const [[{ revenueMonth }]] = await db.query(`SELECT COALESCE(SUM(tong_tien),0) AS revenueMonth FROM orders WHERE tao_luc >= ? AND trang_thai IN (${placeholders})`, [toMySQL(monthStart), ...successStatuses]);
     const [[{ successfulOrdersToday }]] = await db.query(`SELECT COUNT(*) AS successfulOrdersToday FROM orders WHERE tao_luc >= ? AND trang_thai IN (${placeholders})`, [toMySQL(todayStart), ...successStatuses]);
 
-    // Unread messages - count recent messages from chat_messages table
+    // Tin nhắn chưa đọc từ khách hàng trong ngày
     const [[{ unreadMessages }]] = await db.query('SELECT COUNT(*) AS unreadMessages FROM chat_messages WHERE tao_luc >= ?', [toMySQL(todayStart)]);
 
-    // Alerts: products out of stock, orders pending
+    // Đơn hàng chờ xử lý và đơn hàng mới hôm nay
     const [[{ pendingOrders }]] = await db.query("SELECT COUNT(*) AS pendingOrders FROM orders WHERE trang_thai = 'pending'");
 
-    // NEW orders created today (not viewed yet by admin)
+    // Đơn hàng mới hôm nay
     const [[{ newOrders }]] = await db.query("SELECT COUNT(*) AS newOrders FROM orders WHERE trang_thai = 'pending' AND DATE(tao_luc) = CURDATE()");
 
-    // Revenue series: 7 days
+    // Doanh thu theo ngày: last 7 days
     const daysStart = new Date(); daysStart.setHours(0,0,0,0); daysStart.setDate(daysStart.getDate() - 6);
     const [dayRows] = await db.query(`SELECT DATE(tao_luc) AS d, COALESCE(SUM(tong_tien),0) AS total, COUNT(*) AS cnt FROM orders WHERE tao_luc >= ? AND trang_thai IN (${placeholders}) GROUP BY DATE(tao_luc) ORDER BY DATE(tao_luc) ASC`, [toMySQL(daysStart), ...successStatuses]);
     console.log('DEBUG: daysStart=', daysStart.toISOString());
     console.log('DEBUG: toMySQL(daysStart)=', toMySQL(daysStart));
     console.log('DEBUG: successStatuses=', successStatuses);
     console.log('DEBUG: dayRows=', dayRows);
-    // build last 7 days array
+    // Biểu đồ doanh thu 7 ngày
     const revenue7days = [];
     for (let i=0;i<7;i++){
       const d = new Date(daysStart); d.setDate(daysStart.getDate()+i);
@@ -68,7 +68,7 @@ async function stats(req, res) {
       revenue7days.push({ date: key, total: found ? Number(found.total) : 0, orders: found ? Number(found.cnt) : 0 });
     }
 
-    // Revenue per month: last 12 months
+    // Doanh thu theo tháng: last 12 months
     const monthsStart = new Date(); monthsStart.setHours(0,0,0,0); monthsStart.setMonth(monthsStart.getMonth() - 11); monthsStart.setDate(1);
     const [monthRows] = await db.query(`SELECT DATE_FORMAT(tao_luc, '%Y-%m') AS m, COALESCE(SUM(tong_tien),0) AS total, COUNT(*) AS cnt FROM orders WHERE tao_luc >= ? AND trang_thai IN (${placeholders}) GROUP BY m ORDER BY m ASC`, [toMySQL(monthsStart), ...successStatuses]);
     const revenue12months = [];
@@ -79,7 +79,7 @@ async function stats(req, res) {
       revenue12months.push({ month: key, total: found ? Number(found.total) : 0, orders: found ? Number(found.cnt) : 0 });
     }
 
-    // Brand statistics from purchased products - with time period filter
+    // Thống kê thương hiệu bán chạy trong khoảng thời gian
     const period = req.query.period || 'week'; // 'week', 'month', 'year'
     let dateFilter = '';
     
@@ -114,7 +114,7 @@ async function stats(req, res) {
       ORDER BY tong_so_lan DESC
     `);
 
-    // Convert to brandStats format
+    // Chuyển đổi dữ liệu thương hiệu
     const brandStats = brandData.map(item => ({ 
       brand: item.hang || 'Unknown', 
       count: Number(item.tong_so_lan) 
@@ -132,10 +132,10 @@ async function stats(req, res) {
     res.status(500).json({ error: err && err.message ? err.message : String(err) });
   }
 }
-
+// Lấy đơn hàng trong ngày kèm sản phẩm
 async function getDayOrders(req, res) {
   try {
-    // Ensure only admin users can access
+    // Chỉ cho phép user là admin truy cập
     if (!req.user || !(req.user.role === 'admin' || req.user.isAdmin || req.user.is_admin)) {
       return res.status(403).json({ error: 'forbidden' });
     }

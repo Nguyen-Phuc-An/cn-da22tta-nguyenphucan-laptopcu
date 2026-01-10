@@ -6,6 +6,7 @@ export default function BannerSlider() {
   const [banners, setBanners] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // Load active banners on mount
   useEffect(() => {
     (async () => {
       try {
@@ -18,7 +19,7 @@ export default function BannerSlider() {
     })();
   }, []);
 
-  // Auto-slide banner every 5 seconds
+  // Tự động chuyển banner sau mỗi 5 giây
   useEffect(() => {
     if (!banners || banners.length === 0) return;
     
@@ -28,10 +29,9 @@ export default function BannerSlider() {
     
     return () => clearInterval(interval);
   }, [banners]);
-
+  // Nếu không có banner nào, chỉ hiển thị banner-bottom
   if (!banners || banners.length === 0) {
     console.log('[BannerSlider] No active banners from backend, showing fallback');
-    // Fallback: show only banner-bottom when no banners from backend
     return (
       <div className="banner-slider">
         <div className="banner-bottom">
@@ -64,40 +64,41 @@ export default function BannerSlider() {
     );
   }
 
-  // Get banner image URL
+  // Lấy URL hình ảnh banner
   const getBannerImageUrl = (banner) => {
     if (!banner || !banner.duong_dan) return '/uploads/products/default.jpg';
     
     let imagePath = banner.duong_dan;
     
-    // If it's already absolute URL, return as-is
+    // Nếu đã là URL tuyệt đối, trả về nguyên
     if (imagePath.startsWith('http') || imagePath.startsWith('data:')) {
       return imagePath;
     }
     
-    // For relative paths, prepend API base
+    // Với đường dẫn tương đối, thêm tiền tố API base
     const apiBase = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
     const baseUrl = apiBase.replace('/api', '');
     
-    // Clean up path - remove leading slashes and add one
+    // Dọn dẹp đường dẫn - loại bỏ dấu gạch chéo đầu và thêm một dấu
     const cleanPath = imagePath.replace(/^\/+/, '/');
     
     return baseUrl + cleanPath;
   };
 
-  // Get banner by index (cycling through all banners)
+  // Lấy banner theo chỉ số (lặp qua tất cả các banner)
   const getBannerByIndex = (offset) => {
     if (!banners || banners.length === 0) return null;
     const index = (currentIndex + offset) % banners.length;
     return banners[index];
   };
 
+  // Lấy banner trái và phải
   const bannerLeft = getBannerByIndex(0);
   const bannerRight = getBannerByIndex(1);
 
   return (
     <div className="banner-slider">
-        {/* Banner Left with Both Arrows and Dots */}
+        {/* Banner trái với cả mũi tên và chấm */}
         <div className="banner-left">
             {banners && banners.length > 0 && (
               <>
@@ -138,7 +139,7 @@ export default function BannerSlider() {
                 />
                 </a>
             </div>
-            {/* Dots for Banner Left */}
+            {/* Chấm cho Banner Trái */}
             {banners && banners.length > 0 && (
               <div className="banner-dots banner-dots-left">
                 {banners.map((_, index) => (
@@ -194,7 +195,7 @@ export default function BannerSlider() {
                 />
                 </a>
             </div>
-            {/* Dots for Banner Right */}
+            {/* Chấm cho Banner Phải */}
             {banners && banners.length > 0 && (
               <div className="banner-dots banner-dots-right">
                 {banners.map((_, index) => (

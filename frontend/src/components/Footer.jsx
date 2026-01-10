@@ -42,10 +42,10 @@ export default function Footer() {
         <div>
           <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'white', marginBottom: '12px' }}>Liên hệ</h3>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-            <li style={{ fontSize: '14px', marginBottom: '8px' }}>📍 330/13 Quốc lộ 53 ấp Hòa Hảo, xã Hưng Mỹ, tỉnh Vĩnh Long</li>
-            <li style={{ fontSize: '14px', marginBottom: '8px' }}>📞 0363 547 545</li>
-            <li style={{ fontSize: '14px', marginBottom: '8px' }}>✉️ anphuc1203@gamil.com</li>
-            <li style={{ fontSize: '14px', marginBottom: '8px' }}>⏰ Từ 7h - 21h</li>
+            <li style={{ fontSize: '14px', marginBottom: '8px' }}><i className="bi bi-geo-alt-fill" style={{marginRight: '8px'}}></i>330/13 Quốc lộ 53 ấp Hòa Hảo, xã Hưng Mỹ, tỉnh Vĩnh Long</li>
+            <li style={{ fontSize: '14px', marginBottom: '8px' }}><i className="bi bi-telephone-fill" style={{marginRight: '8px'}}></i>0363 547 545</li>
+            <li style={{ fontSize: '14px', marginBottom: '8px' }}><i className="bi bi-envelope-fill" style={{marginRight: '8px'}}></i>anphuc1203@gamil.com</li>
+            <li style={{ fontSize: '14px', marginBottom: '8px' }}><i className="bi bi-clock-fill" style={{marginRight: '8px'}}></i>Từ 7h - 21h</li>
           </ul>
         </div>
 

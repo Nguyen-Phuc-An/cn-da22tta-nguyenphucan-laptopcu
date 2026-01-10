@@ -9,7 +9,7 @@ export default function Cart() {
   const { items, removeFromCart, updateQuantity, clearCart } = useContext(CartContext);
   const { user } = useContext(AuthContext);
   const [selectedItems, setSelectedItems] = React.useState(new Set());
-
+  // Nếu giỏ hàng trống
   if (items.length === 0) {
     return (
       <>
@@ -24,7 +24,7 @@ export default function Cart() {
     );
   }
 
-  // Toggle item selection
+  // Chuyển đổi chọn/bỏ chọn một mục
   const toggleItemSelection = (itemId) => {
     const newSelected = new Set(selectedItems);
     if (newSelected.has(itemId)) {
@@ -35,7 +35,7 @@ export default function Cart() {
     setSelectedItems(newSelected);
   };
 
-  // Toggle select all
+  // Chuyển đổi chọn/bỏ chọn tất cả
   const toggleSelectAll = () => {
     if (selectedItems.size === items.length) {
       setSelectedItems(new Set());
@@ -44,13 +44,13 @@ export default function Cart() {
     }
   };
 
-  // Calculate total for selected items only
+  // Tính tổng cho các mục đã chọn
   const selectedItemsTotal = items
     .filter(item => selectedItems.has(item.id))
     .reduce((sum, item) => sum + (item.gia * item.quantity), 0);
 
-  // Calculate edu discount
-  const EDU_DISCOUNT_PER_ITEM = 500000; // 500.000đ per item
+  // Tính giảm giá edu
+  const EDU_DISCOUNT_PER_ITEM = 500000; // 500.000đ mỗi mục
   const isEduVerified = user?.edu_verified === 1;
   const selectedItemsCount = selectedItems.size;
   const eduDiscount = isEduVerified ? selectedItemsCount * EDU_DISCOUNT_PER_ITEM : 0;
@@ -105,7 +105,7 @@ export default function Cart() {
                 className="btn-remove-card"
                 title="Xóa sản phẩm"
               >
-                ✕
+<i className="bi bi-x-lg"></i>
               </button>
 
               <div className="card-image">

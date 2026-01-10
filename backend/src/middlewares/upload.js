@@ -6,7 +6,7 @@ require('dotenv').config();
 const uploadDir = process.env.UPLOAD_DIR || 'public/uploads/products';
 const absUploadDir = path.isAbsolute(uploadDir) ? uploadDir : path.join(process.cwd(), uploadDir);
 fs.mkdirSync(absUploadDir, { recursive: true });
-
+// Cấu hình lưu trữ cho multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, absUploadDir),
   filename: (req, file, cb) => {
@@ -15,18 +15,17 @@ const storage = multer.diskStorage({
     cb(null, name);
   }
 });
-
+// Bộ lọc để chỉ chấp nhận các file hình ảnh
 function imageFilter(req, file, cb) {
   if (!file.mimetype.startsWith('image/')) return cb(new Error('Only image files allowed'), false);
   cb(null, true);
 }
-
+// Tạo middleware upload
 const upload = multer({ storage, fileFilter: imageFilter, limits: { files: 5, fileSize: 5 * 1024 * 1024 } });
-
-// Avatar upload with separate directory
+// Tải lên avatar với thư mục riêng
 const avatarUploadDir = path.join(process.cwd(), 'public/uploads/users');
 fs.mkdirSync(avatarUploadDir, { recursive: true });
-
+// Cấu hình lưu trữ cho avatar
 const avatarStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, avatarUploadDir),
   filename: (req, file, cb) => {
@@ -35,7 +34,7 @@ const avatarStorage = multer.diskStorage({
     cb(null, name);
   }
 });
-
+// Tạo middleware upload cho avatar
 const avatarUpload = multer({ 
   storage: avatarStorage, 
   fileFilter: imageFilter, 

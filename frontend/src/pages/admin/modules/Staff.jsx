@@ -30,17 +30,17 @@ export default function Staff() {
     };
     loadStaff();
   }, [addToast]);
-
+  // Reset form data
   const resetForm = () => {
     setFormData({ email: '', name: '', password: '', phone: '', address: '' });
     setEditingStaff(null);
   };
-
+  // Mở modal thêm nhân viên
   const openAddModal = () => {
     resetForm();
     setShowModal(true);
   };
-
+  // Mở modal chỉnh sửa nhân viên
   const openEditModal = (s) => {
     setEditingStaff(s);
     setFormData({
@@ -52,12 +52,12 @@ export default function Staff() {
     });
     setShowModal(true);
   };
-
+  // Xử lý thay đổi input form
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
-
+  // Lưu nhân viên (thêm mới hoặc cập nhật)
   const handleSave = async () => {
     if (!formData.email.trim() || !formData.name.trim()) {
       addToast('Vui lòng nhập Email và Tên', 'error');

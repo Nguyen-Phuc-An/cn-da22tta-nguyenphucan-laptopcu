@@ -6,7 +6,7 @@ import { listImages as listProductImages } from '../api/productImages';
 import { imageToSrc, normalizeImages } from '../services/productImages';
 import Footer from '../components/Footer';
 import '../styles/Wishlists.css';
-
+// Giải mã JWT để lấy thông tin người dùng
 function decodeJwt(token) {
   if (!token) return null;
   try {
@@ -30,7 +30,7 @@ export default function Wishlists() {
 
   const [wishlistItems, setWishlistItems] = useState([]);
   const [error, setError] = useState('');
-
+  // Tải danh sách yêu thích
   useEffect(() => {
     if (!userId) return;
     (async () => {
@@ -61,7 +61,7 @@ export default function Wishlists() {
       }
     })();
   }, [userId, addToast]);
-
+  // Xử lý xóa khỏi danh sách yêu thích
   const handleRemove = async (productId) => {
     try {
       await removeFromWishlist(userId, productId);
@@ -73,7 +73,7 @@ export default function Wishlists() {
       console.error(err);
     }
   };
-
+  // Nếu chưa đăng nhập
   if (!token) {
     return (
       <>

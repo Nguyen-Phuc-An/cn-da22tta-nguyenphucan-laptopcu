@@ -13,12 +13,12 @@ export default function Contact() {
     message: ''
   });
   const [loading, setLoading] = useState(false);
-
+  // Xử lý thay đổi form
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
-
+  // Xử lý gửi form
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);

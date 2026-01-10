@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { BsStarFill, BsStar } from 'react-icons/bs';
 import { apiFetch } from '../../../services/apiClient';
 import { AuthContext } from '../../../context/AuthContext';
 import '../styles/Reviews.css';
@@ -59,6 +60,7 @@ export default function Reviews() {
     return matchRating && matchSearch;
   });
 
+  // Kiểm tra quyền admin từ token
   useEffect(() => {
     if (!token) return;
     try {
@@ -69,15 +71,19 @@ export default function Reviews() {
       setIsAdmin(false);
     }
   }, [token]);
-
+  // Tải đánh giá khi component mount
   useEffect(() => {
     loadReviews();
   }, []);
-
+  // Hàm hiển thị sao đánh giá
   const getRatingStars = (rating) => {
-    return '⭐'.repeat(rating) + '☆'.repeat(5 - rating);
+    return Array.from({length: 5}, (_, i) => (
+      i < rating 
+        ? <BsStarFill key={i} style={{color: '#ffc107', marginRight: '2px'}} />
+        : <BsStar key={i} style={{color: '#ddd', marginRight: '2px'}} />
+    ));
   };
-
+  // Định dạng ngày tháng
   const formatDate = (date) => {
     if (!date) return 'N/A';
     return new Date(date).toLocaleString('vi-VN');

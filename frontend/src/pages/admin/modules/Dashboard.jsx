@@ -6,7 +6,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('week');
   const [revenueChartType, setRevenueChartType] = useState('week'); // 'week' hoặc 'month'
-
+  // Tải số liệu thống kê khi period thay đổi
   useEffect(() => {
     const loadStats = async () => {
       try {
@@ -22,7 +22,7 @@ export default function Dashboard() {
     };
     loadStats();
   }, [period]);
-
+  // Hiển thị giao diện khi đang tải
   if (loading) {
     return (
       <div className="admin-panel">
@@ -32,7 +32,7 @@ export default function Dashboard() {
       </div>
     );
   }
-
+  // Hiển thị giao diện khi không có dữ liệu
   if (!stats) {
     return (
       <div className="admin-panel">

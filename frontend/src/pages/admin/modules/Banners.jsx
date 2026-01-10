@@ -14,7 +14,7 @@ export default function Banners() {
   const [bannerImagePreview, setBannerImagePreview] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmData, setDeleteConfirmData] = useState(null);
-
+  // Load banners
   useEffect(() => {
     const loadBanners = async () => {
       try {
@@ -27,27 +27,27 @@ export default function Banners() {
     };
     loadBanners();
   }, []);
-
+  // Lấy URL hình ảnh banner
   const getBannerImageUrl = (banner) => {
     if (!banner || !banner.duong_dan) return null;
     
     let imagePath = banner.duong_dan;
     
-    // If it's already absolute URL, return as-is
+    // Nếu đã là URL tuyệt đối, trả về nguyên
     if (imagePath.startsWith('http') || imagePath.startsWith('data:')) {
       return imagePath;
     }
     
-    // For relative paths, prepend API base
+    // Đối với đường dẫn tương đối, thêm tiền tố API base
     const apiBase = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
     const baseUrl = apiBase.replace('/api', '');
     
-    // Clean up path - remove leading slashes and add one
+    // Làm sạch đường dẫn - loại bỏ các dấu gạch chéo đầu và thêm một dấu /
     const cleanPath = imagePath.replace(/^\/+/, '/');
     
     return baseUrl + cleanPath;
   };
-
+  // Xử lý thay đổi hình ảnh banner
   const handleBannerImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -56,7 +56,7 @@ export default function Banners() {
       reader.readAsDataURL(file);
     }
   };
-
+  // Mở modal thêm/sửa banner
   const handleOpenBannerModal = (banner = null) => {
     if (banner) {
       setEditingBanner(banner);
@@ -78,14 +78,14 @@ export default function Banners() {
     setBannerImagePreview(null);
     setShowBannerModal(true);
   };
-
+  // Lưu banner (thêm hoặc cập nhật)
   const handleSaveBanner = async () => {
     if (!bannerForm.title.trim()) {
       alert('Vui lòng nhập tiêu đề banner');
       return;
     }
     try {
-      // For text-only updates or no image change
+      // Cập nhật chỉ với văn bản hoặc không thay đổi hình ảnh
       const payload = {
         tieu_de: bannerForm.title,
         link: bannerForm.link,
@@ -101,10 +101,10 @@ export default function Banners() {
         setBanners(banners.map(b => b.id === editingBanner.id ? { ...b, ...payload } : b));
         alert('Cập nhật banner thành công');
       } else {
-        // Check if we have a new image file to upload
+        // Kiểm tra nếu có tệp hình ảnh mới để tải lên
         const fileInput = document.querySelector('input[type="file"][accept="image/*"]');
         if (bannerImagePreview && fileInput && fileInput.files.length > 0) {
-          // For new banner with image: use FormData
+          // Đối với banner mới có hình ảnh: sử dụng FormData
           const formData = new FormData();
           formData.append('tieu_de', bannerForm.title);
           formData.append('link', bannerForm.link);
@@ -112,7 +112,7 @@ export default function Banners() {
           formData.append('trang_thai', bannerForm.status);
           formData.append('hinh_anh', fileInput.files[0]);
 
-          // Use apiFetch which handles token and API base correctly
+          // Tạo banner với hình ảnh
           const res = await apiFetch('/banners', {
             method: 'POST',
             body: formData,
@@ -121,7 +121,7 @@ export default function Banners() {
           setBanners([...banners, res]);
           alert('Thêm banner thành công');
         } else {
-          // Text-only banner without image
+          // Banner chỉ có văn bản, không có hình ảnh
           const res = await apiFetch('/banners', {
             method: 'POST',
             body: payload
@@ -135,7 +135,7 @@ export default function Banners() {
       alert('Lỗi lưu banner: ' + err.message);
     }
   };
-
+  // Xử lý xóa banner
   const handleDeleteBanner = (id) => {
     setDeleteConfirmData({
       type: 'banner',
@@ -144,7 +144,7 @@ export default function Banners() {
     });
     setShowDeleteConfirm(true);
   };
-
+  // Xác nhận xóa banner
   const handleConfirmDelete = async () => {
     if (!deleteConfirmData) return;
 
@@ -288,7 +288,7 @@ export default function Banners() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{minWidth: '500px'}}>
             <div className="modal-header">
               <h3>{editingBanner ? 'Sửa banner' : 'Thêm banner mới'}</h3>
-              <button className="close-btn" onClick={() => setShowBannerModal(false)}>✕</button>
+              <button className="close-btn" onClick={() => setShowBannerModal(false)}><i className="bi bi-x-lg"></i></button>
             </div>
             
             <div className="modal-body">

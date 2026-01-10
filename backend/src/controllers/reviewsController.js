@@ -1,5 +1,5 @@
 const reviews = require('../models/reviews');
-
+// Tạo hoặc cập nhật đánh giá
 async function createOrUpdate(req, res) {
   try { 
     const id = await reviews.createOrUpdateReview(req.body || {}); 
@@ -8,12 +8,11 @@ async function createOrUpdate(req, res) {
     res.status(500).json({ error: e.message }); 
   }
 }
-
+// Lấy danh sách đánh giá của một sản phẩm
 async function listByProduct(req, res) {
   try { const rows = await reviews.getReviewsByProduct(req.params.productId); res.json(rows); } catch (e) { res.status(500).json({ error: e.message }); }
 }
-
-// List all reviews (for admin/staff)
+// Lấy danh sách tất cả đánh giá
 async function listAll(req, res) {
   try { 
     const rows = await reviews.getAllReviews(); 
@@ -22,11 +21,11 @@ async function listAll(req, res) {
     res.status(500).json({ error: e.message }); 
   }
 }
-
+// Xóa đánh giá
 async function remove(req, res) {
   try { await reviews.deleteReview(req.params.productId, req.params.userId); res.json({ ok: true }); } catch (e) { res.status(500).json({ error: e.message }); }
 }
-
+// Lấy danh sách sản phẩm cần đánh giá của người dùng
 async function getPending(req, res) {
   try {
     if (!req.user) {

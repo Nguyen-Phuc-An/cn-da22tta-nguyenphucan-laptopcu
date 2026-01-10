@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 
+// Giải mã JWT để lấy thông tin người dùng
 function decodeJwt(token) {
   if (!token) return null;
   try {
@@ -20,7 +21,7 @@ export default function ProfileModal({ token, onClose }) {
         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
           <div className="modal-header">
             <h2>Hồ sơ cá nhân</h2>
-            <button className="close-btn" onClick={onClose}>✕</button>
+            <button className="close-btn" onClick={onClose}><i className="bi bi-x-lg"></i></button>
           </div>
           <div className="modal-body">
             <p>Không thể tải thông tin người dùng</p>

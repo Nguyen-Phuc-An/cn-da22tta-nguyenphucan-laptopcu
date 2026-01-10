@@ -8,7 +8,7 @@ import '../styles/EduVerification.css';
 export default function EduVerification() {
   const { token, user, setUser } = useContext(AuthContext);
   const { addToast } = useContext(ToastContext);
-
+  
   console.log('[EduVerification] user context:', user);
 
   const [formData, setFormData] = useState({
@@ -22,7 +22,7 @@ export default function EduVerification() {
 
   const isVerified = user?.edu_verified === 1 && !!user?.edu_email;
   const isPending = user?.edu_verified === 0 && !!user?.edu_email;
-
+  // Nếu không đăng nhập
   if (!token) { 
     return (
       <>
@@ -37,7 +37,7 @@ export default function EduVerification() {
       </>
     );
   }
-
+  // Nếu đã xác thực
   if (isVerified) {
     return (
       <>
@@ -63,7 +63,7 @@ export default function EduVerification() {
       </>
     );
   }
-
+  // Nếu đang chờ xác thực
   if (isPending) {
     return (
       <>
@@ -91,7 +91,7 @@ export default function EduVerification() {
       </>
     );
   }
-
+  // Xử lý thay đổi form
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -99,7 +99,7 @@ export default function EduVerification() {
       [name]: value
     }));
   };
-
+  // Xử lý gửi form
   const handleSubmit = async (e) => {
     e.preventDefault();
     

@@ -7,11 +7,11 @@ const MIN = 0;
 const MAX = 60000000;
 
 export default function PriceRangeSlider({ onChange, value }) {
-  // support controlled usage via `value` prop, fallback to internal default
+  // Hỗ trợ giá trị được điều khiển từ cha
   const initial = Array.isArray(value) && value.length === 2 ? value : [10000000, 30000000];
   const [values, setValues] = useState(initial);
 
-  // sync when parent-controlled value changes
+  // đồng bộ khi prop value thay đổi
   useEffect(() => {
     if (Array.isArray(value) && value.length === 2) setValues(value.map(v => Number(v || 0)));
   }, [value]);

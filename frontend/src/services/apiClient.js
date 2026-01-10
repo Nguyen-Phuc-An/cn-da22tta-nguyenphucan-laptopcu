@@ -1,7 +1,7 @@
 const API_BASE = (import.meta.env.VITE_API_BASE || '') + '/api';
 
 let token = typeof window !== 'undefined' ? localStorage.getItem('cn_token') : null;
-
+// Lưu hoặc xóa token
 export function setToken(t) {
   token = t;
   if (typeof window !== 'undefined') {
@@ -9,20 +9,20 @@ export function setToken(t) {
     else localStorage.removeItem('cn_token');
   }
 }
-
+// Lấy token hiện tại
 export function getToken() {
-  // Always read fresh from localStorage
+  // Luôn đọc mới từ localStorage
   if (typeof window !== 'undefined') {
     return localStorage.getItem('cn_token');
   }
   return token;
 }
-
+// Lấy header Authorization nếu có token
 export function getAuthHeader() {
   const t = getToken();
   return t ? { Authorization: 'Bearer ' + t } : {};
 }
-
+// Hàm gọi API chung
 async function apiFetch(path, opts = {}) {
   opts.headers = opts.headers || {};
   const currentToken = getToken();

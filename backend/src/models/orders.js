@@ -1,6 +1,6 @@
 const db = require('../db');
 
-// Orders model - single clean implementation
+// Tạo đơn hàng mới
 async function createOrder({ 
   nguoi_dung_id, user_id, 
   ten_nguoi_nhan, 
@@ -72,7 +72,7 @@ async function createOrder({
     conn.release();
   }
 }
-
+// Lấy thông tin đơn hàng theo ID
 async function getOrderById(id) {
   const [orders] = await db.query('SELECT * FROM orders WHERE id = ?', [id]);
   if (!orders[0]) return null;
@@ -86,11 +86,11 @@ async function getOrderById(id) {
   `, [id]);
   return { ...orders[0], items };
 }
-
+// Lấy danh sách đơn hàng cho một người dùng
 async function listOrdersForUser(userId, { limit = 50, offset = 0 } = {}) {
   const [rows] = await db.query('SELECT * FROM orders WHERE khach_hang_id = ? ORDER BY tao_luc DESC LIMIT ? OFFSET ?', [userId, Number(limit), Number(offset)]);
   
-  // Fetch items for each order
+  // Lấy các mục cho mỗi đơn hàng
   const ordersWithItems = await Promise.all(
     rows.map(async (order) => {
       const [items] = await db.query(`
@@ -107,7 +107,7 @@ async function listOrdersForUser(userId, { limit = 50, offset = 0 } = {}) {
   
   return ordersWithItems;
 }
-
+// Lấy tất cả đơn hàng với tùy chọn lọc theo trạng thái
 async function listAll({ limit = 100, offset = 0, status = null } = {}) {
   let query = 'SELECT * FROM orders';
   const params = [];
@@ -139,28 +139,28 @@ async function listAll({ limit = 100, offset = 0, status = null } = {}) {
   
   return ordersWithItems;
 }
-
+// Cập nhật trạng thái đơn hàng, nếu hủy thì hoàn lại số lượng sản phẩm
 async function updateOrderStatus(id, trang_thai) {
   const conn = await db.getConnection();
   try {
     await conn.beginTransaction();
-    
-    // Get current order status
+        
+    // Lấy trạng thái đơn hàng hiện tại
     const [currentOrder] = await conn.query('SELECT trang_thai FROM orders WHERE id = ?', [id]);
     const currentStatus = currentOrder[0]?.trang_thai;
     
-    // Update order status
+    // Cập nhật trạng thái đơn hàng
     await conn.query('UPDATE orders SET trang_thai = ? WHERE id = ?', [trang_thai, id]);
     
-    // If order is being canceled, restore product quantities
+    // Nếu đơn hàng bị hủy, hoàn lại số lượng sản phẩm
     if (trang_thai === 'canceled' && currentStatus !== 'canceled') {
-      // Get all order items for this order
+      // Lấy tất cả các mục đơn hàng cho đơn hàng này
       const [orderItems] = await conn.query(
         'SELECT san_pham_id, so_luong FROM order_items WHERE don_hang_id = ?',
         [id]
       );
       
-      // For each item, increase the product quantity back
+      // Hoàn lại số lượng cho mỗi sản phẩm
       for (const item of orderItems) {
         const [product] = await conn.query(
           'SELECT so_luong FROM products WHERE id = ?',
@@ -169,7 +169,7 @@ async function updateOrderStatus(id, trang_thai) {
         
         if (product[0]) {
           const newQuantity = product[0].so_luong + item.so_luong;
-          const newStatus = 'available'; // Set back to available since we're restoring stock
+          const newStatus = 'available'; // Đặt lại thành "available" vì chúng ta đang khôi phục kho
           
           await conn.query(
             'UPDATE products SET so_luong = ?, trang_thai = ? WHERE id = ?',
@@ -188,7 +188,7 @@ async function updateOrderStatus(id, trang_thai) {
     conn.release();
   }
 }
-
+// Cập nhật thông tin đơn hàng
 async function updateOrder(id, updates = {}) {
   const fields = [];
   const values = [];
@@ -221,7 +221,7 @@ async function updateOrder(id, updates = {}) {
   await db.query(query, values);
   return true;
 }
-
+// Xóa đơn hàng
 async function deleteOrder(id) {
   await db.query('DELETE FROM orders WHERE id = ?', [id]);
   return true;

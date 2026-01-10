@@ -7,7 +7,7 @@ export default function Contacts() {
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedContact, setSelectedContact] = useState(null);
-
+  // Tải danh sách liên hệ
   const fetchContacts = useCallback(async () => {
     setLoading(true);
     try {
@@ -20,15 +20,15 @@ export default function Contacts() {
       setLoading(false);
     }
   }, [addToast]);
-
+  // Tải liên hệ khi component mount
   useEffect(() => {
     fetchContacts();
   }, [fetchContacts]);
-
+  // Hiển thị giao diện khi đang tải
   if (loading) {
     return <div className="contacts-container"><p>Đang tải...</p></div>;
   }
-
+  
   return (
     <div className="contacts-container">
       <div className="contacts-header">

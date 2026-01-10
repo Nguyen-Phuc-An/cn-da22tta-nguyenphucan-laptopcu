@@ -1,5 +1,5 @@
 const db = require('../db');
-
+// Tạo banner mới
 async function createBanner(payload = {}) {
   const tieu_de = payload.tieu_de ?? null;
   const duong_dan = payload.duong_dan ?? null;
@@ -18,7 +18,7 @@ async function createBanner(payload = {}) {
   );
   return res.insertId;
 }
-
+// Lấy thông tin một banner theo ID
 async function getBannerById(id) {
   const [rows] = await db.query(
     `SELECT id, tieu_de, duong_dan, link, vi_tri, trang_thai, tao_luc, cap_nhat_luc
@@ -27,7 +27,7 @@ async function getBannerById(id) {
   );
   return rows[0] || null;
 }
-
+// Lấy danh sách tất cả banner
 async function listBanners() {
   const [rows] = await db.query(
     `SELECT id, tieu_de, duong_dan, link, vi_tri, trang_thai, tao_luc, cap_nhat_luc
@@ -36,7 +36,7 @@ async function listBanners() {
   );
   return rows;
 }
-
+// Lấy danh sách banner đang hoạt động
 async function listActiveBanners() {
   const [rows] = await db.query(
     `SELECT id, tieu_de, duong_dan, link, vi_tri, trang_thai, tao_luc, cap_nhat_luc
@@ -46,7 +46,7 @@ async function listActiveBanners() {
   );
   return rows;
 }
-
+// Cập nhật thông tin banner
 async function updateBanner(id, fields = {}) {
   const sets = [];
   const vals = [];
@@ -70,7 +70,7 @@ async function updateBanner(id, fields = {}) {
   await db.query('UPDATE banners SET ' + sets.join(', ') + ' WHERE id = ?', vals);
   return true;
 }
-
+// Xóa banner
 async function deleteBanner(id) {
   await db.query('DELETE FROM banners WHERE id = ?', [id]);
   return true;

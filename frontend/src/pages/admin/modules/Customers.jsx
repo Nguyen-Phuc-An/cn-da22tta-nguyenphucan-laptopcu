@@ -5,7 +5,7 @@ export default function Customers() {
   const [customers, setCustomers] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerOrders, setCustomerOrders] = useState([]);
-
+  // Tải danh sách khách hàng khi component mount
   useEffect(() => {
     const loadCustomers = async () => {
       try {
@@ -18,7 +18,7 @@ export default function Customers() {
     };
     loadCustomers();
   }, []);
-
+  // Xử lý khi chọn một khách hàng
   const handleSelectCustomer = async (customer) => {
     setSelectedCustomer(customer);
     setCustomerOrders([]);
@@ -73,7 +73,7 @@ export default function Customers() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Thông tin khách hàng</h3>
-              <button className="close-btn" onClick={() => setSelectedCustomer(null)}>✕</button>
+              <button className="close-btn" onClick={() => setSelectedCustomer(null)}><i className="bi bi-x-lg"></i></button>
             </div>
             
             <div className="modal-body">

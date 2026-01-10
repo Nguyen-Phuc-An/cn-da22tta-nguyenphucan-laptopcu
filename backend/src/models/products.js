@@ -1,7 +1,6 @@
 const db = require('../db');
-
+// Tạo sản phẩm mới
 async function createProduct(payload = {}) {
-  // Accept either Vietnamese keys (preferred) or common English keys for compatibility
   const danh_muc_id = payload.danh_muc_id ?? payload.category_id ?? null;
   const tieu_de = payload.tieu_de ?? payload.title ?? null;
   const mo_ta = payload.mo_ta ?? payload.description ?? null;
@@ -25,7 +24,7 @@ async function createProduct(payload = {}) {
   );
   return res.insertId;
 }
-
+// Lấy thông tin một sản phẩm theo ID
 async function getProductById(id) {
   const [rows] = await db.query(
     `SELECT id, danh_muc_id, tieu_de, mo_ta, ram, o_cung, cpu, kich_thuoc_man_hinh, card_do_hoa, do_phan_giai, tinh_trang, gia, tien_te, so_luong, trang_thai, mau_sac, dang_tai_luc, cap_nhat_luc
@@ -34,7 +33,7 @@ async function getProductById(id) {
   );
   return rows[0] || null;
 }
-
+// Lấy danh sách sản phẩm với phân trang
 async function listProducts({ limit = 50, offset = 0 } = {}) {
   const [rows] = await db.query(
     `SELECT id, danh_muc_id, tieu_de, mo_ta, ram, o_cung, cpu, kich_thuoc_man_hinh, card_do_hoa, do_phan_giai, tinh_trang, gia, tien_te, so_luong, trang_thai, mau_sac, dang_tai_luc, cap_nhat_luc
@@ -45,11 +44,11 @@ async function listProducts({ limit = 50, offset = 0 } = {}) {
   );
   return rows;
 }
-
+// Cập nhật thông tin sản phẩm
 async function updateProduct(id, fields = {}) {
   const sets = []; const vals = [];
   const mapping = {
-    // Vietnamese -> column
+    // Việt Nam aliases -> column
     danh_muc_id: 'danh_muc_id', tieu_de: 'tieu_de', mo_ta: 'mo_ta', tinh_trang: 'tinh_trang', gia: 'gia', tien_te: 'tien_te', so_luong: 'so_luong', trang_thai: 'trang_thai', ram: 'ram', o_cung: 'o_cung', cpu: 'cpu', kich_thuoc_man_hinh: 'kich_thuoc_man_hinh', card_do_hoa: 'card_do_hoa', do_phan_giai: 'do_phan_giai', mau_sac: 'mau_sac',
     // English aliases -> column
     category_id: 'danh_muc_id', title: 'tieu_de', description: 'mo_ta', condition: 'tinh_trang', price: 'gia', currency: 'tien_te', stock: 'so_luong', status: 'trang_thai', disk: 'o_cung', screen_size: 'kich_thuoc_man_hinh', gpu: 'card_do_hoa', resolution: 'do_phan_giai', color: 'mau_sac'

@@ -8,7 +8,7 @@ export default function EduVerifications() {
   const [loading, setLoading] = useState(true);
   const [selectedVerification, setSelectedVerification] = useState(null);
   const [filterStatus, setFilterStatus] = useState('pending'); // pending, approved, rejected, all
-
+  // Tải danh sách xác thực Edu khi component mount
   const fetchVerifications = useCallback(async () => {
     setLoading(true);
     try {
@@ -31,11 +31,11 @@ export default function EduVerifications() {
       setLoading(false);
     }
   }, [addToast]);
-
+  // Tải xác thực khi component mount
   useEffect(() => {
     fetchVerifications();
   }, [fetchVerifications]);
-
+  // Xử lý phê duyệt xác thực
   const handleApprove = async (userId) => {
     if (window.confirm('Xác nhận phê duyệt xác thực Edu cho người dùng này?')) {
       try {
@@ -56,7 +56,7 @@ export default function EduVerifications() {
       }
     }
   };
-
+  // Từ chối xác thực
   const handleReject = async (userId) => {
     if (window.confirm('Từ chối xác thực Edu cho người dùng này?')) {
       try {
@@ -75,7 +75,7 @@ export default function EduVerifications() {
       }
     }
   };
-
+  // Lọc xác thực theo trạng thái
   const filteredVerifications = verifications.filter(v => {
     if (filterStatus === 'all') return true;
     if (filterStatus === 'pending') return !v.edu_verified;
@@ -83,11 +83,11 @@ export default function EduVerifications() {
     if (filterStatus === 'rejected') return v.edu_verified === -1;
     return true;
   });
-
+  // Hiển thị giao diện khi đang tải
   if (loading) {
     return <div className="edu-verifications-container"><p>Đang tải...</p></div>;
   }
-
+  // Giao diện chính
   return (
     <div className="edu-verifications-container">
       <div className="edu-verifications-header">

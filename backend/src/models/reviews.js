@@ -1,5 +1,5 @@
 const db = require('../db');
-
+// Tạo hoặc cập nhật đánh giá sản phẩm
 async function createOrUpdateReview({ product_id, user_id, rating, title = null, body = null }) {
   const [res] = await db.query(
     `INSERT INTO reviews (san_pham_id, khach_hang_id, diem, tieu_de, noi_dung)
@@ -9,7 +9,7 @@ async function createOrUpdateReview({ product_id, user_id, rating, title = null,
   );
   return res.insertId || true;
 }
-
+// Lấy tất cả đánh giá của một sản phẩm
 async function getReviewsByProduct(productId) {
   const [rows] = await db.query(
     `SELECT r.*, u.ten as user_name FROM reviews r LEFT JOIN users u ON r.khach_hang_id = u.id WHERE r.san_pham_id = ? ORDER BY tao_luc DESC`,
@@ -17,8 +17,7 @@ async function getReviewsByProduct(productId) {
   );
   return rows;
 }
-
-// Get all reviews with product and user info (for admin)
+// Lấy tất cả đánh giá với thông tin sản phẩm và người dùng (dành cho admin)
 async function getAllReviews() {
   const [rows] = await db.query(
     `SELECT r.*, 
@@ -31,17 +30,16 @@ async function getAllReviews() {
   );
   return rows;
 }
-
+// Xóa đánh giá của một sản phẩm bởi người dùng
 async function deleteReview(product_id, user_id) {
   await db.query('DELETE FROM reviews WHERE san_pham_id = ? AND khach_hang_id = ?', [product_id, user_id]);
   return true;
 }
-
 // Lấy danh sách sản phẩm từ đơn hàng đã hoàn thành mà chưa review
 async function getPendingReviewsForUser(userId) {
   console.log('[reviews.getPendingReviewsForUser] Getting reviews for user:', userId);
   
-  // First, check what orders exist for this user
+  // Đầu tiên, kiểm tra các đơn hàng tồn tại cho người dùng này
   const [userOrders] = await db.query(
     'SELECT id, trang_thai FROM orders WHERE khach_hang_id = ? ORDER BY id DESC LIMIT 5',
     [userId]
@@ -74,7 +72,7 @@ async function getPendingReviewsForUser(userId) {
   const [rows] = await db.query(sql, [userId, userId]);
   console.log('[reviews.getPendingReviewsForUser] Found', rows.length, 'rows with completed status');
   
-  // If no completed orders, also try other possible statuses for debugging
+  // Nếu không có đơn hàng đã hoàn thành, cũng thử các trạng thái khác để gỡ lỗi
   if (rows.length === 0) {
     const [allOrders] = await db.query(
       `SELECT DISTINCT p.id, p.tieu_de, o.trang_thai

@@ -1,7 +1,7 @@
 const db = require('../db');
 
 /**
- * Create a new contact submission
+ * Tạo liên hệ mới
  */
 exports.create = async (req, res) => {
   try {
@@ -35,7 +35,7 @@ exports.create = async (req, res) => {
 };
 
 /**
- * Get all contacts (admin only)
+ * Lấy danh sách tất cả liên hệ
  */
 exports.list = async (req, res) => {
   try {
@@ -54,7 +54,7 @@ exports.list = async (req, res) => {
 };
 
 /**
- * Get a single contact by ID
+ * Lấy thông tin một liên hệ theo ID
  */
 exports.getOne = async (req, res) => {
   try {
@@ -78,7 +78,7 @@ exports.getOne = async (req, res) => {
 };
 
 /**
- * Delete a contact
+ * Xóa liên hệ
  */
 exports.remove = async (req, res) => {
   try {

@@ -1,5 +1,4 @@
-// Categories services: data helpers only.
-
+// Category services: helpers for category data normalization and tree building.
 export function normalizeCategory(c = {}) {
   return {
     id: c.id || c.ma || null,
@@ -8,7 +7,7 @@ export function normalizeCategory(c = {}) {
     ...c
   };
 }
-
+// Xây dựng cây danh mục từ danh sách phẳng
 export function buildCategoryTree(list = []) {
   // simple tree builder (flat parent_id -> children)
   const map = {};

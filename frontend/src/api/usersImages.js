@@ -12,17 +12,17 @@ export async function uploadUserImages(userId, files) {
   return response;
 }
 
-// Get all user images
+// Lấy danh sách hình ảnh người dùng
 export async function getUserImages(userId) {
   return apiFetch(`/users/${userId}/images`);
 }
 
-// Get main avatar
+// Lấy avatar chính
 export async function getMainUserImage(userId) {
   return apiFetch(`/users/${userId}/images/main`);
 }
 
-// Set image as main
+// Đặt hình ảnh làm avatar chính
 export async function setMainUserImage(userId, imageId) {
   return apiFetch(`/users/${userId}/images/main`, {
     method: 'POST',
@@ -34,7 +34,7 @@ export async function setMainUserImage(userId, imageId) {
   });
 }
 
-// Delete user image
+// Xóa hình ảnh người dùng
 export async function deleteUserImage(userId, imageId) {
   return apiFetch(`/users/${userId}/images`, {
     method: 'DELETE',

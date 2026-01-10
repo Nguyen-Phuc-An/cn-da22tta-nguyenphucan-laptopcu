@@ -1,11 +1,11 @@
 import { API_BASE, getToken } from '../services/apiClient';
-
+// Lấy danh sách banner đang hoạt động
 export async function listActiveBanners() {
   const res = await fetch(`${API_BASE}/banners/active`);
   if (!res.ok) throw new Error(`Failed to fetch banners: ${res.status}`);
   return res.json();
 }
-
+// Quản lý banner (admin)
 export async function listBanners() {
   const res = await fetch(`${API_BASE}/banners`, {
     headers: { Authorization: `Bearer ${getToken()}` }
@@ -13,9 +13,9 @@ export async function listBanners() {
   if (!res.ok) throw new Error(`Failed to fetch banners: ${res.status}`);
   return res.json();
 }
-
+// Tạo banner mới
 export async function createBanner(payload) {
-  // If payload has a file, use FormData instead of JSON
+  // Nếu payload có file, sử dụng FormData thay vì JSON
   if (payload.file) {
     const formData = new FormData();
     formData.append('tieu_de', payload.tieu_de);
@@ -47,9 +47,9 @@ export async function createBanner(payload) {
   if (!res.ok) throw new Error(`Failed to create banner: ${res.status}`);
   return res.json();
 }
-
+// Cập nhật banner
 export async function updateBanner(id, payload) {
-  // If payload has a file, use FormData
+  // Nếu payload có file, sử dụng FormData thay vì JSON
   if (payload.file) {
     const formData = new FormData();
     formData.append('tieu_de', payload.tieu_de);
@@ -81,7 +81,7 @@ export async function updateBanner(id, payload) {
   if (!res.ok) throw new Error(`Failed to update banner: ${res.status}`);
   return res.json();
 }
-
+// Xóa banner
 export async function deleteBanner(id) {
   const res = await fetch(`${API_BASE}/banners/${id}`, {
     method: 'DELETE',

@@ -2,7 +2,7 @@ const usersImagesModel = require('../models/usersImages');
 const path = require('path');
 const fs = require('fs');
 
-// Upload avatar
+// Tải lên hình ảnh người dùng
 async function upload(req, res) {
   try {
     const userId = req.params.userId;
@@ -11,7 +11,7 @@ async function upload(req, res) {
     const files = req.files || [];
     if (!files.length) return res.status(400).json({ error: 'no files uploaded' });
 
-    // Delete old images from file system
+    // Xóa tất cả hình ảnh cũ của người dùng trước khi tải lên hình ảnh mới
     const oldImages = await usersImagesModel.getUserImages(userId);
     for (const img of oldImages) {
       if (img.duong_dan) {
@@ -27,7 +27,7 @@ async function upload(req, res) {
       }
     }
 
-    // Delete all old image records from database
+    // Xóa tất cả bản ghi hình ảnh cũ trong cơ sở dữ liệu
     await usersImagesModel.deleteAllUserImages(userId);
 
     const uploadedIds = [];
@@ -35,7 +35,7 @@ async function upload(req, res) {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const filePath = `/public/uploads/users/${file.filename}`;
-      // First file is main image, rest are secondary
+      // Đánh dấu hình ảnh đầu tiên là hình chính
       const isMain = (i === 0);
       const id = await usersImagesModel.uploadUserImage({
         nguoi_dung_id: userId,
@@ -51,8 +51,7 @@ async function upload(req, res) {
     res.status(500).json({ error: e.message });
   }
 }
-
-// List all user images
+// Lấy danh sách tất cả hình ảnh người dùng
 async function list(req, res) {
   try {
     const userId = req.params.userId;
@@ -64,8 +63,7 @@ async function list(req, res) {
     res.status(500).json({ error: e.message });
   }
 }
-
-// Get main avatar
+// Lấy hình ảnh đại diện chính
 async function getMain(req, res) {
   try {
     const userId = req.params.userId;
@@ -77,8 +75,7 @@ async function getMain(req, res) {
     res.status(500).json({ error: e.message });
   }
 }
-
-// Set image as main
+// Đặt hình ảnh làm hình chính
 async function setMain(req, res) {
   try {
     const { imageId, userId } = req.body || {};
@@ -92,8 +89,7 @@ async function setMain(req, res) {
     res.status(500).json({ error: e.message });
   }
 }
-
-// Delete image
+// Xóa hình ảnh người dùng
 async function remove(req, res) {
   try {
     const { imageId, userId } = req.body || {};

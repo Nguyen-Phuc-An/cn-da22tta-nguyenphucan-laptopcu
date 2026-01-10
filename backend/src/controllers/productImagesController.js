@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { absUploadDir } = require('../middlewares/upload');
 
-// upload files via multer before calling this handler
+// Tải lên hình ảnh sản phẩm
 async function upload(req, res) {
   try {
     console.log('[productImages.upload] START - productId:', req.params.productId, 'files received:', req.files?.length || 0);
@@ -15,7 +15,6 @@ async function upload(req, res) {
     const files = req.files || [];
     if (!files.length) return res.status(400).json({ error: 'no files uploaded' });
 
-    // debug log saved filenames and upload dir
     try { console.log('Upload handler files:', files.map(f => f.filename)); console.log('absUploadDir:', absUploadDir); } catch (e) { void e; }
 
     const existing = await productImages.countImagesForProduct(productId);
@@ -33,7 +32,7 @@ async function upload(req, res) {
     res.status(500).json({ error: e.message });
   }
 }
-
+// Lấy danh sách hình ảnh của một sản phẩm
 async function list(req, res) {
   try {
     const productId = req.params.productId;
@@ -43,7 +42,7 @@ async function list(req, res) {
     res.json(rows);
   } catch (e) { res.status(500).json({ error: e.message }); }
 }
-
+// Xóa hình ảnh sản phẩm
 async function remove(req, res) {
   try {
     const id = req.params.id;

@@ -1,7 +1,7 @@
 const users = require('../models/users');
 const bcrypt = require('bcryptjs');
 
-// Use hashing here so POST /api/users is safe if used directly.
+// Tạo người dùng mới
 async function create(req, res) {
   try {
     const { email, name, password, phone, address, role } = req.body || {};
@@ -16,7 +16,7 @@ async function create(req, res) {
     res.status(201).json({ id: insertId });
   } catch (e) { console.error(e); res.status(500).json({ error: e.message }); }
 }
-
+// Lấy thông tin một người dùng theo ID
 async function getOne(req, res) {
   try {
     const id = req.params.id;
@@ -25,24 +25,24 @@ async function getOne(req, res) {
     res.json(user);
   } catch (e) { res.status(500).json({ error: e.message }); }
 }
-
+// Lấy danh sách tất cả người dùng
 async function list(req, res) {
   try {
     const all = await users.listUsers();
     res.json(all || []);
   } catch (e) { console.error('users.list error', e); res.status(500).json({ error: e.message }); }
 }
-
+// Cập nhật thông tin người dùng
 async function update(req, res) {
   try {
     const id = req.params.id;
-    // If password provided, hash it
+    // Nếu có password trong body, băm mật khẩu trước khi lưu
     const body = { ...req.body };
     if (body.password) {
       body.passwordHash = bcrypt.hashSync(body.password, 12);
       delete body.password;
     }
-    // Handle avatar upload
+    // Nếu có file avatar được tải lên, sử dụng đường dẫn này
     if (req.file) {
       body.avatar = `/public/uploads/users/${req.file.filename}`;
     }
@@ -51,7 +51,7 @@ async function update(req, res) {
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 }
-
+// Vô hiệu hóa người dùng
 async function remove(req, res) {
   try {
     const id = req.params.id;

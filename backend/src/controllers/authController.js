@@ -12,7 +12,7 @@ function userSafe(u) {
   return rest;
 }
 
-// Register: email, name, password, optional phone, address
+// Đăng ký người dùng
 async function register(req, res) {
   try {
     const { email, name, password, phone = null, address = null, role = 'customer' } = req.body || {};
@@ -40,7 +40,7 @@ async function register(req, res) {
     res.status(500).json({ error: 'server error' });
   }
 }
-
+// Đăng nhập người dùng
 async function login(req, res) {
   try {
     const { email, password } = req.body || {};
@@ -64,7 +64,7 @@ async function login(req, res) {
     res.status(500).json({ error: 'server error' });
   }
 }
-
+// Đổi mật khẩu người dùng
 async function changePassword(req, res) {
   try {
     // Extract userId from jwt payload in req.user
@@ -119,8 +119,7 @@ async function changePassword(req, res) {
     res.status(500).json({ error: 'server error', details: err.message });
   }
 }
-
-// Verify Edu - Student/Teacher verification
+// Xác minh Edu - Xác minh Sinh viên/Giáo viên
 async function eduVerification(req, res) {
   try {
     const userId = req.user?.id;
@@ -180,8 +179,7 @@ async function eduVerification(req, res) {
     res.status(500).json({ error: 'server error', details: err.message });
   }
 }
-
-// Get Edu Status
+// Lấy trạng thái Edu
 async function getEduStatus(req, res) {
   try {
     const userId = req.user?.id;
@@ -205,8 +203,7 @@ async function getEduStatus(req, res) {
     res.status(500).json({ error: 'server error', details: err.message });
   }
 }
-
-// Admin: Get All Edu Verifications
+// Admin: Lấy tất cả các xác minh Edu
 async function getAllEduVerifications(req, res) {
   try {
     const db = require('../db');
@@ -231,8 +228,7 @@ async function getAllEduVerifications(req, res) {
     res.status(500).json({ error: 'server error', details: err.message });
   }
 }
-
-// Admin: Approve Edu Verification
+// Admin: Phê duyệt xác minh Edu
 async function approveEduVerification(req, res) {
   try {
     const { user_id } = req.body;
@@ -262,8 +258,7 @@ async function approveEduVerification(req, res) {
     res.status(500).json({ error: 'server error', details: err.message });
   }
 }
-
-// Admin: Reject Edu Verification
+// Admin: Từ chối xác minh Edu
 async function rejectEduVerification(req, res) {
   try {
     const { user_id } = req.body;

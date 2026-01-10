@@ -1,5 +1,6 @@
 import { listActiveBanners, listBanners, createBanner, updateBanner, deleteBanner } from '../api/banners';
 
+// Dịch vụ banner: các hàm tiện ích để tương tác với API banner.
 export async function getActiveBanners() {
   try {
     const banners = await listActiveBanners();
@@ -9,7 +10,7 @@ export async function getActiveBanners() {
     return [];
   }
 }
-
+// Lấy tất cả banner (admin)
 export async function getAllBanners() {
   try {
     const banners = await listBanners();
@@ -19,15 +20,15 @@ export async function getAllBanners() {
     return [];
   }
 }
-
+// Thêm banner mới
 export async function addBanner(payload) {
   return createBanner(payload);
 }
-
+// Chỉnh sửa banner
 export async function editBanner(id, payload) {
   return updateBanner(id, payload);
 }
-
+// Xóa banner
 export async function removeBanner(id) {
   return deleteBanner(id);
 }

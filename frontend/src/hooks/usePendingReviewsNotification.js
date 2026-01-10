@@ -4,48 +4,49 @@ import { apiFetch } from '../services/apiClient';
 export function usePendingReviewsNotification(user, token) {
   useEffect(() => {
     console.log('[usePendingReviewsNotification] user:', user?.id, 'token:', token ? token.substring(0, 20) + '...' : null);
-    
+    // Nếu không có user hoặc token, bỏ qua
     if (!user || !token) {
       console.log('[usePendingReviewsNotification] Skipping - user/token missing');
       return;
     }
 
-    // Check if notification has been shown for this user in this session
+    // Kiểm tra nếu đã thông báo rồi
     const notificationKey = `pending_reviews_notified_${user.id}`;
+    // Nếu đã thông báo rồi, bỏ qua
     if (localStorage.getItem(notificationKey)) {
       console.log('[usePendingReviewsNotification] Notification already shown for this user');
       return;
     }
-
+    // Lấy danh sách đánh giá chờ
     (async () => {
       try {
         console.log('[usePendingReviewsNotification] Fetching /reviews/pending');
         const response = await apiFetch('/reviews/pending');
         console.log('[usePendingReviewsNotification] API Response:', response);
         
-        // Handle different response types
+        // Xử lý các loại phản hồi khác nhau
         let pendingReviews = response;
         if (response && response.error) {
           console.warn('[usePendingReviewsNotification] API returned error:', response.error);
           return;
         }
-        
+        // Nếu phản hồi có dạng { data: [...] }
         if (!Array.isArray(pendingReviews)) {
           console.warn('[usePendingReviewsNotification] Response is not array:', typeof pendingReviews);
           return;
         }
-        
+        // Lọc các đánh giá chưa được đánh giá
         const pending = pendingReviews.filter(p => !p.da_review);
         console.log('[usePendingReviewsNotification] Pending reviews count:', pending.length, 'out of', pendingReviews.length);
         
         if (pending.length > 0) {
-          // Mark as notified
+          // Đánh dấu đã thông báo
           localStorage.setItem(notificationKey, '1');
           console.log('[usePendingReviewsNotification] Showing modal for', pending.length, 'products');
           
-          // Small delay to ensure DOM is ready
+          // Đợi một chút để đảm bảo DOM đã sẵn sàng
           setTimeout(() => {
-            // Create and show modal
+            // Tạo và hiển thị modal
             const modalId = 'pending-reviews-modal';
             if (!document.getElementById(modalId)) {
               const modalHTML = `

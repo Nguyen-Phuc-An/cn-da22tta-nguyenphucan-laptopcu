@@ -10,13 +10,13 @@ app.use(cors({ origin: ['http://localhost:5173', 'http://localhost:5174'], crede
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// serve uploaded files
+// Mặc định thư mục public để phục vụ file tĩnh
 app.use('/public', express.static(require('path').join(__dirname, '..', 'public')));
 
-// mount API
+// API routes
 app.use('/api', api);
 
-// ensure admin user exists on startup
+// Kiểm tra và tạo tài khoản admin nếu chưa có
 try {
   const ensureAdmin = require('./scripts/ensureAdmin');
   if (require.main === module) {
@@ -26,12 +26,12 @@ try {
   // ignore if script missing
 }
 
-// basic error handler
+// Loại bỏ thông tin nhạy cảm và xử lý lỗi chung
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).json({ error: err.message || 'server error' });
 });
-
+// Khởi động server nếu chạy trực tiếp
 if (require.main === module) {
   const port = process.env.PORT || 3000;
   const server = require('http').createServer(app);

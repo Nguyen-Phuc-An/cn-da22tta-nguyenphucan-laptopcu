@@ -1,4 +1,4 @@
-import { apiFetch, getAuthHeader } from './apiClient';
+import { apiFetch } from './apiClient';
 
 /**
  * Send a contact form submission

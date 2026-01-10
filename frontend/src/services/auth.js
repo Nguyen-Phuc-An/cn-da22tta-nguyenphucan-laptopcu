@@ -1,15 +1,14 @@
-// Auth services: only helpers and payload normalization.
-
+// Chuẩn bị dữ liệu đăng nhập
 export function prepareLoginPayload(emailOrPayload, password) {
   return (typeof emailOrPayload === 'object' && emailOrPayload !== null)
     ? emailOrPayload
     : { email: emailOrPayload, password };
 }
-
+// Chuẩn bị dữ liệu đăng ký
 export function prepareRegisterPayload(payload) {
   return payload;
 }
-
+// Chuẩn hóa dữ liệu người dùng
 export function normalizeUser(user = {}) {
   return {
     id: user.id || user.ma || null,

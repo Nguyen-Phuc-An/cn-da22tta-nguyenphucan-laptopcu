@@ -1,7 +1,7 @@
 const db = require('../db');
 
 /**
- * Get list of users who have chatted (for admin panel)
+ * Lấy danh sách người dùng đã chat
  */
 exports.getChatUsers = async (req, res) => {
   try {
@@ -28,7 +28,7 @@ exports.getChatUsers = async (req, res) => {
 };
 
 /**
- * Get chat history for a specific user
+ * Lấy lịch sử chat với một người dùng
  */
 exports.getChatHistory = async (req, res) => {
   try {
@@ -50,7 +50,7 @@ exports.getChatHistory = async (req, res) => {
 };
 
 /**
- * Send a message (REST fallback)
+ * Gửi tin nhắn mới
  */
 exports.sendMessage = async (req, res) => {
   try {

@@ -25,19 +25,21 @@ export default function ChatButton() {
   const socketRef = useRef(null);
   const userIdRef = useRef(null);
 
+  // Cuộn xuống dưới cùng
   const scrollToBottom = () => {
     if (!isUserScrollingRef.current) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
+  // Xử lý cuộn tay của người dùng
   const handleChatScroll = () => {
     if (!chatMessagesRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = chatMessagesRef.current;
     isUserScrollingRef.current = scrollHeight - (scrollTop + clientHeight) > 50;
   };
 
-  // Extract user ID from token
+  // Lấy ID người dùng từ token
   const extractUserId = () => {
     if (token) {
       try {
@@ -54,12 +56,12 @@ export default function ChatButton() {
     return null;
   };
 
-  // Initialize Socket.IO and setup listeners
+  // Khởi tạo Socket.IO và thiết lập các listener
   const setupSocketListeners = () => {
     const socket = initializeSocket();
     socketRef.current = socket;
 
-    // When socket connects, join user room
+    // Khi socket kết nối, tham gia phòng chat người dùng
     onSocketConnected(() => {
       console.log('[ChatButton] Socket connected');
       const userId = extractUserId();
@@ -69,7 +71,7 @@ export default function ChatButton() {
       }
     });
 
-    // Listen for admin messages
+    // Nhận tin nhắn mới
     onReceiveMessage((data) => {
       console.log('[ChatButton] Received message:', data);
       setMessages(prev => [...prev, {
@@ -86,20 +88,20 @@ export default function ChatButton() {
     });
   };
 
-  // Open/close chat
+  // Mở/đóng chat
   const handleToggleChat = (open) => {
     setIsOpen(open);
     if (open) {
       isUserScrollingRef.current = false;
       
-      // Setup Socket.IO if not already done
+      // Thiết lập Socket.IO nếu chưa làm
       if (!socketRef.current) {
         setupSocketListeners();
       }
     }
   };
 
-  // Send message
+  // Gửi tin nhắn
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
@@ -116,7 +118,7 @@ export default function ChatButton() {
     setIsLoading(true);
 
     try {
-      // Add user message optimistically
+      // Thêm tin nhắn vào giao diện ngay lập tức
       setMessages(prev => [...prev, {
         id: Date.now(),
         noi_dung,
@@ -139,6 +141,7 @@ export default function ChatButton() {
     }
   };
 
+  // Tự động cuộn khi có tin nhắn mới
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -177,7 +180,7 @@ export default function ChatButton() {
                 onClick={() => handleToggleChat(false)}
                 aria-label="Đóng chat"
               >
-                ✕
+<i className="bi bi-x-lg"></i>
               </button>
             </div>
           </div>

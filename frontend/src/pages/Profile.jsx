@@ -5,6 +5,7 @@ import { uploadUserImages, getUserImages } from '../api/usersImages';
 import Footer from '../components/Footer';
 import '../styles/Profile.css';
 
+// Giải mã JWT để lấy thông tin người dùng
 function decodeJwt(token) {
   if (!token) return null;
   try {
@@ -20,8 +21,7 @@ function decodeJwt(token) {
   }
 }
 
-
-
+// Trang hồ sơ người dùng
 export default function Profile() {
   const { token, setToken } = useContext(AuthContext);
   const userInfo = token ? decodeJwt(token) : null;
@@ -50,8 +50,7 @@ export default function Profile() {
   const [pendingReviewCount, setPendingReviewCount] = useState(0);
   const reviewsLoadedRef = React.useRef(false);
 
-  // Form states
-  
+  // Trạng thái form
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -63,7 +62,7 @@ export default function Profile() {
     confirmPassword: ''
   });
 
-  // Load user data on mount
+  // Tải thông tin người dùng
   useEffect(() => {
     if (!userId) return;
     
@@ -110,9 +109,7 @@ export default function Profile() {
     })();
   }, [userId]);
 
-
-
-  // Load orders when tab changes to orders
+  // Tải đơn hàng khi chuyển tab sang đơn hàng
   useEffect(() => {
     const loadUserOrders = async () => {
       try {
@@ -135,7 +132,7 @@ export default function Profile() {
     }
   }, [activeTab, userId]);
 
-  // Load reviewed products when tab changes to reviews
+  // Tải đánh giá khi chuyển tab sang đánh giá
   useEffect(() => {
     const loadReviewedProducts = async () => {
       try {
@@ -143,7 +140,7 @@ export default function Profile() {
         setError('');
         const res = await apiFetch(`/reviews/pending`);
         const allProducts = Array.isArray(res) ? res : res?.data || [];
-        // Filter to show only reviewed products (da_review === 1)
+        // Lọc để chỉ hiển thị các sản phẩm đã đánh giá (da_review === 1)
         const reviewed = allProducts.filter(p => p.da_review === 1);
         const pending = allProducts.filter(p => p.da_review === 0);
         setReviewedProducts(reviewed);
@@ -162,7 +159,7 @@ export default function Profile() {
     }
   }, [activeTab, userId]);
 
-  // Helper function to get status label
+  // Lấy nhãn trạng thái đơn hàng
   const getStatusLabel = (status) => {
     const statusMap = {
       pending: 'Chờ xác nhận',
@@ -174,7 +171,7 @@ export default function Profile() {
     return statusMap[status] || status;
   };
 
-  // Helper function to get status color
+  // Lấy màu trạng thái đơn hàng
   const getStatusColor = (status) => {
     const colorMap = {
       pending: '#ff9800',
@@ -186,6 +183,7 @@ export default function Profile() {
     return colorMap[status] || '#666';
   };
 
+  // Xử lý thay đổi avatar
   const handleAvatarChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -198,7 +196,7 @@ export default function Profile() {
     }
   };
 
-  // Handle save profile
+  // Xử lý lưu hồ sơ
   const handleSaveProfile = async () => {
     try {
       setLoading(true);
@@ -250,7 +248,7 @@ export default function Profile() {
     }
   };
 
-  // Handle change password
+  // Xử lý đổi mật khẩu
   const handleChangePassword = async () => {
     try {
       setLoading(true);
@@ -294,7 +292,7 @@ export default function Profile() {
     }
   };
 
-  // Handle delete account
+  // Xử lý xóa tài khoản
   const handleDeleteAccount = async () => {
     try {
       setLoading(true);
@@ -311,7 +309,7 @@ export default function Profile() {
     }
   };
 
-  // Handle save edited review
+  // Xử lý lưu đánh giá đã chỉnh sửa
   const handleSaveReview = async () => {
     try {
       setLoading(true);
@@ -355,7 +353,7 @@ export default function Profile() {
     }
   };
 
-  // Not logged in
+  // Chưa đăng nhập
   if (!token) {
     return (
       <>
@@ -805,13 +803,13 @@ export default function Profile() {
                   color: '#666'
                 }}
               >
-                ✕
+                <i className="bi bi-x-lg"></i>
               </button>
             </div>
 
             {/* Delivery Info */}
             <div style={{ marginBottom: '25px', paddingBottom: '15px', borderBottom: '1px solid #e5e7eb' }}>
-              <h3 style={{ fontSize: '16px', marginBottom: '12px', color: '#333' }}>📦 Thông tin giao hàng</h3>
+              <h3 style={{ fontSize: '16px', marginBottom: '12px', color: '#333' }}><i className="bi bi-box-seam"></i> Thông tin giao hàng</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                 <div>
                   <p style={{ margin: '0 0 5px 0', fontSize: '12px', color: '#666' }}>Người nhận</p>
@@ -1135,7 +1133,7 @@ export default function Profile() {
                     <td style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {product.tieu_de || '-'}
                     </td>
-                    <td>{'⭐'.repeat(product.rating || 0)}</td>
+                    <td>{Array.from({length: product.rating || 0}, (_, i) => <i key={i} className="bi bi-star-fill" style={{color: '#ffc107', marginRight: '2px'}}></i>)}</td>
                     <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {product.review_title || '-'}
                     </td>
@@ -1217,7 +1215,7 @@ export default function Profile() {
                   color: '#666'
                 }}
               >
-                ✕
+                <i className="bi bi-x-lg"></i>
               </button>
             </div>
 
@@ -1237,10 +1235,11 @@ export default function Profile() {
                       border: 'none',
                       cursor: 'pointer',
                       opacity: star <= editForm.rating ? 1 : 0.3,
-                      transition: 'opacity 0.2s'
+                      transition: 'opacity 0.2s',
+                      color: '#ffc107'
                     }}
                   >
-                    ⭐
+                    <i className="bi bi-star-fill"></i>
                   </button>
                 ))}
               </div>

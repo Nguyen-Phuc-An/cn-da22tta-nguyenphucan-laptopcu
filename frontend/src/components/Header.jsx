@@ -4,6 +4,7 @@ import { CartContext } from '../context/Cart';
 import { SearchContext } from '../context/SearchContextValue';
 import { getMainUserImage } from '../api/usersImages';
 
+// Giải mã JWT
 function decodeJwt(token) {
   if (!token) return null;
   try {
@@ -18,7 +19,7 @@ function decodeJwt(token) {
     return null;
   }
 }
-
+// Header component
 export default function Header({ onOpenAuth, onLogout }) {
   const { token } = useContext(AuthContext);
   const { getTotalQuantity } = useContext(CartContext);
@@ -29,7 +30,7 @@ export default function Header({ onOpenAuth, onLogout }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
 
-  // Parse token whenever it changes
+  // Phân tích token mỗi khi nó thay đổi
   useEffect(() => {
     let label = null;
     let admin = false;
@@ -55,7 +56,7 @@ export default function Header({ onOpenAuth, onLogout }) {
     setIsAdmin(admin);
     setIsStaff(staff);
 
-    // Load avatar if user is logged in
+    // Tải avatar nếu người dùng đã đăng nhập
     if (userId) {
       (async () => {
         try {
@@ -75,14 +76,14 @@ export default function Header({ onOpenAuth, onLogout }) {
     }
   }, [token]);
 
-  // Update local state when context changes
+  // Lấy giá trị tìm kiếm từ context
   useEffect(() => {
     setSearchValue(searchQuery);
   }, [searchQuery]);
 
   const isOperator = isAdmin || isStaff;
 
-  // Hide the global header when an admin or staff is viewing the admin dashboard
+  // Ẩn header toàn cục khi admin hoặc nhân viên đang xem bảng điều khiển admin
   try {
     const pathname = typeof window !== 'undefined' && window.location ? window.location.pathname : '';
     if (isOperator && pathname && pathname.startsWith('/admin')) return null;
@@ -92,12 +93,12 @@ export default function Header({ onOpenAuth, onLogout }) {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    // Update search context (which also saves to sessionStorage)
+    // Cập nhật context tìm kiếm (cũng lưu vào sessionStorage)
     setSearchQuery(searchValue.trim());
   };
   return (
     <header className="site-header">
-      {/* scrolling ticker above header-inner */}
+      {/* thanh chạy thông báo */}
       <div className="header-ticker" aria-hidden>
         <div className="ticker-track">
           {[
@@ -109,7 +110,7 @@ export default function Header({ onOpenAuth, onLogout }) {
           ].map((txt, i) => (
             <span key={i} className="ticker-item">{txt}</span>
           ))}
-          {[ /* duplicate items for seamless loop */
+          {[ /* nhân bản các mục để tạo vòng lặp liền mạch */
             'Giá mềm - Hiệu năng còn mới',
             'Tiết kiệm thông minh - Trãi nghiêm thoải mái',
             'Bền - Mượt - Đáng giá',

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { CartContext } from './Cart';
 
+// Cung cấp ngữ cảnh giỏ hàng
 export function CartProvider({ children }) {
   const [items, setItems] = useState(() => {
-    // Load from localStorage on init
+    // Tải từ localStorage khi khởi tạo
     try {
       const saved = localStorage.getItem('cart');
       return saved ? JSON.parse(saved) : [];
@@ -12,11 +13,11 @@ export function CartProvider({ children }) {
     }
   });
 
-  // Save to localStorage whenever items change
+  // Lưu vào localStorage mỗi khi items thay đổi
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(items));
   }, [items]);
-
+  // Thêm sản phẩm vào giỏ hàng
   const addToCart = (product, quantity = 1) => {
     setItems(prevItems => {
       const existingItem = prevItems.find(item => item.id === product.id);
@@ -30,11 +31,11 @@ export function CartProvider({ children }) {
       return [...prevItems, { ...product, quantity }];
     });
   };
-
+  // Xóa sản phẩm khỏi giỏ hàng
   const removeFromCart = (productId) => {
     setItems(prevItems => prevItems.filter(item => item.id !== productId));
   };
-
+  // Cập nhật số lượng sản phẩm trong giỏ hàng
   const updateQuantity = (productId, quantity) => {
     if (quantity <= 0) {
       removeFromCart(productId);
@@ -46,15 +47,15 @@ export function CartProvider({ children }) {
       )
     );
   };
-
+  // Xóa tất cả sản phẩm khỏi giỏ hàng
   const clearCart = () => {
     setItems([]);
   };
-
+  // Tính tổng tiền trong giỏ hàng
   const getTotalPrice = () => {
     return items.reduce((total, item) => total + (item.gia || 0) * item.quantity, 0);
   };
-
+  // Tính tổng số lượng sản phẩm trong giỏ hàng
   const getTotalQuantity = () => {
     return items.reduce((total, item) => total + item.quantity, 0);
   };

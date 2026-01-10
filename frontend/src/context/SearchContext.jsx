@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { SearchContext } from './SearchContextValue';
 
+// Cung cấp ngữ cảnh tìm kiếm
 export function SearchProvider({ children }) {
   const [searchQuery, setSearchQueryState] = useState(() => {
     try {
@@ -9,7 +10,7 @@ export function SearchProvider({ children }) {
       return '';
     }
   });
-
+  // Cập nhật truy vấn tìm kiếm và lưu vào sessionStorage
   const setSearchQuery = useCallback((query) => {
     setSearchQueryState(query);
     if (query.trim()) {

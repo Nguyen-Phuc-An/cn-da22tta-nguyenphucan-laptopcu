@@ -46,7 +46,7 @@ export default function ProductDetail() {
   // Get product ID from URL
   const productId = typeof window !== 'undefined' ? window.location.pathname.split('/product/')[1] : null;
 
-  // Load edu status
+  // Tải trạng thái edu
   useEffect(() => {
     if (!token || !userId) return;
     
@@ -62,7 +62,7 @@ export default function ProductDetail() {
       }
     })();
   }, [token, userId]);
-
+  // Tải thông tin sản phẩm
   useEffect(() => {
     if (!productId) return;
     
@@ -93,8 +93,7 @@ export default function ProductDetail() {
     })();
     return () => { mounted = false; };
   }, [productId]);
-
-  // Load reviews
+  // Tải đánh giá
   useEffect(() => {
     if (!product) return;
     
@@ -108,8 +107,7 @@ export default function ProductDetail() {
       }
     })();
   }, [product]);
-
-  // Load wishlist to check if product is favorite
+  // Tải wishlist để kiểm tra xem sản phẩm có phải là yêu thích không
   useEffect(() => {
     if (!userId || !product) return;
     
@@ -127,7 +125,7 @@ export default function ProductDetail() {
       }
     })();
   }, [userId, product]);
-
+  // Xử lý thêm/xóa yêu thích
   const handleAddToWishlist = () => {
     if (!userId) {
       addToast('Vui lòng đăng nhập để thêm vào yêu thích', 'info');
@@ -156,7 +154,7 @@ export default function ProductDetail() {
         });
     }
   };
-
+  // Xử lý thêm vào giỏ hàng
   const handleAddToCart = () => {
     if (!product) return;
     
@@ -181,7 +179,7 @@ export default function ProductDetail() {
 
   if (err) return <p className="error">{err}</p>;
   if (!product) return null;
-
+  // Xác định hình ảnh hiển thị
   const currentImage = product.images && product.images[selectedImageIndex] 
     ? imageToSrc(typeof product.images[selectedImageIndex] === 'string' 
       ? { url: product.images[selectedImageIndex] } 
@@ -248,10 +246,10 @@ export default function ProductDetail() {
             <h3 className="camket-title">
               CAM KẾT SẢN PHẨM
             </h3>
-            <p>🚚Miễn phí vận chuyển toàn quốc - Giao hàng hoả tốc 2H nội thành</p>
-            <p>🛡️ Bảo hành chính hãng 24 tháng</p>
-            <p>⭐ Bao xài đổi trả trong vòng 30 ngày đầu tiên</p>
-            <p>🧾 Giá đã bao gồm VAT, xuất hoá đơn ngay sau khi bán hàng</p>
+            <p><i className="bi bi-truck" style={{marginRight: '8px'}}></i>Miễn phí vận chuyển toàn quốc - Giao hàng hoả tốc 2H nội thành</p>
+            <p><i className="bi bi-shield-check" style={{marginRight: '8px'}}></i>Bảo hành chính hãng 24 tháng</p>
+            <p><i className="bi bi-star-fill" style={{marginRight: '8px', color: '#ffc107'}}></i>Bao xài đổi trả trong vòng 30 ngày đầu tiên</p>
+            <p><i className="bi bi-receipt" style={{marginRight: '8px'}}></i>Giá đã bao gồm VAT, xuất hoá đơn ngay sau khi bán hàng</p>
           </div>
 
           <div className="product-description-section">

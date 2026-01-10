@@ -16,7 +16,7 @@ export default function Reviews() {
     title: '',
     content: ''
   });
-
+  // Tải danh sách sản phẩm chờ đánh giá
   useEffect(() => {
     console.log('[Reviews] useEffect - token:', token ? token.substring(0, 20) + '...' : null, 'user:', user);
     
@@ -51,7 +51,7 @@ export default function Reviews() {
 
     loadPendingReviews();
   }, [token, user, addToast]);
-
+  // Bắt đầu đánh giá một sản phẩm
   const handleStartReview = (product) => {
     setReviewingProduct(product);
     setReviewForm({
@@ -60,7 +60,7 @@ export default function Reviews() {
       content: product.review_content || ''
     });
   };
-
+  // Gửi đánh giá
   const handleSubmitReview = async () => {
     if (!reviewForm.title.trim() || !reviewForm.content.trim()) {
       addToast('Vui lòng nhập tiêu đề và nội dung đánh giá', 'error');
@@ -92,7 +92,7 @@ export default function Reviews() {
       addToast('Lỗi lưu đánh giá: ' + err.message, 'error');
     }
   };
-
+  // Nếu chưa đăng nhập
   if (!user || !token) {
     return (
       <>
@@ -217,7 +217,7 @@ export default function Reviews() {
                       borderLeft: '4px solid #10b981'
                     }}>
                       <p style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600', color: '#065f46' }}>
-                        ✓ Đã đánh giá ({product.rating}⭐)
+                        <i className="bi bi-check-circle-fill" style={{marginRight: '8px', color: '#10b981'}}></i>Đã đánh giá ({product.rating}<i className="bi bi-star-fill" style={{marginLeft: '2px', color: '#ffc107'}}></i>)
                       </p>
                       <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: '#047857' }}>
                         <strong>Tiêu đề:</strong> {product.review_title}
@@ -248,7 +248,7 @@ export default function Reviews() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ minWidth: '500px' }}>
             <div className="modal-header">
               <h3>Đánh giá sản phẩm</h3>
-              <button className="close-btn" onClick={() => setReviewingProduct(null)}>✕</button>
+              <button className="close-btn" onClick={() => setReviewingProduct(null)}><i className="bi bi-x-lg"></i></button>
             </div>
 
             <div className="modal-body" style={{ padding: '20px' }}>
@@ -277,10 +277,11 @@ export default function Reviews() {
                           border: 'none',
                           cursor: 'pointer',
                           opacity: star <= reviewForm.rating ? 1 : 0.3,
-                          transition: 'all 0.2s'
+                          transition: 'all 0.2s',
+                          color: '#ffc107'
                         }}
                       >
-                        ⭐
+                        <i className="bi bi-star-fill"></i>
                       </button>
                     ))}
                   </div>

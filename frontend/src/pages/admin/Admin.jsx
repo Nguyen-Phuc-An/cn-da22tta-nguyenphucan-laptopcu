@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useContext, useEffect } from 'react';
+import { BsBoxSeam, BsChatDots, BsPerson, BsLock } from 'react-icons/bs';
 import { AuthContext } from '../../context/AuthContext';
 import Dashboard from './modules/Dashboard';
 import Products from './modules/Products';
@@ -14,7 +15,7 @@ import ProfileModal from './modals/ProfileModal';
 import ChangePasswordModal from './modals/ChangePasswordModal';
 import { apiFetch } from '../../services/apiClient';
 import './Admin.css';
-
+// Giải mã JWT để lấy thông tin người dùng
 function decodeJwt(token) {
   if (!token) return null;
   try {
@@ -25,25 +26,26 @@ function decodeJwt(token) {
     return JSON.parse(json);
   } catch { return null; }
 }
-
+// Main Admin Component
 export default function Admin() {
-  const { token, setToken } = useContext(AuthContext);
-  const userInfo = useMemo(() => decodeJwt(token), [token]);
+  const { token, setToken } = useContext(AuthContext);// Lấy thông tin người dùng từ token
+  const userInfo = useMemo(() => decodeJwt(token), [token]);// Kiểm tra quyền admin
+  // Nếu không phải admin, redirect về trang chủ
   const isAdmin = !!(userInfo && (userInfo.role === 'admin' || userInfo.isAdmin || userInfo.is_admin || userInfo.admin === true || (userInfo.permissions && userInfo.permissions.includes && userInfo.permissions.includes('admin'))));
   
-  const [activeModule, setActiveModule] = useState('dashboard');
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [pendingOrders, setPendingOrders] = useState(0);
-  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [activeModule, setActiveModule] = useState('dashboard'); // Mặc định là dashboard
+  const [showUserMenu, setShowUserMenu] = useState(false); // Hiển thị menu người dùng
+  const [showProfileModal, setShowProfileModal] = useState(false); // Hiển thị modal hồ sơ
+  const [showPasswordModal, setShowPasswordModal] = useState(false); // Hiển thị modal đổi mật khẩu
+  const [pendingOrders, setPendingOrders] = useState(0); // Số đơn hàng mới
+  const [unreadMessages, setUnreadMessages] = useState(0); // Số tin nhắn chưa đọc
 
-  // Redirect if not logged in
+  // Kiểm tra token hợp lệ
   useEffect(() => {
     if (!token) window.location.href = '/';
   }, [token]);
 
-  // Load stats for header badges
+  // Tải số liệu thống kê
   useEffect(() => {
     const loadStats = async () => {
       try {
@@ -155,7 +157,7 @@ export default function Admin() {
                 title="Đơn hàng mới"
                 onClick={() => setActiveModule('orders')}
               >
-                📦
+                <BsBoxSeam />
                 {pendingOrders > 0 && <span className="status-dot"></span>}
               </button>
               <button 
@@ -163,7 +165,7 @@ export default function Admin() {
                 title="Tin nhắn mới"
                 onClick={() => setActiveModule('chat')}
               >
-                💬
+                <BsChatDots />
                 {unreadMessages > 0 && <span className="status-dot"></span>}
               </button>
 
@@ -178,10 +180,10 @@ export default function Admin() {
                 {showUserMenu && (
                   <div className="user-dropdown">
                     <button onClick={() => { setShowProfileModal(true); setShowUserMenu(false); }}>
-                      👤 Hồ sơ cá nhân
+                      <BsPerson /> Hồ sơ cá nhân
                     </button>
                     <button onClick={() => { setShowPasswordModal(true); setShowUserMenu(false); }}>
-                      🔐 Đổi mật khẩu
+                      <BsLock /> Đổi mật khẩu
                     </button>
                     <hr />
                     <button onClick={handleLogout} className="logout-btn">
